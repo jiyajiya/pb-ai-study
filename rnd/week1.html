@@ -50,7 +50,7 @@
     text-decoration:none;color:var(--muted);font-size:.8rem;font-weight:500;
     padding:5px 10px;border-radius:999px;white-space:nowrap;transition:.2s;
   }
-  .nav a:hover{background:var(--accent);color:#1A1611}
+  .nav a:hover,.nav a.active{background:var(--accent);color:#1A1611}
 
   .wrap{max-width:980px;margin:0 auto;padding:0 24px;position:relative;z-index:1}
 
@@ -187,10 +187,10 @@
 
   <header class="hero">
     <div class="kicker">AI 첫걸음 · 첫번째 시간</div>
-    <h1>AI 쓰면서 답답했던 것들,<br><span class="hl">오늘 해결합니다</span></h1>
+    <h1>AI 쓰면서 답답했던 거,<br><span class="hl">오늘 같이 풀어봐요</span></h1>
     <p>5가지 불편 사항을 차례로 풀어봅니다.</p>
     <div class="flow">
-      <span>맥락 <b>고정</b></span><span class="arrow">→</span>
+      <span>프롬프트 <b>박제</b></span><span class="arrow">→</span>
       <span>잘 <b>시키기</b></span><span class="arrow">→</span>
       <span>검증·<b>검색</b></span><span class="arrow">→</span>
       <span>요약 <b>너머</b></span><span class="arrow">→</span>
@@ -199,26 +199,25 @@
   </header>
 
   <section class="session" id="s0">
-    <div class="s-head"><span class="time">0–5분</span></div>
     <h2 class="s-title">오프닝</h2>
     <p class="s-intro">이런 적 없으세요?</p>
     <div class="case">
       <p>매번 같은 설명 반복 &nbsp;·&nbsp; 답이 맘에 안 듦 &nbsp;·&nbsp; 틀린 답 &nbsp;·&nbsp; 긴 자료 &nbsp;·&nbsp; 파일 노가다</p>
     </div>
     <div class="key">
-      <span class="lab">오늘의 약속</span>
-      <p>오늘 끝나면, 이 다섯 가지가 더는 답답하지 않습니다.</p>
+      <span class="lab">오늘의 힌트</span>
+      <p>오늘 끝나면, 이 다섯 가지가 한결 가벼워질 거예요.</p>
     </div>
   </section>
 
   <section class="session" id="s1">
-    <div class="s-head"><span class="time">5–15분</span></div>
     <h2 class="s-title"><span class="q">"</span>매번 똑같은 걸 다시 설명해요<span class="q">"</span></h2>
     <p class="s-intro">회의 끝나면 매번 회의록 정리하죠? 그때마다 같은 지시를 다시 치고 있지 않나요?</p>
 
     <div class="case">
       <div class="case-label star"><span class="dot"></span>회의록 정리 프롬프트 → 프로젝트에 박제</div>
-      <p>프롬프트를 한 번 잘 만들어 프로젝트에 저장하면, 다음부턴 메모만 붙여넣으면 끝. 이런 저장 기능은 Claude Projects, ChatGPT 맞춤형 지침, Gemini Gems 등 도구마다 있어요.</p>
+      <p>프롬프트를 한 번 잘 만들어 프로젝트에 저장하면, 다음부턴 메모만 붙여넣으면 끝.</p>
+      <p>이런 저장 기능은 Claude Projects, ChatGPT 맞춤형 지침, Gemini Gems 등 도구마다 있어요.</p>
       <details class="prompt">
         <summary><span class="chev">▶</span><span class="summary-text">회의록 정리 프롬프트 펼치기</span></summary>
         <div class="prompt-body">
@@ -255,7 +254,8 @@
 
     <div class="case">
       <div class="case-label star"><span class="dot"></span>내 반복 업무로 직접 만들어보기</div>
-      <p>여러분이 매주 반복하는 일을 하나 떠올려보세요. 프롬프트 짜기가 막막하면, AI에게 "프롬프트를 만들어줘"라고 하면 됩니다. 아래를 복사해서 <b>[내가 하려는 일]</b> 칸만 채워보세요.</p>
+      <p>여러분이 매주 반복하는 일을 하나 떠올려보세요.</p>
+      <p>프롬프트 짜기가 막막하면, AI에게 "프롬프트를 만들어줘"라고 하면 됩니다. 아래를 복사해서 <b>[내가 하려는 일]</b> 칸만 채워보세요.</p>
       <details class="prompt">
         <summary><span class="chev">▶</span><span class="summary-text">프롬프트를 만들어주는 프롬프트 펼치기</span></summary>
         <div class="prompt-body">
@@ -283,9 +283,8 @@
   </section>
 
   <section class="session" id="s2">
-    <div class="s-head"><span class="time">15–28분</span><span class="badge b-do">직접 실습</span></div>
     <h2 class="s-title"><span class="q">"</span>답이 영 맘에 안 들어요<span class="q">"</span></h2>
-    <p class="s-intro">대충 시키면 AI도 대충 합니다. '글 써줘'가 아니라 인턴에게 업무 지시서를 준다고 생각하세요. (나쁜 예 → 좋은 예 순서로 직접 쳐보기)</p>
+    <p class="s-intro">대충 시키면 AI도 대충해요. '글 써줘'보다는 인턴에게 업무 지시서를 준다고 생각하세요. (나쁜 예 → 좋은 예 순서로 직접 쳐보기)</p>
 
     <div class="case">
       <div class="case-label star"><span class="dot"></span>사례 A · 인스타 피드 문구</div>
@@ -301,7 +300,7 @@
         <div class="prompt-body">
           <button class="copy">복사</button>
           <pre>[역할]
-너는 MZ세대 인스타 피드용 카피를 쓰는 카피라이터야.
+너는 20대 직장인 타겟의 인스타 피드용 카피를 쓰는 카피라이터야.
 유행어·밈·현실 공감대를 활용해서 짧고 찌르는 문장을 써.
 [타겟]
 다이어트는 하고 싶지만 닭가슴살은 이미 질린 20대 직장인.
@@ -353,7 +352,8 @@
 
     <div class="case">
       <div class="case-label star"><span class="dot"></span>내 글로 직접 만들어보기</div>
-      <p>여러분이 자주 쓰는 글(메일·공지·소개글 등)을 하나 떠올려보세요. 방금 본 4칸 공식을 AI가 알아서 채우게 하는 프롬프트예요. <b>[내가 쓰려는 글]</b> 칸만 바꿔 복사해 보세요.</p>
+      <p>여러분이 자주 쓰는 글(메일·공지·소개글 등)을 하나 떠올려보세요.</p>
+      <p>방금 본 4칸 공식을 AI가 알아서 채우게 하는 프롬프트예요. <b>[내가 쓰려는 글]</b> 칸만 바꿔 복사해 보세요.</p>
       <details class="prompt">
         <summary><span class="chev">▶</span><span class="summary-text">글쓰기 프롬프트를 만들어주는 프롬프트 펼치기</span></summary>
         <div class="prompt-body">
@@ -384,10 +384,26 @@
   </section>
 
   <section class="session" id="s3">
-    <div class="s-head"><span class="time">28–38분</span></div>
     <h2 class="s-title"><span class="q">"</span>AI가 틀린 말을·옛날 정보를 말해요<span class="q">"</span></h2>
-    <p class="s-intro">같은 질문을 그냥 물었을 때 vs 검색 켜고·Perplexity의 결과를 나란히 비교해 봅니다.</p>
+    <p class="s-intro">같은 질문이라도 어떤 도구를 쓰느냐, 출처를 몇 개 보느냐에 따라 답이 달라져요. 두 사례로 봅니다.</p>
+
     <div class="case">
+      <div class="case-label star"><span class="dot"></span>① 같은 질문, 다른 답 — 약 이름이 비슷해서 헷갈린 경우</div>
+      <details class="prompt">
+        <summary><span class="chev">▶</span><span class="summary-text">질문 펼치기</span></summary>
+        <div class="prompt-body">
+          <button class="copy">복사</button>
+          <pre>효과빠른 푸러펜 알약 복용방법과 효능 알려줘.</pre>
+        </div>
+      </details>
+      <p><b>A 도구</b>: "푸러펜 = <u>이부프로펜 200mg</u>" 으로 자신 있게 답변. → 이름이 비슷한 부루펜 계열로 오인, 검색 상위 1건만 보고 끌려간 결과.</p>
+      <p><b>B 도구</b>: 출처 10개를 교차 확인하고 "푸러펜<b>정</b> = <u>아세트아미노펜 + 클로르족사존 복합제</u>(근육이완)"로 정확히 특정.</p>
+      <p>약 이름 하나 잘못 짚으면 성분도, 복용량도, 주의사항도 다 어긋나요. 동명·유사명 키워드일수록 위험이 큰 사례.</p>
+    </div>
+
+    <div class="case">
+      <div class="case-label"><span class="dot"></span>② 도구마다 다른 답 — 강점이 다르기 때문</div>
+      <p>같은 질문을 셋에게 던져보면, 누가 어디에 강한지 바로 드러나요.</p>
       <details class="prompt">
         <summary><span class="chev">▶</span><span class="summary-text">질문 펼치기</span></summary>
         <div class="prompt-body">
@@ -395,17 +411,20 @@
           <pre>2026 상반기 대한민국 소비 트렌드 알려줘.</pre>
         </div>
       </details>
-      <p>검색 끔 → 옛 정보거나 "검색이 필요하다" &nbsp;|&nbsp; 검색 켬 / Perplexity → 최신 정보 + 출처 링크</p>
+      <p><b>Claude</b> — 깊이 읽고, 길게 잘 쓰고, 판단까지. 긴 자료를 요약·검토할 때.</p>
+      <p><b>ChatGPT</b> — 빠른 초안, 가볍고 폭넓게. 아이디어 뽑고 이것저것 가볍게 물어볼 때.</p>
+      <p><b>Perplexity</b> — 최신 정보 + 출처 링크. "출처는 여기"라고 근거까지 붙여주는 검색 전문가.</p>
+      <p>위 질문(트렌드)은 <b>최신성</b>과 <b>근거</b>가 생명이라 Perplexity 차례. 도구를 골라 쓰는 것도 정답률을 바꿉니다.</p>
     </div>
+
     <div class="key">
       <span class="lab">핵심 습관</span>
-      <p>AI가 아는 척할 땐 "출처 링크 같이 줘" 라고 말하세요.</p>
+      <p>"출처 링크 같이 줘" 한 줄을 붙이세요. 그리고 출처가 <b>1개인지, 여러 곳을 교차 확인했는지</b> 꼭 보세요 — 같은 AI라도 그 차이가 정답과 오답을 가릅니다.</p>
     </div>
   </section>
 
   <section class="session" id="s4">
-    <div class="s-head"><span class="time">38–48분</span></div>
-    <h2 class="s-title"><span class="q">"</span>긴 자료, 요약만 하고 계셨죠?<span class="q">"</span></h2>
+    <h2 class="s-title"><span class="q">"</span>긴 자료, 요약만 하고 계셨나요?<span class="q">"</span></h2>
     <p class="s-intro">요약은 다들 쓰죠. 근데 요약만 시키면 AI를 절반만 쓰는 거예요. 요약은 '뭐라고 적혀 있나'일 뿐.</p>
 
     <div class="case">
@@ -423,7 +442,29 @@
     </div>
 
     <div class="case">
-      <div class="case-label"><span class="dot"></span>② 문서와 '대화하기' — 필요한 것만 콕</div>
+      <div class="case-label star"><span class="dot"></span>② 5인 자문단 — 한 질문으로 다섯 관점 동시에</div>
+      <details class="prompt">
+        <summary><span class="chev">▶</span><span class="summary-text">프롬프트 펼치기</span></summary>
+        <div class="prompt-body">
+          <button class="copy">복사</button>
+          <pre>너는 내 5명의 가상 자문단이야.
+어떤 질문을 던져도 아래 5명이 각자 답해.
+
+1. CEO — 매출·속도·기회비용 우선. 단언, 3줄 이내.
+2. CFO — 숫자·현금흐름 우선. 반드시 비용/회수 시점 추정.
+3. UX 디자이너 — 쓰는 사람 입장. 비유로 설명.
+4. 신중한 베테랑 — 과거 실패 사례 1개 끄집어내기.
+5. 까칠한 신입 — "왜 이걸 굳이 우리가 지금?" 의문 던지기.
+
+5명이 각자 답한 뒤, 마지막에
+"내가 너라면 OOO 의견에 가중치를 두겠다" 한 줄.</pre>
+        </div>
+      </details>
+      <p>한 번 프로젝트/GPT에 박제해두면, 매일 다른 의사결정에 같은 자문단을 부를 수 있어요. 회의 전 5분, 혼자 5명 분량의 시뮬레이션.</p>
+    </div>
+
+    <div class="case">
+      <div class="case-label"><span class="dot"></span>③ 문서와 '대화하기' — 필요한 것만 콕</div>
       <details class="prompt">
         <summary><span class="chev">▶</span><span class="summary-text">프롬프트 펼치기</span></summary>
         <div class="prompt-body">
@@ -435,7 +476,7 @@
     </div>
 
     <div class="case">
-      <div class="case-label"><span class="dot"></span>③ 여러 자료 비교</div>
+      <div class="case-label"><span class="dot"></span>④ 여러 자료 비교</div>
       <details class="prompt">
         <summary><span class="chev">▶</span><span class="summary-text">프롬프트 펼치기</span></summary>
         <div class="prompt-body">
@@ -447,7 +488,7 @@
     </div>
 
     <div class="case">
-      <div class="case-label"><span class="dot"></span>④ 흩어진 의견에서 패턴 뽑기</div>
+      <div class="case-label"><span class="dot"></span>⑤ 흩어진 의견에서 패턴 뽑기</div>
       <details class="prompt">
         <summary><span class="chev">▶</span><span class="summary-text">프롬프트 펼치기</span></summary>
         <div class="prompt-body">
@@ -465,9 +506,10 @@
   </section>
 
   <section class="session" id="s5">
-    <div class="s-head"><span class="time">48–55분</span><span class="badge b-show">코워크 맛보기</span></div>
-    <h2 class="s-title"><span class="q">"</span>이걸 아직도 손으로 하세요?<span class="q">"</span></h2>
-    <p class="s-intro">챗은 파일 하나 올려서 답 보는 것까지. 진짜 일은 내 폴더의 자료들로, 결과를 파일로 만드는 거잖아요. 여기서부터가 코워크예요.</p>
+    <div class="s-head"><span class="badge b-show">코워크 맛보기</span></div>
+    <h2 class="s-title"><span class="q">"</span>여기부터는 코워크로.<span class="q">"</span></h2>
+    <p class="s-intro">Claude 앱에는 <b>챗 / 코워크 / 코드</b> 3가지 모드가 있어요. 그중 <b>코워크</b>는 챗과 달리 내 폴더를 직접 다루고, 한 번 시킨 일을 자동으로 반복해주는 작업 파트너예요.</p>
+    <p class="s-intro">챗은 파일 하나 올려서 답 보는 것까지. 코워크는 내 폴더를 직접 다루고, 한 번 시키면 매일 알아서 돌아가요. 그리고 위험한 일은 먼저 물어봐요.</p>
 
     <div class="case">
       <div class="case-label star"><span class="dot"></span>① 영수증 사진 무더기 → 경비정산 엑셀</div>
@@ -484,46 +526,77 @@
     </div>
 
     <div class="case">
-      <div class="case-label"><span class="dot"></span>② 흩어진 파일 통합</div>
+      <div class="case-label star"><span class="dot"></span>② 매일 아침 8시, 미국 경제 브리핑 PDF 자동</div>
       <details class="prompt">
         <summary><span class="chev">▶</span><span class="summary-text">프롬프트 펼치기</span></summary>
         <div class="prompt-body">
           <button class="copy">복사</button>
-          <pre>이 폴더의 월별 매출 엑셀 12개를 합쳐서
-연간 요약 한 장으로 만들어줘.</pre>
+          <pre>밤새 있었던 미국 경제 내용을 요약해서
+한 장으로 한국시간 아침 8시에
+PDF 파일로 현재 폴더에 받아보고 싶어.
+Yahoo Finance, Reuters 등 신뢰할 수 있는 곳에서
+리서치 후 작성할 것.</pre>
         </div>
       </details>
+      <p>한 번 시키면 끝. 다음 날부턴 출근해서 폴더만 열면 오늘자 브리핑이 와 있어요. 챗에는 없는 <b>스케줄 실행</b>이 코워크의 진짜 차이.</p>
     </div>
 
     <div class="case">
-      <div class="case-label"><span class="dot"></span>③ 영상도 '본다' — claude-video</div>
-      <p>유튜브 주소만 주면 Claude가 영상을 직접 보고 요약·분석해줘요. 트렌드 영상이나 경쟁사 콘텐츠, 긴 강의를 일일이 안 보고도 핵심만. (스킬을 한 번 추가하면 되는데, 세팅은 코워크를 본격 다루는 다음 시간에 해볼게요.)</p>
+      <div class="case-label star"><span class="dot"></span>③ 폴더 정리 — 단, 묻고 시작</div>
       <details class="prompt">
         <summary><span class="chev">▶</span><span class="summary-text">프롬프트 펼치기</span></summary>
         <div class="prompt-body">
           <button class="copy">복사</button>
-          <pre>이 유튜브 영상의 핵심 포인트 5가지와
-우리 콘텐츠에 쓸 만한 인사이트 3개를 뽑아줘.
-[유튜브 영상 주소]</pre>
+          <pre>이 폴더 안의 파일들을 규칙에 맞춰서
+내부 폴더를 만들고 전반적으로 정리해줘.
+어떻게 정리할지 폴더를 직접 확인하고
+먼저 이야기해보자.
+절대 임의대로 삭제는 하지 말 것.</pre>
         </div>
       </details>
+      <p>폴더를 스스로 열어보고, 중복·빈 폴더·최신본 같은 애매한 건 먼저 질문. <b>'실행 전 확인'</b> 모드를 켜두면 매 단계 승인받고 진행해서, 잘못 삭제될 걱정이 없어요.</p>
+    </div>
+
+    <div class="case">
+      <div class="case-label"><span class="dot"></span>④ 영상도 '본다' — /watch 한 줄로 (맛보기)</div>
+      <details class="prompt">
+        <summary><span class="chev">▶</span><span class="summary-text">프롬프트 펼치기</span></summary>
+        <div class="prompt-body">
+          <button class="copy">복사</button>
+          <pre># 특정 시점 분석
+/watch https://youtu.be/xxx 30초에 뭐가 나와?
+
+# 요약
+/watch https://youtu.be/xxx 이 영상 요약해줘
+
+# 로컬 영상 버그 분석
+/watch ~/screen-recording.mp4 어디서 UI가 깨져?
+
+# 구간 지정 (토큰 절약)
+/watch https://youtu.be/xxx --start 2:15 --end 2:45</pre>
+        </div>
+      </details>
+      <p><b>claude-video 플러그인</b>을 한 번 설치해 두면, 그 다음부턴 /watch 한 줄로 불러요. 유튜브든 내 PC 화면 녹화든 — 트렌드 영상 요약, 강의 핵심 뽑기, 화면 녹화에서 UI 버그 위치 찾기까지. 구간만 잘라 보면 비용도 아낄 수 있어요.</p>
     </div>
 
     <div class="key">
       <span class="lab">핵심</span>
-      <p>챗은 보여주는 데서 끝, 코워크는 내 책상에서 진짜 파일을 만들어 줘요. 여러 파일 + 여러 단계 + 파일 저장.</p>
+      <p>챗은 보여주는 데서 끝. 코워크는 <b>내 폴더</b>에서 진짜 파일을 만들고, <b>자동으로 반복</b>하고, <b>위험한 건 먼저 물어봐요</b>.</p>
     </div>
+    <p class="s-intro" style="margin-top:14px;font-size:.88rem">※ claude-video 같은 플러그인을 직접 설치·관리하는 방법은 코워크를 본격 다루는 다음 시간에 같이 세팅해볼게요.</p>
   </section>
 
   <section class="closing" id="s6">
     <h2>마무리 · 55–60분</h2>
     <div class="three">
-      <div><b>① 반복은 저장</b> — 두 번 쓸 거면 프롬프트로 만들어 프로젝트에</div>
-      <div><b>② 잘 시키면 잘 나온다</b> — 역할·조건·예시를 줘라</div>
-      <div><b>③ 요약 너머</b> — 분석·검토·파일 협업까지</div>
+      <div><b>① 반복은 저장</b> — 두 번 쓸 거면 프롬프트로 만들어 프로젝트에 박제</div>
+      <div><b>② 잘 시키면 잘 나온다</b> — 역할·상황·조건·예시 4칸</div>
+      <div><b>③ 의심이 정답을 만든다</b> — "출처 줘" 한 줄, 도구도 골라 쓰기</div>
+      <div><b>④ 요약 너머로</b> — 셀프 검토·문서 대화·비교·패턴까지</div>
+      <div><b>⑤ 챗 너머 코워크로</b> — 내 폴더 다루고, 자동 반복, 위험은 먼저 확인</div>
     </div>
     <div class="sub">숙제</div>
-    <p class="hw">"내 업무 중 매번 반복하는 일" 1가지 적어오기 → 2주차에 그걸로 어시스턴트를 직접 만듭니다.</p>
+    <p class="hw">매번 반복하는 내 업무 1가지, 프롬프트로 만들어 프로젝트에 추가하고 직접 써보기</p>
   </section>
 
 </div>
@@ -552,6 +625,19 @@
     entries.forEach(function(en){ if(en.isIntersecting){en.target.classList.add('in');io.unobserve(en.target);} });
   },{threshold:.12});
   document.querySelectorAll('.session').forEach(function(s){io.observe(s);});
+
+  var navLinks=document.querySelectorAll('.nav a[href^="#"]');
+  var activeIo=new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(en.isIntersecting){
+        var id=en.target.id;
+        navLinks.forEach(function(a){
+          a.classList.toggle('active',a.getAttribute('href')==='#'+id);
+        });
+      }
+    });
+  },{rootMargin:'-40% 0px -55% 0px',threshold:0});
+  document.querySelectorAll('section[id]').forEach(function(s){activeIo.observe(s);});
 </script>
 </body>
 </html>
