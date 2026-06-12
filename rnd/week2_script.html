@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2주차 · 강사 진행 노트 (청중용은 week2.html)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#1A1611;
+    --ink:#F1EBE0;
+    --muted:#A99C88;
+    --accent:#7CC4A6;
+    --accent2:#E5926A;
+    --gold:#D8B25E;
+    --card:#241F18;
+    --line:#3B3328;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 12px 32px rgba(0,0,0,.28);
+    --sans:'Noto Sans KR',sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:var(--sans);
+    background:var(--bg);
+    color:var(--ink);
+    line-height:1.7;
+    -webkit-font-smoothing:antialiased;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background-image:radial-gradient(circle at 1px 1px, rgba(255,255,255,.022) 1px, transparent 0);
+    background-size:22px 22px;
+  }
+
+  .nav{
+    position:sticky;top:0;z-index:50;
+    background:rgba(26,22,17,.86);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav-inner{
+    max-width:980px;margin:0 auto;padding:12px 24px;
+    display:flex;gap:8px;align-items:center;overflow-x:auto;
+  }
+  .nav-inner .brand{font-weight:900;font-size:.92rem;white-space:nowrap;margin-right:6px;color:var(--accent)}
+  .nav a{
+    text-decoration:none;color:var(--muted);font-size:.8rem;font-weight:500;
+    padding:5px 10px;border-radius:999px;white-space:nowrap;transition:.2s;
+  }
+  .nav a:hover,.nav a.active{background:var(--accent);color:#1A1611}
+
+  .wrap{max-width:980px;margin:0 auto;padding:0 24px;position:relative;z-index:1}
+
+  .hero{padding:64px 0 40px;text-align:center}
+  .hero .kicker{
+    font-size:.8rem;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--accent2);font-weight:700;margin-bottom:18px;
+  }
+  .hero h1{
+    font-family:var(--sans);font-weight:900;
+    font-size:clamp(2rem,5vw,3.3rem);line-height:1.25;letter-spacing:-.02em;
+    margin-bottom:20px;
+  }
+  .hero h1 .hl{color:var(--accent);border-bottom:6px solid rgba(124,196,166,.28)}
+  .hero p{color:var(--muted);font-size:1.05rem;max-width:680px;margin:0 auto}
+  .flow{
+    margin:34px auto 0;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;
+    max-width:860px;
+  }
+  .flow span{
+    background:var(--card);border:1px solid var(--line);border-radius:999px;
+    padding:7px 15px;font-size:.82rem;font-weight:500;box-shadow:var(--shadow);
+  }
+  .flow span b{color:var(--accent);font-weight:700}
+  .flow .arrow{border:none;background:none;box-shadow:none;color:var(--muted);padding:7px 0}
+
+  .session{
+    background:var(--card);border:1px solid var(--line);border-radius:18px;
+    padding:34px 34px 30px;margin:22px 0;box-shadow:var(--shadow);
+    opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease;
+  }
+  .session.in{opacity:1;transform:none}
+  .s-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+  .time{
+    font-family:'JetBrains Mono',monospace;font-size:.8rem;font-weight:500;
+    background:var(--ink);color:var(--bg);padding:4px 10px;border-radius:7px;
+  }
+  .badge{font-size:.72rem;font-weight:700;padding:4px 11px;border-radius:999px;letter-spacing:.02em}
+  .b-talk{background:#332C22;color:var(--muted)}
+  .b-do{background:rgba(229,146,106,.2);color:var(--accent2)}
+  .b-show{background:rgba(124,196,166,.16);color:var(--accent)}
+  .s-title{
+    font-family:var(--sans);font-weight:900;letter-spacing:-.01em;
+    font-size:clamp(1.45rem,3.2vw,2rem);line-height:1.3;margin:10px 0 4px;
+  }
+  .s-title .q{color:var(--accent2)}
+  .s-intro{color:var(--muted);margin-bottom:20px}
+
+  .case{margin:18px 0}
+  .case-label{
+    display:inline-flex;align-items:center;gap:7px;font-weight:700;font-size:1rem;margin-bottom:8px;flex-wrap:wrap;
+  }
+  .case-label .dot{width:9px;height:9px;border-radius:50%;background:var(--accent)}
+  .case-label.star .dot{background:var(--accent2)}
+  .case-label .star-tag{
+    font-size:.68rem;background:var(--accent2);color:#1A1611;padding:2px 8px;border-radius:999px;font-weight:700;
+  }
+  .case-label .recap{
+    font-size:.66rem;background:rgba(216,178,94,.18);color:var(--gold);padding:2px 9px;border-radius:999px;font-weight:700;letter-spacing:.02em;
+  }
+  .case-label .live-tag{
+    font-size:.66rem;background:rgba(229,146,106,.22);color:var(--accent2);padding:2px 9px;border-radius:999px;font-weight:700;letter-spacing:.02em;
+  }
+  .case-label .home-tag{
+    font-size:.66rem;background:#332C22;color:var(--muted);padding:2px 9px;border-radius:999px;font-weight:700;letter-spacing:.02em;
+  }
+  .case-label .bonus-tag{
+    font-size:.66rem;background:rgba(216,178,94,.16);color:var(--gold);padding:2px 9px;border-radius:999px;font-weight:700;letter-spacing:.02em;
+  }
+  .case-label .next-tag{
+    font-size:.66rem;background:rgba(124,196,166,.14);color:var(--accent);padding:2px 9px;border-radius:999px;font-weight:700;letter-spacing:.02em;
+  }
+  .case p{font-size:.95rem;color:var(--muted);margin:4px 0 8px}
+
+  details.prompt{
+    border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:8px 0;
+    background:#1F1A14;
+  }
+  details.prompt summary{
+    list-style:none;cursor:pointer;padding:13px 16px;
+    display:flex;align-items:center;gap:10px;font-weight:600;font-size:.9rem;
+    user-select:none;transition:.2s;flex-wrap:wrap;
+  }
+  details.prompt summary::-webkit-details-marker{display:none}
+  details.prompt summary:hover{background:#272019}
+  .chev{transition:transform .25s;color:var(--accent);font-size:.8rem}
+  details.prompt[open] .chev{transform:rotate(90deg)}
+  .badtag,.goodtag,.filetag{font-size:.7rem;font-weight:700;padding:2px 9px;border-radius:6px}
+  .badtag{background:#3D2A22;color:#E5926A}
+  .goodtag{background:rgba(124,196,166,.16);color:var(--accent)}
+  .filetag{background:rgba(216,178,94,.16);color:var(--gold);font-family:'JetBrains Mono',monospace}
+  .summary-text{color:var(--muted);font-weight:500;font-size:.82rem}
+  .prompt-body{padding:0 16px 16px;position:relative}
+  .prompt-body pre{
+    font-family:'JetBrains Mono',monospace;font-size:.84rem;line-height:1.65;
+    background:#15110C;border:1px solid var(--line);border-radius:9px;
+    padding:16px;white-space:pre-wrap;word-break:break-word;color:#EDE6D8;
+  }
+  .copy{
+    position:absolute;top:8px;right:24px;
+    background:var(--accent);color:#15110C;border:none;border-radius:7px;
+    font-family:inherit;font-size:.72rem;font-weight:700;padding:6px 12px;cursor:pointer;
+    transition:.2s;
+  }
+  .copy:hover{filter:brightness(1.08)}
+  .copy.done{background:var(--gold)}
+
+  .tip{
+    margin:14px 0;padding:14px 16px;border-radius:11px;
+    background:rgba(229,146,106,.08);border:1px dashed rgba(229,146,106,.4);
+  }
+  .tip .lab{font-size:.7rem;font-weight:700;letter-spacing:.08em;color:var(--accent2);text-transform:uppercase}
+  .tip p{font-size:.88rem;color:var(--ink);margin-top:4px}
+
+  .teacher-banner{
+    max-width:980px;margin:18px auto 0;
+    background:linear-gradient(90deg,rgba(216,178,94,.18),rgba(124,196,166,.12));
+    border:1px solid var(--line);border-radius:12px;padding:12px 18px;
+    font-size:.88rem;font-weight:600;color:var(--gold);text-align:center;
+  }
+  .note{
+    margin:16px 0 2px;padding:15px 18px;border-radius:12px;
+    background:rgba(216,178,94,.07);border:1px solid rgba(216,178,94,.34);
+  }
+  .note .lab{font-size:.7rem;font-weight:800;letter-spacing:.06em;color:var(--gold);text-transform:uppercase}
+  .note ul{margin:8px 0 0;padding-left:4px;list-style:none}
+  .note li{font-size:.9rem;color:var(--ink);margin:6px 0;padding-left:2px}
+  .note li.say{color:var(--accent)}
+  .note li.qq{color:var(--accent2)}
+
+  .vs{
+    display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0;
+  }
+  .vs .col{
+    border:1px solid var(--line);border-radius:13px;padding:16px 18px;background:#1F1A14;
+  }
+  .vs .col.task{border-top:3px solid var(--accent2)}
+  .vs .col.proj{border-top:3px solid var(--accent)}
+  .vs .col h4{font-size:.95rem;font-weight:900;margin-bottom:8px}
+  .vs .col.task h4{color:var(--accent2)}
+  .vs .col.proj h4{color:var(--accent)}
+  .vs .col p{font-size:.86rem;color:var(--muted);margin:0}
+  @media(max-width:560px){.vs{grid-template-columns:1fr}}
+
+  .files{
+    margin:16px 0;border:1px solid var(--line);border-radius:13px;background:#1F1A14;
+    padding:8px 10px;font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.9;
+  }
+  .files .row{display:flex;gap:10px;align-items:baseline;padding:2px 8px;border-radius:7px}
+  .files .row .nm{color:var(--gold);font-weight:500;min-width:140px}
+  .files .row .ds{color:var(--muted);font-family:var(--sans);font-size:.82rem}
+  .files .row.brain{background:rgba(124,196,166,.06)}
+  .files .row.brain .nm{color:var(--accent)}
+
+  .key{
+    margin-top:22px;padding:18px 20px;border-radius:13px;
+    background:linear-gradient(180deg,rgba(124,196,166,.1),rgba(124,196,166,.04));
+    border-left:5px solid var(--accent);
+  }
+  .key .lab{font-size:.72rem;font-weight:700;letter-spacing:.1em;color:var(--accent);text-transform:uppercase}
+  .key p{font-family:var(--sans);font-size:1.12rem;font-weight:700;margin-top:5px;line-height:1.5;color:var(--ink)}
+
+  .closing{
+    background:linear-gradient(160deg,#211C15,#1A2019);
+    border:1px solid var(--line);border-radius:18px;padding:38px 34px;margin:28px 0 60px;
+  }
+  .closing h2{font-family:var(--sans);font-weight:900;font-size:1.6rem;margin-bottom:18px;color:var(--ink)}
+  .three{display:grid;gap:10px;margin-bottom:24px}
+  .three div{background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:11px;padding:13px 16px;font-size:.93rem}
+  .three b{color:var(--gold)}
+  .closing .sub{font-weight:700;margin:18px 0 8px;color:var(--accent);font-size:.95rem}
+  .closing .hw{font-size:.92rem;color:var(--ink)}
+  .closing .next{font-size:.9rem;color:var(--muted);margin-top:6px}
+
+  @media(max-width:640px){
+    .session{padding:24px 20px}
+    .copy{right:20px}
+    .prompt-body{padding:0 12px 12px}
+    .files .row .nm{min-width:110px}
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <span class="brand">2주차 · 강사 스크립트</span>
+    <a href="#s0">오프닝·프로젝트</a>
+    <a href="#s2">기억시키기</a>
+    <a href="#s3">전역 지침</a>
+    <a href="#s4">폴더째 실무</a>
+    <a href="#s5">스킬 맛보기</a>
+    <a href="#s6">에이전트 팀</a>
+    <a href="#s7">커넥터 맛보기</a>
+    <a href="#s8">예약·대시보드</a>
+    <a href="#s9">마무리</a>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <div class="teacher-banner">🎤 강사 진행용 — 청중에게는 <b>week2.html(슬라이드)</b>을 띄우세요. 이 페이지는 멘트·예상질문이 포함된 상세 스크립트입니다.</div>
+
+  <header class="hero">
+    <div class="kicker">코워크 본격 · 두번째 시간</div>
+    <h1>코워크를 챗처럼 쓰면,<br><span class="hl">딱 1%만 쓰는 거예요</span></h1>
+    <p>지난주엔 일을 '시키는 법'을 봤어요. 오늘은 한 단계 위 — 우리 부서를 아는 동료로 세팅합니다. 헤비 유저들이 입을 모아 말해요: 초반 셋업 한 번이 코워크를 완전히 다른 도구로 바꾼다고. 그 셋업을 비개발자 버전으로 같이 합니다.</p>
+    <div class="flow">
+      <span>① <b>프로젝트</b></span><span class="arrow">→</span>
+      <span>② <b>기억(컨텍스트)</b></span><span class="arrow">→</span>
+      <span>③ <b>전역 지침</b></span><span class="arrow">→</span>
+      <span>④ <b>폴더·스킬</b></span><span class="arrow">→</span>
+      <span>⑤ <b>팀·커넥터·예약</b></span>
+    </div>
+  </header>
+
+  <!-- ===================== S0 오프닝 + 프로젝트로 사고 ===================== -->
+  <section class="session" id="s0">
+    <div class="s-head">
+      <span class="time">00:00 – 14:00</span>
+      <span class="badge b-talk">지난주 회고 → 사고 전환</span>
+    </div>
+    <h2 class="s-title">오프닝 · 지난주에 해보셨어요?</h2>
+    <p class="s-intro">1주차 끝에 "매번 반복하는 업무 1가지를 프롬프트로 만들어 프로젝트에 박제해보기"를 해보자고 했죠. 해보신 분 있나요? 한두 분 이야기를 같이 들어봐요. 그리고 오늘은 거기서 한 걸음 더 나갑니다. 지난주 '프로젝트에 박제'는 챗에서 프롬프트를 저장해 반복을 줄이는 거였죠. 참고로 <b>챗 프로젝트도 기억은 해요</b>(대화를 요약해 맥락으로). 코워크 프로젝트의 진짜 차이는 '기억'이 아니라 — <b>내 폴더에서 진짜 파일을 만들고, 예약으로 자동 실행하고, 커넥터로 내 도구까지 다룬다</b>는 점이에요. 묻는 곳이 아니라 일하는 곳. (그 안에서도 한 번 쓰고 버리는 '태스크'보다 계속 쌓는 '프로젝트'로 쓰면 좋아요.)</p>
+    <div class="case">
+      <div class="case-label"><span class="dot"></span>같이 이야기해볼 것</div>
+      <p>박제한 프롬프트에 지침으로 맥락까지 넣으니, 챗이 우리 부서를 꽤 잘 이해했죠. 그런데 거기서 막히지 않으셨어요? — <b>챗은 답을 '보여주는' 데까지. 그 결과를 복붙해 엑셀로 만들고, 폴더에 정리하고, 매주 다시 돌리는 건 여전히 내 손</b>이었죠. 오늘은 코워크가 그 일까지 합니다. (아직 안 해보셨어도 괜찮아요. 같이 처음부터 해봐요.)</p>
+    </div>
+    <div class="tip">
+      <span class="lab">시작 전 준비</span>
+      <p>배포받은 <b>'2주차_실습자료' 폴더</b>를 준비해두세요. 안에 회의메모·영수증·설문 데이터가 들어 있어요. 잠시 뒤 이걸 프로젝트에 연결합니다.</p>
+    </div>
+    <p class="s-intro" style="margin:14px 0 0">실습 표시: <span class="live-tag" style="font-size:.66rem;background:rgba(229,146,106,.22);color:var(--accent2);padding:2px 9px;border-radius:999px;font-weight:700">오늘 같이</span> 수업 중 함께 · <span class="home-tag" style="font-size:.66rem;background:#332C22;color:var(--muted);padding:2px 9px;border-radius:999px;font-weight:700">집에서</span> 자료 보고 따라 하기 · <span class="next-tag" style="font-size:.66rem;background:rgba(124,196,166,.14);color:var(--accent);padding:2px 9px;border-radius:999px;font-weight:700">3주차 본격</span> 맛보기만 · <span class="bonus-tag" style="font-size:.66rem;background:rgba(216,178,94,.16);color:var(--gold);padding:2px 9px;border-radius:999px;font-weight:700">보너스</span> 여유 되면</p>
+
+    <div class="case">
+      <div class="case-label star"><span class="dot"></span>챗 프로젝트 vs 코워크 프로젝트 — 진짜 차이</div>
+      <p>챗은 답을 보여주고, 코워크는 내 폴더에서 진짜 일을 합니다.</p>
+    </div>
+
+    <div class="vs">
+      <div class="col task">
+        <h4>챗 프로젝트</h4>
+        <p><b>묻고 답을 듣는 대화 공간.</b> 기억·요약은 하지만, 결과는 채팅창에만 남아요. (claude.ai의 프로젝트)</p>
+      </div>
+      <div class="col proj">
+        <h4>코워크 프로젝트</h4>
+        <p><b>일을 맡기는 작업 공간.</b> 내 폴더에서 진짜 파일을 만들고, 예약으로 자동 실행, 커넥터로 내 도구까지 — 결과가 파일로 남아요.</p>
+      </div>
+    </div>
+
+    <div class="case">
+      <div class="case-label star"><span class="dot"></span>한 번뿐인가, 반복인가 — 각자 업무로 실습<span class="live-tag">오늘 같이</span></div>
+      <p><b>먼저 청중에게 "자기 업무 하나"를 떠올리게 하세요.</b> 그걸 같이 판별합니다(예시는 "이번 주 경쟁사 동향 정리해줘"). <b>진짜 물어볼 건 하나 — "한 번 하고 끝인가, 계속 반복할 일인가?"</b> 정해진 공식(5whys 같은)이 아니라, 아래 세 가지로 가려내는 휴리스틱이에요.</p>
+      <p style="color:var(--ink)">· <b>왜 해?</b> → 매주 월요일 경쟁사 확인 <span style="color:var(--accent)">(목적이 1회성인지)</span><br>
+      · <b>뭘 보고 싶어?</b> → 작년 대비 변화 <span style="color:var(--accent)">(매번 비교할 기준이 있는지)</span><br>
+      · <b>그다음엔?</b> → 매주·매달·분기 점검 <span style="color:var(--accent)">(뒤에 반복이 붙는지 ← 핵심)</span></p>
+      <p>→ 뒤에 반복이 붙으니 1회성이 아니라 <b>"주간 경쟁사 모니터링"이라는 프로젝트</b>예요. <b>청중 각자가 떠올린 업무도 같은 식으로 판별</b>하게 한 뒤, 오늘은 경쟁사 모니터링 프로젝트를 함께 만들어봅니다.</p>
+    </div>
+
+    <div class="case">
+      <div class="case-label star"><span class="dot"></span>① 프로젝트 만들기 — 빈 사무실 차리기<span class="live-tag">오늘 같이</span></div>
+      <p>코워크 → 프로젝트 → <b>새 프로젝트(+)</b>. 옵션 3개가 나와요: 처음부터 시작 / 프로젝트 가져오기 / 기존 폴더 연결. 오늘은 <b>'처음부터 시작'</b>으로 만들고, 이름은 <b>"주간 경쟁사 모니터링"</b> 정도로. (코워크 프로젝트는 메모리가 기본으로 켜져 있어요 — 따로 손댈 것 없어요.)</p>
+      <div class="tip">
+        <span class="lab">왜 외부 프로그램 없이 코워크만으로?</span>
+        <p>유튜브엔 안티그래비티·클로드 코드 같은 개발자 도구로 폴더를 짜는 영상도 많아요. 우리는 코딩 없이 가도 충분합니다 — <b>코워크 프로젝트 기능 자체가 폴더·지침·메모리를 다 갖고 있어요.</b> 그대로 따라오시면 돼요.</p>
+      </div>
+    </div>
+
+    <div class="key">
+      <span class="lab">핵심 ①</span>
+      <p>"이거 분석해줘"에서 멈추지 말고 "왜·뭘·그다음?"을 물어보세요. 거의 모든 반복 업무는 사실 '프로젝트'예요.</p>
+    </div>
+    <div class="note">
+      <span class="lab">🎤 진행 노트</span>
+      <ul>
+        <li class="say">💬 "지난주 숙제 해보신 분?" 손 들게 하고 1~2명만 실제 사례. 안 해온 분 많아도 부담 주지 않기.</li>
+        <li class="say">💬 챗 vs 코워크는 "묻는 곳 vs 일하는 곳"으로. 챗도 기억은 한다는 점을 꼭 짚어주기(틀린 정보 방지).</li>
+        <li class="say">🖥️ "한 번? 반복?"은 설명 말고 실습 — 청중이 각자 자기 업무 하나를 그 자리에서 판별해보게.</li>
+        <li class="say">🖥️ 다 같이 '처음부터 시작'으로 프로젝트 1개 생성까지 확인하고 다음으로.</li>
+        <li class="qq">❓ "지난주에도 프로젝트 썼잖아요?" → 챗도 기억은 해요. 차이는 코워크가 내 폴더에서 진짜 파일을 만들고 자동 실행한다는 점이에요.</li>
+        <li class="qq">❓ "그냥 폴더 연결이랑 뭐가 달라요?" → 프로젝트는 지침·메모리가 따라붙어요. 폴더만 연결하면 그게 없어요.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ===================== S2 기억시키기 ===================== -->
+  <section class="session" id="s2">
+    <div class="s-head">
+      <span class="time">14:00 – 26:00</span>
+      <span class="badge b-do">기억시키기</span>
+    </div>
+    <h2 class="s-title"><span class="q">"</span>맥락을 어디까지 말해줘야 할지 막막해요<span class="q">"</span></h2>
+    <p class="s-intro">프로젝트를 만든 건 = 방금 사람 한 명 뽑은 상태예요. 채용하자마자 "분석해, 보고서 올려" 하면 못 하죠. 그래서 일 시키기 전에 맥락부터 채우는데 — "떠오르는 대로 말하라"고 하면 막막하잖아요. 그래서 <b>틀</b>을 드립니다. STEP 1에서 만든 프로젝트의 <b>'지침'</b>에 우리 부서 배경을 더하면 돼요.</p>
+    <div class="tip">
+      <span class="lab">짚고 갈 점 — 챗 지침과 본질이 같아요</span>
+      <p>코워크의 프로젝트 지침은 사실 지난주 <b>챗 프로젝트 지침과 개념이 같아요.</b> (유튜브엔 CLAUDE.md·About-Me 같은 파일로 나누는 방식도 있는데, CLAUDE.md는 Claude Code(개발자용) 개념이고 코워크 정식은 '프로젝트 지침'이에요.) 그러니 여기 너무 오래 머물지 말고 — 코워크의 진짜 새로움은 뒤의 <b>폴더째 실무·예약·커넥터</b>에 있다고 안내하며 빠르게 넘어가세요.</p>
+    </div>
+
+    <div class="case">
+      <div class="case-label star"><span class="dot"></span>① 프로젝트 지침에 우리 부서 적기<span class="live-tag">오늘 같이</span></div>
+      <p>STEP 1에서 만든 프로젝트의 <b>'지침'</b>에 우리 부서 배경을 더합니다. 그러면 이 프로젝트에서 일할 때 코워크가 늘 참고해요. 아래 세 가지를 섹션으로 적습니다.</p>
+      <div class="files">
+        <div class="row brain"><span class="nm">프로젝트 지침</span><span class="ds">이 프로젝트에서 코워크가 늘 참고하는 우리 부서 정보</span></div>
+        <div class="row"><span class="nm">· 나에 대해</span><span class="ds">누구·직무·주요 업무·우선순위·자주 쓰는 도구</span></div>
+        <div class="row"><span class="nm">· 말투</span><span class="ds">톤·형식 + '하지 말 것' 금지 목록</span></div>
+        <div class="row"><span class="nm">· 작업 규칙</span><span class="ds">저장 위치·실행 전 확인 = 우리 부서 매뉴얼</span></div>
+      </div>
+      <p>막막하면 빈 칸을 채울 필요 없이, 아래 템플릿을 복사해 프로젝트 지침에 붙이거나 "이 틀로 나를 인터뷰하면서 같이 채워줘"라고 하면 됩니다.</p>
+      <details class="prompt">
+        <summary><span class="chev">▶</span><span class="filetag">프로젝트 지침</span><span class="summary-text">우리 부서 설명서 템플릿 펼치기</span></summary>
+        <div class="prompt-body">
+          <button class="copy">복사</button>
+          <pre>[프로젝트 지침 — 우리 부서 설명서]
+(프로젝트 설정의 '지침' 칸에 붙여넣기)
+
+## 나에 대해
+- 부서: R&D 전략부서
+- 역할: (예) 경쟁사·시장 동향 분석, 전략 보고서 작성
+- 주로 하는 업무: (예) 주간 경쟁사 모니터링 / 학회 자료 취합 / 파이프라인 정리
+- 우선순위: (예) 정확한 출처 > 빠른 속도. 추측보다 '미정' 표시 선호
+- 자주 쓰는 도구: (예) 엑셀, 파워포인트, 구글 드라이브
+- 자주 보는 회사·키워드: (예) H제약·Y바이오·D사 / ADC·비만치료제·FDA·식약처
+
+## 말투
+- 한국어, 간결하고 핵심 위주. 군더더기·과장 빼고.
+- 보고서는 'TL;DR 3줄 → 본문' 순서, 출처는 항목마다 링크
+- 하지 말 것: 확인 안 된 내용 단정 금지(→ '(확인 필요)'), 추측을 사실처럼 인용 금지, 이모지 남발 금지
+
+## 작업 규칙
+- 사실과 추측을 구분해서 표시
+- 결과물은 'Output' 폴더에, 파일명은 날짜 포함(2026-06-15)
+- 날짜·파일 삭제·이동은 마음대로 하지 말 것 (먼저 확인)</pre>
+        </div>
+      </details>
+    </div>
+
+    <div class="case">
+      <div class="case-label star"><span class="dot"></span>② 음성으로 며칠에 걸쳐 채우기<span class="home-tag">집에서</span></div>
+      <p>틀은 잡았으니, 살은 <b>음성 받아쓰기(코워크 내장 마이크)</b>로 붙이세요. 신입에게 설명하듯 말로 쏟아내면 타이핑보다 빠르고 자연스러워요. 한 번에 다 못 줘도 괜찮아요 — 출퇴근 중, 회의 끝나고, 생각날 때마다 조금씩. 며칠 뒤엔 "우리 부서를 사람보다 잘 아는 동료"가 됩니다.</p>
+      <details class="prompt">
+        <summary><span class="chev">▶</span><span class="goodtag">학습 모드</span><span class="summary-text">맥락만 채우는 프롬프트 펼치기</span></summary>
+        <div class="prompt-body">
+          <button class="copy">복사</button>
+          <pre>지금은 아무 작업도 하지 마.
+이 프로젝트의 '지침'에
+[나에 대해][말투][작업 규칙]으로 우리 부서를 정리하는 게 목표야.
+
+내가 말로 정보를 줄 테니, 빠진 부분이 보이면 질문만 해 줘.
+받은 내용은 해당 파일에 정리해서 저장하고,
+기존 내용과 충돌하면 먼저 물어봐.
+
+(여기서부터 음성으로 우리 부서 이야기를 쏟아내기)</pre>
+        </div>
+      </details>
+      <div class="tip">
+        <span class="lab">테스트 — 제대로 기억했는지 확인</span>
+        <p>다 채운 뒤 이렇게 물어보세요: <b>"프로젝트 지침 기준으로, 나에 대해 아는 것과 내가 선호하는 작업 방식을 정리해서 알려줘."</b> 코워크가 우리 부서를 제대로 이해했는지 한눈에 확인됩니다.</p>
+      </div>
+    </div>
+
+    <div class="key">
+      <span class="lab">핵심 ②</span>
+      <p>좋은 결과의 90%는 '잘 시키기'가 아니라 '미리 기억시키기'에서 나와요. 프로젝트 지침 하나 — 이 프로젝트에서 코워크가 늘 참고하는 우리 부서 설명서예요.</p>
+    </div>
+    <div class="note">
+      <span class="lab">🎤 진행 노트</span>
+      <ul>
+        <li class="say">⏱️ 챗 지침과 같은 개념이니 빠르게 — 깊이 설명 말고 '틀 + 음성'만 보여주고 STEP 4로 넘어가기.</li>
+        <li class="say">💬 "방금 뽑은 신입에게 바로 일 못 시키죠" 비유로 시작. 프로젝트 지침 칸을 화면에 띄우고 항목별로.</li>
+        <li class="say">🖥️ 음성 받아쓰기를 강사가 직접 시연 — '나에 대해'를 말로 3줄 채우는 모습을 보여주면 임팩트가 큼.</li>
+        <li class="say">🖥️ 청중은 '나에 대해' 섹션만이라도 같이 채우게. 완벽히 채울 필요 없다고 안심시키기.</li>
+        <li class="qq">❓ "파일로 나눠야 해요(About-Me 등)?" → 아니에요. 코워크 정식은 '프로젝트 지침' 하나. 파일로 나누는 건 취향이에요.</li>
+        <li class="qq">❓ "이거 매번 새로 써야 해요?" → 한 번 만들면 계속 재사용. 나중엔 보강만 해요.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ===================== S3 전역 지침 ===================== -->
+  <section class="session" id="s3">
+    <div class="s-head">
+      <span class="time">26:00 – 32:00</span>
+      <span class="badge b-do">전역 지침</span>
+    </div>
+    <h2 class="s-title"><span class="q">"</span>프로젝트마다 같은 말을 또 적어요<span class="q">"</span></h2>
+    <p class="s-intro">방금 채운 프로젝트 지침은 그 프로젝트 안에서만 통해요. 그런데 "한국어로 간결하게", "삭제는 함부로 하지 마" 같은 건 <b>어느 프로젝트에서든 항상</b> 지켜야죠. 그건 한 군데에 딱 한 번 적어두면 됩니다 — 전역 지침이에요.</p>
+
+    <div class="case">
+      <div class="case-label star"><span class="dot"></span>① 전역 지침 — 모든 작업에 항상 적용<span class="live-tag">오늘 같이</span></div>
+      <p>경로는 <b>설정(Settings) → Cowork → 전역 지침(Global instructions) → 편집</b>. 여기 적은 규칙은 폴더가 바뀌어도, 어떤 프로젝트를 열어도 항상 따라와요. 코워크엔 지침이 3단계(전역 → 폴더 → 프로젝트)인데, 전역은 그중 '회사 전체 사규'에 해당해요.</p>
+      <details class="prompt">
+        <summary><span class="chev">▶</span><span class="goodtag">전역 지침</span><span class="summary-text">한 번 붙여넣을 기본 규칙 펼치기</span></summary>
+        <div class="prompt-body">
+          <button class="copy">복사</button>
+          <pre>- 불명확하거나 빠진 정보가 있으면, 마음대로 만들지 말고
+  반드시 먼저 질문해.
+- 한국어로, 간결하고 핵심 위주로 답해.
+- 날짜·파일 삭제·이동은 마음대로 하지 말고 먼저 확인해.
+
+(프로젝트별 내용은 각 프로젝트의 '지침'에 따로 적어요)</pre>
+        </div>
+      </details>
+    </div>
+
+    <div class="case">
+      <div class="case-label star"><span class="dot"></span>② 가장 중요한 한 줄 — "모르면 질문 먼저"</div>
+      <p>이게 헤비 유저들이 입을 모아 꼽는 <b>제일 강력한 규칙</b>이에요. 코워크는 머리가 좋아서, 정보가 부족해도 알아서 '그럴듯하게' 만들어버려요. 그게 엉뚱한 방향일 때가 많죠. "모르면 멈추고 물어봐"를 박아두면, <b>코워크가 거꾸로 나를 인터뷰</b>하면서 결과물이 내가 원하는 쪽으로 흘러갑니다.</p>
+      <div class="tip">
+        <span class="lab">왜 효과적일까</span>
+        <p>AI가 질문을 던지게 만드는 순간, 주도권이 나에게 와요. 빈칸을 AI가 멋대로 채우는 게 아니라, 내가 채우게 되니까요. 1주차 '의심하는 습관'의 연장선입니다.</p>
+      </div>
+    </div>
+
+    <div class="key">
+      <span class="lab">핵심 ③</span>
+      <p>항상 지킬 규칙은 전역 지침에 한 번만. 그중 제일 강력한 건 "모르면 마음대로 만들지 말고 질문 먼저".</p>
+    </div>
+    <div class="note">
+      <span class="lab">🎤 진행 노트</span>
+      <ul>
+        <li class="say">🖥️ 설정 경로(설정 → Cowork → 전역 지침)를 화면 공유로 직접 보여주기.</li>
+        <li class="say">💬 "모르면 질문 먼저"가 오늘 제일 중요한 한 줄이라고 못 박기. 1주차 '의심 습관'과 연결.</li>
+        <li class="qq">❓ "전역이랑 프로젝트 지침 둘 다 있으면?" → 전역=회사 사규, 프로젝트=부서 규칙. 둘 다 적용돼요.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ===================== S4 폴더째 실무 ===================== -->
+  <section class="session" id="s4">
+    <div class="s-head">
+      <span class="time">32:00 – 40:00</span>
+      <span class="badge b-do">실무 실습</span>
+    </div>
+    <h2 class="s-title"><span class="q">"</span>같은 걸 형식만 바꿔 세 번 써요<span class="q">"</span></h2>
+    <p class="s-intro">기억도 시키고 규칙도 박았으니, 이제 진짜 일을 시킵니다. 핵심은 — <b>양식·KPI를 매번 안 알려줘도</b> 컨텍스트를 보고 알아서 우리 스타일로 맞춰준다는 거예요. 챗은 파일 하나씩, 코워크는 폴더째.</p>
+
+    <div class="case">
+      <div class="case-label star"><span class="dot"></span>① 회의 메모 폴더 → 회의록 한꺼번에<span class="live-tag">오늘 같이</span></div>
+      <p>'2주차_실습자료'의 <b>'회의메모' 폴더 전부</b>(R&amp;D 메모 3건)를 읽어 각각 회의록으로 저장해요. 양식을 안 적어도 Voice-Style을 보고 우리 부서 형식으로 맞춥니다.</p>
+      <details class="prompt">
+        <summary><span class="chev">▶</span><span class="goodtag">코워크</span><span class="summary-text">폴더째 일괄 정리 펼치기</span></summary>
+        <div class="prompt-body">
+          <button class="copy">복사</button>
+          <pre>'회의메모' 폴더 안의 텍스트 파일을 전부 읽어서
+각각 회의록으로 정리해 줘.
+양식은 우리 부서 스타일대로(프로젝트 지침 반영),
+파일 하나당 회의록 하나로 'Output/회의록' 폴더에
+원본과 같은 이름으로 저장해.
+
+[규칙]
+- 메모에 없는 내용은 지어내지 말고 '미정'으로
+- 이름·시스템명 같은 고유명사는 원문 그대로
+- 다 끝나면 어떤 파일을 처리했는지 목록으로 알려줘</pre>
+        </div>
+      </details>
+      <div class="tip">
+        <span class="lab">결과 같이 확인</span>
+        <p>메모엔 "예산 미정", "학회 참가 미결"이 있었죠. 회의록에 <b>'미정'으로 정직하게</b> 남았는지 확인하세요. "모르는 건 모른다고 하게" 만드는 규칙이 작동하는 순간 — 1주차 검증 습관의 연장입니다.</p>
+      </div>
+    </div>
+
+    <div class="case">
+      <div class="case-label"><span class="dot"></span>② 영수증 사진 무더기 → 경비정산 엑셀<span class="recap">1주차 맛보기 본편</span><span class="home-tag">집에서</span></div>
+      <p>'영수증' 폴더(출장 5장)를 읽어 요약 시트·그래프까지. 한 장은 일부러 흐려요 — '(판독 불가)' 목록에 들어가는지 확인해보세요.</p>
+      <details class="prompt">
+        <summary><span class="chev">▶</span><span class="summary-text">두 시트 + 차트로 펼치기</span></summary>
+        <div class="prompt-body">
+          <button class="copy">복사</button>
+          <pre>'영수증' 폴더의 사진을 전부 읽어서
+경비정산 엑셀을 만들어 줘.
+
+[시트1: 내역] 날짜·사용처·항목(식비/교통/숙박/기타)·금액·비고
+[시트2: 요약] 항목별 합계 + 전체 합계, 막대그래프 1개
+
+[규칙]
+- 안 읽히는 건 '(판독 불가)'로 표시하고 따로 목록화
+- 금액은 ₩ 서식, 날짜는 2026-06-09 형식
+- 'Output/정산결과' 폴더에 .xlsx로 저장</pre>
+        </div>
+      </details>
+    </div>
+
+    <div class="case">
+      <div class="case-label"><span class="dot"></span>③ 설문 응답(CSV) → 요약 + 차트<span class="home-tag">집에서</span></div>
+      <p>'survey.csv'(사내 AI 도구 만족도 200건)로 불만 패턴까지 뽑아보세요.</p>
+      <details class="prompt">
+        <summary><span class="chev">▶</span><span class="summary-text">200건 자동 분석 펼치기</span></summary>
+        <div class="prompt-body">
+          <button class="copy">복사</button>
+          <pre>'survey.csv'(만족도 설문 200건)를 분석해 줘.
+
+[원하는 결과]
+1. 문항별 평균 점수 표
+2. 자유응답에서 많이 나온 키워드 top10
+3. 불만 응답의 공통 패턴 3가지 + 대표 코멘트 1개씩
+4. 위 내용을 표·차트로 정리한 엑셀
+
+'Output/설문분석' 폴더에 저장하고,
+핵심 3줄 요약은 채팅으로도 알려줘.</pre>
+        </div>
+      </details>
+    </div>
+
+    <div class="case">
+      <div class="case-label"><span class="dot"></span>④ 받은 메일 → 정중한 거절 답장<span class="home-tag">집에서</span></div>
+      <p>'받은메일.txt'(웨비나 연사 제안)로 정중한 거절을 써봅니다. 거절 메일은 '톤 지정'의 효과를 느끼기 좋은 예시예요.</p>
+      <details class="prompt">
+        <summary><span class="chev">▶</span><span class="summary-text">정중한 거절 답장 펼치기</span></summary>
+        <div class="prompt-body">
+          <button class="copy">복사</button>
+          <pre>'받은메일.txt'(웨비나 연사 제안)를 읽고,
+정중하게 거절하는 답장 초안을 써 줘.
+
+[상황] 제안은 고맙지만 지금은 일정상 어려워.
+       다만 관계는 계속 이어가고 싶어.
+[톤] 따뜻하지만 분명하게. 여지는 남기되 확답은 피해.
+[길이] 5~6문장, 인사말~맺음말까지 바로 보낼 수 있게.</pre>
+        </div>
+      </details>
+    </div>
+
+    <div class="key">
+      <span class="lab">핵심</span>
+      <p>기억시켜두면, 폴더째 시켜도 우리 부서 양식·톤으로 알아서 맞춰줘요. 마지막 검산은 내 몫으로 남기고요.</p>
+    </div>
+    <div class="note">
+      <span class="lab">🎤 진행 노트</span>
+      <ul>
+        <li class="say">🖥️ 회의록은 다 같이, 영수증·설문·거절메일은 집에서. 시간 빠듯하면 회의록만.</li>
+        <li class="say">💬 결과의 '미정' 표시를 꼭 같이 확인 — "지어내지 않는다"는 게 핵심 포인트.</li>
+        <li class="qq">❓ "양식 안 알려줬는데 어떻게 알아요?" → 컨텍스트의 Voice-Style을 읽어서 맞춰요.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ===================== S5 스킬 맛보기 ===================== -->
+  <section class="session" id="s5">
+    <div class="s-head">
+      <span class="time">40:00 – 46:00</span>
+      <span class="badge b-show">스킬 맛보기</span>
+    </div>
+    <h2 class="s-title"><span class="q">"</span>그 긴 지시문을 매번 다시 써요<span class="q">"</span> <span class="next-tag" style="font-size:.7rem;background:rgba(124,196,166,.14);color:var(--accent);padding:3px 11px;border-radius:999px;font-weight:700;vertical-align:middle">3주차 본격</span></h2>
+    <p class="s-intro">잘 만든 지시문을 매번 복붙하는 것도 일이죠. <b>스킬</b>은 그 지시문을 '나만의 팀원'으로 등록해두는 거예요. 명령 한 번이면 그 팀원이 정해진 일을 해줍니다. 오늘은 감만 잡고, 본격 제작은 3주차에 같이 해요.</p>
+
+    <div class="case">
+      <div class="case-label star"><span class="dot"></span>① 먼저 기존 스킬 체험해보기<span class="live-tag">오늘 같이</span></div>
+      <p><b>사용자 지정(Customize) → 스킬</b>에서 "+→ 둘러보기"를 누르면 이미 만들어진 스킬들이 있어요. 하나 설치해 써보면 감이 와요 — 예를 들어 '하루 브리핑' 류 스킬은 연결된 캘린더·메일을 참고해 오늘 할 일을 정리해줍니다. (전역 지침 덕에 "어디에 집중할지" 먼저 물어보기도 해요.) ※ 유튜브엔 '아이디어' 메뉴라고 나오기도 하는데, 현재 공식 위치는 '사용자 지정 → 스킬'이에요.</p>
+    </div>
+
+    <div class="case">
+      <div class="case-label"><span class="dot"></span>② 내 말투로 스킬 만들기 — 예시를 먹이기<span class="home-tag">집에서</span></div>
+      <p>스킬 퀄리티를 끌어올리는 비결은 <b>내 예시를 주는 것</b>. 평소 쓰던 보고서·메일 3~5개를 폴더에 넣고 "이걸 학습해서 스킬로 만들어줘"라고 하면, 내 말투에 맞춰진 스킬이 나와요.</p>
+      <details class="prompt">
+        <summary><span class="chev">▶</span><span class="goodtag">스킬 제작</span><span class="summary-text">내 예시 기반 스킬 만들기 펼치기</span></summary>
+        <div class="prompt-body">
+          <button class="copy">복사</button>
+          <pre>'Inbox/내보고서샘플' 폴더에 내가 쓴 주간보고 5개를 넣어뒀어.
+이걸 학습해서, 앞으로 '주간보고 정리' 스킬을 만들어 줘.
+
+[스킬이 할 일]
+- 'Inbox'의 이번 주 메모들을 모아
+- 내 샘플과 같은 구조·말투로 주간보고 초안 작성
+- 'Output/주간보고'에 날짜로 저장
+
+요구사항이 불명확한 부분은 먼저 물어보고,
+완성된 스킬 설명을 마지막에 요약해 줘.</pre>
+        </div>
+      </details>
+      <div class="tip">
+        <span class="lab">3주차 예고</span>
+        <p>스킬을 제대로 만들고 관리하는 법(claude-video 같은 플러그인 설치 포함)은 다음 시간에 커넥터와 함께 본격적으로 다뤄요.</p>
+      </div>
+    </div>
+
+    <div class="key">
+      <span class="lab">핵심 ④</span>
+      <p>두 번 이상 쓸 긴 지시문은 '스킬'로 등록해 나만의 팀원으로. 비결은 내 예시를 먹여 말투까지 맞추는 것.</p>
+    </div>
+    <div class="note">
+      <span class="lab">🎤 진행 노트</span>
+      <ul>
+        <li class="say">🖥️ '사용자 지정 → 스킬 → 둘러보기'를 한 번 같이 열어 기존 스킬 체험. 깊은 제작은 3주차 예고만.</li>
+        <li class="say">💬 "긴 지시문을 매번 복붙하던 걸 버튼 하나로" — 가치만 각인시키고 넘어가기.</li>
+        <li class="qq">❓ "스킬이랑 프롬프트 박제랑 차이는?" → 스킬은 메뉴에 등록돼 재사용·공유가 더 쉬워요.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ===================== S6 에이전트 팀 ===================== -->
+  <section class="session" id="s6">
+    <div class="s-head">
+      <span class="time">46:00 – 51:00</span>
+      <span class="badge b-do">에이전트 팀</span>
+    </div>
+    <h2 class="s-title"><span class="q">"</span>알아볼 게 많은데 혼자 하면 한세월이에요<span class="q">"</span></h2>
+    <p class="s-intro">여러 개를 각각 알아봐야 할 때, 한 명이 차례로 하면 다 기다려야 하죠. <b>서브 에이전트</b>(나 대신 일하는 AI 일꾼)를 여러 명 풀면 <b>동시에</b> 돌아가요. 진행 화면에서 여럿이 나란히 일하는 게 보입니다.</p>
+
+    <div class="case">
+      <div class="case-label star"><span class="dot"></span>① 조사 사원 3명 동시에 풀기<span class="live-tag">오늘 같이</span></div>
+      <p>인턴 한 명에게 셋을 주는 게 아니라, <b>인턴 셋을 고용</b>해 하나씩 맡기는 거예요. 보고는 팀장(메인)이 모아서 합니다. 여러 파일 요약, 경쟁사 여러 곳 리서치, 같은 양식으로 여러 버전 만들기에 특히 좋아요.</p>
+      <details class="prompt">
+        <summary><span class="chev">▶</span><span class="goodtag">코워크 · 에이전트</span><span class="summary-text">3명 동시 조사 펼치기</span></summary>
+        <div class="prompt-body">
+          <button class="copy">복사</button>
+          <pre>에이전트 3개를 동시에 풀어서, 각자 하나씩 맡아 조사해 줘.
+
+- 에이전트A: H제약의 ADC 파이프라인 현황
+- 에이전트B: Y바이오의 비만치료제 도입 검토 소식
+- 에이전트C: 국내 AI 신약개발 벤처 상위 3곳
+
+[규칙]
+- 각자 출처 링크를 포함해서 조사
+- 확실하지 않은 건 '(확인 필요)' 표시
+- 셋 다 끝나면 결과를 합쳐서 비교표 한 장으로 정리해 줘</pre>
+        </div>
+      </details>
+    </div>
+
+    <div class="case">
+      <div class="case-label"><span class="dot"></span>② AI끼리 토론 붙이기 — 레드팀 리뷰<span class="bonus-tag">보너스</span></div>
+      <p>보고서를 올리기 전, 임원이 던질 질문을 미리 맞아보는 도구예요. 낙관론자와 회의론자를 붙여 <b>내 자료를 공격하고 방어</b>하게 합니다.</p>
+      <details class="prompt">
+        <summary><span class="chev">▶</span><span class="goodtag">코워크 · 토론</span><span class="summary-text">3라운드 토론 펼치기</span></summary>
+        <div class="prompt-body">
+          <button class="copy">복사</button>
+          <pre>내가 쓴 'CPHI 참가 제안서' 초안을 놓고 토론을 붙여 줘.
+(파일이 없으면 아까 만든 회의록 중 하나로 해도 돼)
+
+- 낙관론자: 참가해야 하는 이유를 최대한 강하게
+- 회의론자: 예산 담당 임원처럼 깐깐하게 반박
+
+[방식]
+- 3라운드 주고받기, 라운드마다 핵심만 짧게
+- 토론이 끝나면, 임원 보고 전에 보강해야 할
+  약점 3가지와 예상 질문 3개를 정리해 줘</pre>
+        </div>
+      </details>
+    </div>
+
+    <div class="key">
+      <span class="lab">핵심 ⑤</span>
+      <p>막히면 혼자 시키지 말고 팀을 꾸리세요. 조사는 나눠 맡겨 동시에, 결론은 토론으로 두드려요.</p>
+    </div>
+    <div class="note">
+      <span class="lab">🎤 진행 노트</span>
+      <ul>
+        <li class="say">🖥️ 진행 화면에서 에이전트 3명이 동시에 도는 걸 꼭 보여주기 — 시각적 임팩트가 제일 큼.</li>
+        <li class="say">💬 레드팀 토론은 시간 남을 때만(보너스). "임원 질문 미리 맞아보기"로 소개.</li>
+        <li class="qq">❓ "여럿 돌리면 느려지지 않아요?" → 오히려 동시라 빨라요. 대신 사용량은 더 써요.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ===================== S7 커넥터 맛보기 ===================== -->
+  <section class="session" id="s7">
+    <div class="s-head">
+      <span class="time">51:00 – 55:00</span>
+      <span class="badge b-show">커넥터 맛보기</span>
+    </div>
+    <h2 class="s-title"><span class="q">"</span>메일·드라이브 오가며 복붙만 해요<span class="q">"</span> <span class="next-tag" style="font-size:.7rem;background:rgba(124,196,166,.14);color:var(--accent);padding:3px 11px;border-radius:999px;font-weight:700;vertical-align:middle">3주차 본격</span></h2>
+    <p class="s-intro">여기까진 '내 폴더' 안 이야기였어요. <b>커넥터</b>를 붙이면 코워크가 Gmail·구글 드라이브·노션 같은 내 도구를 직접 들여다봐요. 오늘은 어떤 그림인지만 맛보고, 실제 연결은 3주차에 같이 세팅합니다.</p>
+
+    <div class="case">
+      <div class="case-label"><span class="dot"></span>커넥터가 붙으면 가능해지는 일<span class="next-tag">3주차 본격</span></div>
+      <p>경로는 <b>홈 → (+) 버튼 → 커넥터 관리 → 둘러보기</b>. 구글 워크스페이스(메일·드라이브)와 노션만 붙여도 비서로 쓰기엔 충분해요. 예를 들면 이런 게 가능해져요.</p>
+      <details class="prompt">
+        <summary><span class="chev">▶</span><span class="goodtag">3주차 미리보기</span><span class="summary-text">메일 자동 분류·답장 펼치기</span></summary>
+        <div class="prompt-body">
+          <button class="copy">복사</button>
+          <pre>지난 7일간 받은 메일을 검토해서 3가지로 분류해 줘.
+- 당장 급한 것 / 참고용 / 내 승인이 필요한 것
+
+각 메일에 한 줄 요약을 붙이고,
+'당장 급한 것'은 답장 초안까지 써 줘.
+(보내지는 말고 초안만)</pre>
+        </div>
+      </details>
+      <div class="tip">
+        <span class="lab">서브 에이전트와 만나면</span>
+        <p>아까 본 동시 처리도 커넥터가 있으면 훨씬 세져요 — 드라이브에 흩어진 파일 수십 장을 에이전트 여럿이 동시에 읽어 한 장으로 요약하는 식. 이게 3주차의 핵심입니다.</p>
+      </div>
+    </div>
+
+    <div class="key">
+      <span class="lab">핵심</span>
+      <p>커넥터 = 코워크가 내 업무 도구(메일·드라이브·노션)를 직접 다루게 하는 다리. 본격 연결은 3주차에.</p>
+    </div>
+    <div class="note">
+      <span class="lab">🎤 진행 노트</span>
+      <ul>
+        <li class="say">💬 실제 연결은 3주차. 오늘은 "이런 게 가능해진다"는 그림만 보여주고 기대감만.</li>
+        <li class="qq">❓ "보안 괜찮아요?" → 권한 범위·읽기 전용 같은 안전 설정은 3주차에 같이 봐요.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ===================== S8 예약 + 대시보드 ===================== -->
+  <section class="session" id="s8">
+    <div class="s-head">
+      <span class="time">55:00 – 60:00</span>
+      <span class="badge b-do">자동화·확인</span>
+    </div>
+    <h2 class="s-title"><span class="q">"</span>한 번 시키고, 매번 또 시켜요<span class="q">"</span></h2>
+    <p class="s-intro">마지막 두 가지 — <b>한 번 → 매번</b> 자동 실행(예약), 그리고 <b>결과 확인까지 자동화</b>(라이브 대시보드). S1에서 만든 "주간 경쟁사 모니터링"을 진짜로 돌려봅니다.</p>
+
+    <div class="case">
+      <div class="case-label star"><span class="dot"></span>① 매일 아침, 경쟁사 브리핑 자동<span class="recap">1주차 맛보기 본편</span><span class="live-tag">오늘 같이</span></div>
+      <p><b>STEP 1에서 만든 '주간 경쟁사 모니터링' 프로젝트가 드디어 가동되는 순간이에요</b> — 만들고 지침 채운 그 사무실이 이제 진짜 일을 합니다. 경로는 <b>예정됨(스케줄) → 작업 추가 → 이름·프롬프트·시간 입력</b>. 프로젝트 지침이 있으니 안 알려준 디테일(우리 파이프라인·작년 데이터 위치)까지 알아서 채워요.</p>
+      <details class="prompt">
+        <summary><span class="chev">▶</span><span class="goodtag">코워크 · 예약</span><span class="summary-text">자동 반복 펼치기</span></summary>
+        <div class="prompt-body">
+          <button class="copy">복사</button>
+          <pre>매일 아침 8시에, 경쟁사(H제약, Y바이오, D사)와
+FDA·식약처 승인 관련 뉴스를 조사해서
+한 장짜리 브리핑 PDF로 'Output/경쟁사브리핑'에 저장해 줘.
+
+[구성]
+핵심 3줄 / 회사별 새 소식(출처 링크) /
+우리 파이프라인에 미칠 영향 한 줄
+
+[규칙]
+- 단독보도 1건뿐인 내용은 '(추가 확인 필요)' 표시
+- 파일명은 '브리핑_2026-06-17.pdf'처럼 날짜로</pre>
+        </div>
+      </details>
+      <div class="tip">
+        <span class="lab">수업 중 바로 확인 + 잘 쓰는 순서</span>
+        <p>내일까지 기다릴 필요 없어요. <b>"5분 뒤에 한 번 실행해 줘"</b>로 등록해 수업 안에서 도착을 확인하세요. 팁 하나 — 예약은 <b>충분히 써보고 "매일 자동으로 받고 싶다" 싶을 때</b> 거는 게 좋아요. 처음부터 예약부터 짜면 오히려 비효율적이에요.</p>
+      </div>
+    </div>
+
+    <div class="case">
+      <div class="case-label star"><span class="dot"></span>② 결과 확인도 자동화 — 라이브 대시보드<span class="home-tag">집에서</span></div>
+      <p>예약을 걸면 결과물이 폴더에 쌓여요. 근데 매번 폴더 뒤지는 것도 일이죠. <b>라이브 아티팩트</b>로 묶으면, 열 때마다 최신 데이터로 자동 갱신되는 대시보드 하나가 됩니다.</p>
+      <details class="prompt">
+        <summary><span class="chev">▶</span><span class="goodtag">코워크 · 라이브 아티팩트</span><span class="summary-text">대시보드 만들기 펼치기</span></summary>
+        <div class="prompt-body">
+          <button class="copy">복사</button>
+          <pre>'Output/경쟁사브리핑'의 결과들을 대시보드 하나로 묶어 줘.
+라이브 아티팩트로 만들고,
+열 때마다 폴더의 최신 데이터를 가져와 자동 갱신되게 해.
+
+[보여줄 것]
+- 이번 주 핵심 3줄
+- 회사별 최근 소식(출처 링크)
+- 작년 대비 변화 차트</pre>
+        </div>
+      </details>
+      <div class="tip">
+        <span class="lab">핀(Pin)으로 고정</span>
+        <p>만든 대시보드를 <b>핀으로 고정</b>하면 매일 아침 앱을 열 때 메인에 떠요. 예약 = 일의 자동화, 대시보드 = 확인의 자동화. 둘을 합치면 켜두기만 해도 굴러갑니다.</p>
+      </div>
+    </div>
+
+    <div class="key">
+      <span class="lab">핵심</span>
+      <p>반복은 예약으로, 확인은 라이브 대시보드로. 단 "5분 뒤 실행"으로 먼저 테스트하고, 위험한 건 먼저 묻게(전역 지침에 이미 넣어뒀죠).</p>
+    </div>
+    <div class="note">
+      <span class="lab">🎤 진행 노트</span>
+      <ul>
+        <li class="say">🖥️ "5분 뒤 실행"으로 등록해 수업 안에서 결과 도착을 보여주기 — 오늘의 하이라이트.</li>
+        <li class="say">💬 예약은 충분히 써보고 "매일 받고 싶다" 싶을 때 거는 게 좋다는 팁 강조.</li>
+        <li class="qq">❓ "앱 꺼도 돌아요?" → 기기·앱 상태에 따라 달라요. 안전하게는 켜두는 걸 권해요.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ===================== 마무리 ===================== -->
+  <section class="closing" id="s9">
+    <h2>마무리 · 60분</h2>
+    <div class="three">
+      <div><b>① 태스크 말고 프로젝트로</b> — "왜·뭘·그다음?"을 물으면 거의 다 프로젝트다</div>
+      <div><b>② 우리 부서를 프로젝트 지침에 적어라</b> — 역할 + 배경을 한 곳에 + 음성으로 며칠에 걸쳐</div>
+      <div><b>③ 전역 지침 한 번 + "모르면 질문 먼저"</b> — 항상 지킬 규칙은 설정에 딱 한 번</div>
+      <div><b>④ 폴더째 시키고, 반복은 스킬·예약으로</b> — 양식은 컨텍스트가, 반복은 자동화가</div>
+      <div><b>⑤ 팀·커넥터·대시보드로 확장</b> — 동시에 나눠 맡기고, 도구를 붙이고, 확인까지 자동</div>
+    </div>
+    <div class="sub">숙제</div>
+    <p class="hw">내 업무 1가지로 <b>프로젝트를 만들고</b>, <b>프로젝트 지침에 우리 부서(역할 + 배경)를 음성으로 적어두기</b>. (여유 되면 전역 지침에 "모르면 질문 먼저" 한 줄 추가까지) — 다음 시간에 각자 만든 프로젝트에 커넥터를 붙입니다.</p>
+    <div class="sub">다음 시간 예고</div>
+    <p class="next">3주차 — 커넥터·스킬·플러그인 본격 세팅. 오늘 맛본 커넥터(슬랙·구글드라이브·노션)와 스킬, claude-video(/watch)를 실제로 연결해, 우리 부서를 기억하는 코워크가 <b>내 업무 도구 전체</b>를 다루게 만듭니다.</p>
+    <div class="note">
+      <span class="lab">🎤 진행 노트</span>
+      <ul>
+        <li class="say">💬 핵심 5개를 빠르게 복창시키기(한 명씩 한 개씩 말해보게 해도 좋음).</li>
+        <li class="say">💬 숙제는 "프로젝트 1개 + 프로젝트 지침 채우기"로 명확히. 다음 주에 그 프로젝트로 커넥터를 붙인다고 예고.</li>
+        <li class="qq">❓ "시간 없으면 어디까지 하면 돼요?" → 프로젝트 만들고 About-Me 한 파일만 채워도 절반은 성공.</li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  document.querySelectorAll('.copy').forEach(function(btn){
+    btn.addEventListener('click',function(e){
+      e.preventDefault();
+      var pre=btn.parentElement.querySelector('pre');
+      var text=pre.innerText;
+      navigator.clipboard.writeText(text).then(function(){
+        var old=btn.textContent;
+        btn.textContent='복사됨!';btn.classList.add('done');
+        setTimeout(function(){btn.textContent=old;btn.classList.remove('done');},1400);
+      }).catch(function(){
+        var r=document.createRange();r.selectNode(pre);
+        var sel=window.getSelection();sel.removeAllRanges();sel.addRange(r);
+        try{document.execCommand('copy');btn.textContent='복사됨!';btn.classList.add('done');
+          setTimeout(function(){btn.textContent='복사';btn.classList.remove('done');},1400);}catch(_){}
+        sel.removeAllRanges();
+      });
+    });
+  });
+
+  var io=new IntersectionObserver(function(entries){
+    entries.forEach(function(en){ if(en.isIntersecting){en.target.classList.add('in');io.unobserve(en.target);} });
+  },{threshold:.12});
+  document.querySelectorAll('.session').forEach(function(s){io.observe(s);});
+
+  var navLinks=document.querySelectorAll('.nav a[href^="#"]');
+  var activeIo=new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(en.isIntersecting){
+        var id=en.target.id;
+        navLinks.forEach(function(a){
+          a.classList.toggle('active',a.getAttribute('href')==='#'+id);
+        });
+      }
+    });
+  },{rootMargin:'-40% 0px -55% 0px',threshold:0});
+  document.querySelectorAll('section[id]').forEach(function(s){activeIo.observe(s);});
+</script>
+</body>
+</html>
+
