@@ -1,0 +1,10 @@
+{
+  "name": "kr-claims",
+  "version": "0.1.0",
+  "description": "식약처 「건강기능식품의 기준 및 규격」 고시에서 인정 기능성 문구·일일섭취량·섭취 시 주의사항을 조회하고, 논문 근거 팩의 용량을 국내 인정 범위와 대조한다.",
+  "author": {
+    "name": "Jay",
+    "email": "jay@pharma-bros.com"
+  },
+  "keywords": ["pharmacy", "mfds", "regulatory", "healthcare", "korea"]
+}

@@ -1,0 +1,20 @@
+{
+  "name": "pharma-bros",
+  "owner": {
+    "name": "Jay",
+    "email": "jay@pharma-bros.com"
+  },
+  "description": "약사 콘텐츠 제작 파이프라인 플러그인 모음 (교육용 예제)",
+  "plugins": [
+    {
+      "name": "evidence-card",
+      "source": "./evidence-card",
+      "description": "성분×효능 조합의 PubMed 근거를 수집·검증해 카드뉴스용 evidence-pack을 생성한다. 숫자 환각을 스크립트 게이트로 차단한다."
+    },
+    {
+      "name": "kr-claims",
+      "source": "./kr-claims",
+      "description": "식약처 「건강기능식품의 기준 및 규격」 고시에서 인정 기능성 문구·일일섭취량·섭취 시 주의사항을 조회하고, 논문 근거 팩의 용량을 국내 인정 범위와 대조한다."
+    }
+  ]
+}

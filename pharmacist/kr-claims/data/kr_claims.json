@@ -1,0 +1,2635 @@
+{
+  "schema": "kr-claims/0.1",
+  "source": {
+    "title": "건강기능식품의 기준 및 규격",
+    "notice": "제2026-43호",
+    "effective_date": "2026-06-11",
+    "url": "https://www.mfds.go.kr/brd/m_211/view.do?seq=14973",
+    "scope": "고시형 원료만. 개별인정형은 이 고시에 없다 — 표에 없음은 인정되지 않음이 아니다.",
+    "checked_at": "2026-08-12"
+  },
+  "coverage": {
+    "blocks": 97,
+    "rows": 120,
+    "missing_functional_claim": [
+      "13-2",
+      "1-1",
+      "1-2",
+      "1-3",
+      "1-5",
+      "1-10",
+      "1-11",
+      "1-14",
+      "1-15",
+      "1-16",
+      "1-17",
+      "1-18",
+      "1-19",
+      "1-21",
+      "1-22",
+      "1-26",
+      "1-27",
+      "1-28",
+      "2-1",
+      "2-4",
+      "2-61"
+    ],
+    "missing_daily_intake": [
+      "13-2",
+      "2-66"
+    ],
+    "unparsed_intake": [
+      "1-4:3.3 ~ 400 mg α-TE（4.917 ~ 596 IU)",
+      "1-28:리놀레산은 4.0 g 이상 또는 리놀렌산은 0.6 g 이상",
+      "2-8:총 플라보노이드로서 20 ~ 40 mg (3) 섭취 시 주의사항",
+      "2-49:키토산으로서 3.0 ~ 4.5 g, 키토올리고당으로서 3 g 고시 제20"
+    ],
+    "note": "missing/unparsed 항목은 고시 원문을 보고 사람이 채워야 한다. 빈 값을 '해당 없음'으로 읽지 말 것."
+  },
+  "ingredients": [
+    {
+      "code": "13-2",
+      "ingredient_ko": "4 프로폴리스추출물가공식품, 16-1 농",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": null,
+      "rows": [],
+      "cautions": []
+    },
+    {
+      "code": "1-1",
+      "ingredient_ko": "비타민 A",
+      "category": "영양성분",
+      "recognition_type": "고시형",
+      "functional_claims_raw": null,
+      "rows": [
+        {
+          "functional_claim": null,
+          "daily_intake": {
+            "raw": "210 ~ 1,000 μg RAE (699.93 ~ 3,333 IU)",
+            "basis": null,
+            "min": 210.0,
+            "max": 1000.0,
+            "unit": "μg RAE",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": []
+    },
+    {
+      "code": "1-2",
+      "ingredient_ko": "베타카로틴",
+      "category": "영양성분",
+      "recognition_type": "고시형",
+      "functional_claims_raw": null,
+      "rows": [
+        {
+          "functional_claim": "1). (1). (가) 및 (나)의 경우",
+          "daily_intake": {
+            "raw": "0.42 ~ 7 mg",
+            "basis": null,
+            "min": 0.42,
+            "max": 7.0,
+            "unit": "mg",
+            "bound": "range",
+            "parsed": true
+          }
+        },
+        {
+          "functional_claim": "1). (1). (다)의 경우",
+          "daily_intake": {
+            "raw": "1.26 mg 이상",
+            "basis": null,
+            "min": 1.26,
+            "max": null,
+            "unit": "mg",
+            "bound": "min",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": [
+        "흡연자는 섭취 시 전문가와 상담할 것",
+        "이상사례 발생 시 섭취를 중단하고 전문가와 상담할 것"
+      ]
+    },
+    {
+      "code": "1-3",
+      "ingredient_ko": "비타민 D",
+      "category": "영양성분",
+      "recognition_type": "고시형",
+      "functional_claims_raw": null,
+      "rows": [
+        {
+          "functional_claim": null,
+          "daily_intake": {
+            "raw": "3 ~ 10 μg(120 ~ 400 IU)",
+            "basis": null,
+            "min": 3.0,
+            "max": 10.0,
+            "unit": "μg",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": [
+        "고칼슘혈증이 있거나 의약품 복용 시 전문가와 상담할 것",
+        "이상사례 발생 시 섭취를 중단하고 전문가와 상담할 것"
+      ]
+    },
+    {
+      "code": "1-4",
+      "ingredient_ko": "비타민 E",
+      "category": "영양성분",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "항산화 작용을 하여 유해산소로부터 세포를 보호하는데 필요",
+      "rows": [
+        {
+          "functional_claim": "항산화 작용을 하여 유해산소로부터 세포를 보호하는데 필요",
+          "daily_intake": {
+            "raw": "3.3 ~ 400 mg α-TE（4.917 ~ 596 IU)",
+            "basis": null,
+            "min": null,
+            "max": null,
+            "unit": null,
+            "bound": null,
+            "parsed": false
+          }
+        }
+      ],
+      "cautions": []
+    },
+    {
+      "code": "1-5",
+      "ingredient_ko": "비타민 K",
+      "category": "영양성분",
+      "recognition_type": "고시형",
+      "functional_claims_raw": null,
+      "rows": [
+        {
+          "functional_claim": null,
+          "daily_intake": {
+            "raw": "21 ~ 1,000 μg",
+            "basis": null,
+            "min": 21.0,
+            "max": 1000.0,
+            "unit": "μg",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": [
+        "항응고제 등 복용 시 전문가와 상담할 것",
+        "이상사례 발생 시 섭취를 중단하고 전문가와 상담할 것"
+      ]
+    },
+    {
+      "code": "1-6",
+      "ingredient_ko": "비타민 B",
+      "category": "영양성분",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "탄수화물과 에너지 대사에 필요",
+      "rows": [
+        {
+          "functional_claim": "탄수화물과 에너지 대사에 필요",
+          "daily_intake": {
+            "raw": "0.36 ~ 100 mg",
+            "basis": null,
+            "min": 0.36,
+            "max": 100.0,
+            "unit": "mg",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": []
+    },
+    {
+      "code": "1-7",
+      "ingredient_ko": "비타민 B",
+      "category": "영양성분",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "체내 에너지 생성에 필요",
+      "rows": [
+        {
+          "functional_claim": "체내 에너지 생성에 필요",
+          "daily_intake": {
+            "raw": "0.42 ~ 40 mg",
+            "basis": null,
+            "min": 0.42,
+            "max": 40.0,
+            "unit": "mg",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": []
+    },
+    {
+      "code": "1-8",
+      "ingredient_ko": "나이아신",
+      "category": "영양성분",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "체내 에너지 생성에 필요",
+      "rows": [
+        {
+          "functional_claim": "니코틴산인 경우",
+          "daily_intake": {
+            "raw": "4.5 ~ 23 mg",
+            "basis": null,
+            "min": 4.5,
+            "max": 23.0,
+            "unit": "mg",
+            "bound": "range",
+            "parsed": true
+          }
+        },
+        {
+          "functional_claim": "니코틴산아미드인 경우",
+          "daily_intake": {
+            "raw": "4.5 ~ 670 mg",
+            "basis": null,
+            "min": 4.5,
+            "max": 670.0,
+            "unit": "mg",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": []
+    },
+    {
+      "code": "1-9",
+      "ingredient_ko": "판토텐산",
+      "category": "영양성분",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "지방, 탄수화물, 단백질 대사와 에너지 생성에 필요",
+      "rows": [
+        {
+          "functional_claim": "지방, 탄수화물, 단백질 대사와 에너지 생성에 필요",
+          "daily_intake": {
+            "raw": "1.5 ~ 200 mg",
+            "basis": null,
+            "min": 1.5,
+            "max": 200.0,
+            "unit": "mg",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": []
+    },
+    {
+      "code": "1-10",
+      "ingredient_ko": "비타민 B",
+      "category": "영양성분",
+      "recognition_type": "고시형",
+      "functional_claims_raw": null,
+      "rows": [
+        {
+          "functional_claim": null,
+          "daily_intake": {
+            "raw": "0.45 ~ 67 mg",
+            "basis": null,
+            "min": 0.45,
+            "max": 67.0,
+            "unit": "mg",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": []
+    },
+    {
+      "code": "1-11",
+      "ingredient_ko": "엽산",
+      "category": "영양성분",
+      "recognition_type": "고시형",
+      "functional_claims_raw": null,
+      "rows": [
+        {
+          "functional_claim": null,
+          "daily_intake": {
+            "raw": "120 ~ 400 ㎍ DFE",
+            "basis": null,
+            "min": 120.0,
+            "max": 400.0,
+            "unit": "㎍ DFE",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": []
+    },
+    {
+      "code": "1-12",
+      "ingredient_ko": "비타민 B",
+      "category": "영양성분",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "정상적인 엽산 대사에 필요",
+      "rows": [
+        {
+          "functional_claim": "정상적인 엽산 대사에 필요",
+          "daily_intake": {
+            "raw": "0.72 ~ 2,000 μg",
+            "basis": null,
+            "min": 0.72,
+            "max": 2000.0,
+            "unit": "μg",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": []
+    },
+    {
+      "code": "1-13",
+      "ingredient_ko": "비오틴",
+      "category": "영양성분",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "지방, 탄수화물, 단백질 대사와 에너지 생성에 필요",
+      "rows": [
+        {
+          "functional_claim": "지방, 탄수화물, 단백질 대사와 에너지 생성에 필요",
+          "daily_intake": {
+            "raw": "9 ~ 900 μg",
+            "basis": null,
+            "min": 9.0,
+            "max": 900.0,
+            "unit": "μg",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": []
+    },
+    {
+      "code": "1-14",
+      "ingredient_ko": "비타민 C",
+      "category": "영양성분",
+      "recognition_type": "고시형",
+      "functional_claims_raw": null,
+      "rows": [
+        {
+          "functional_claim": null,
+          "daily_intake": {
+            "raw": "30 ~ 1,000 mg",
+            "basis": null,
+            "min": 30.0,
+            "max": 1000.0,
+            "unit": "mg",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": [
+        " 과량 섭취하지 않도록 주의할 것",
+        "신장질환이 있는 경우 섭취 전 전문가와 상담할 것",
+        "이상사례 발생 시 섭취를 중단하고 전문가와 상담할 것"
+      ]
+    },
+    {
+      "code": "1-15",
+      "ingredient_ko": "칼슘",
+      "category": "영양성분",
+      "recognition_type": "고시형",
+      "functional_claims_raw": null,
+      "rows": [
+        {
+          "functional_claim": null,
+          "daily_intake": {
+            "raw": "210 ~ 800 mg",
+            "basis": null,
+            "min": 210.0,
+            "max": 800.0,
+            "unit": "mg",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": []
+    },
+    {
+      "code": "1-16",
+      "ingredient_ko": "마그네슘",
+      "category": "영양성분",
+      "recognition_type": "고시형",
+      "functional_claims_raw": null,
+      "rows": [
+        {
+          "functional_claim": null,
+          "daily_intake": {
+            "raw": "94.5 ~ 250 mg",
+            "basis": null,
+            "min": 94.5,
+            "max": 250.0,
+            "unit": "mg",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": []
+    },
+    {
+      "code": "1-17",
+      "ingredient_ko": "철",
+      "category": "영양성분",
+      "recognition_type": "고시형",
+      "functional_claims_raw": null,
+      "rows": [
+        {
+          "functional_claim": null,
+          "daily_intake": {
+            "raw": "3.6 ~ 15 mg",
+            "basis": null,
+            "min": 3.6,
+            "max": 15.0,
+            "unit": "mg",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": []
+    },
+    {
+      "code": "1-18",
+      "ingredient_ko": "아연",
+      "category": "영양성분",
+      "recognition_type": "고시형",
+      "functional_claims_raw": null,
+      "rows": [
+        {
+          "functional_claim": null,
+          "daily_intake": {
+            "raw": "2.55 ~ 12 mg",
+            "basis": null,
+            "min": 2.55,
+            "max": 12.0,
+            "unit": "mg",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": []
+    },
+    {
+      "code": "1-19",
+      "ingredient_ko": "구리",
+      "category": "영양성분",
+      "recognition_type": "고시형",
+      "functional_claims_raw": null,
+      "rows": [
+        {
+          "functional_claim": null,
+          "daily_intake": {
+            "raw": "0.24 ~ 7.0 mg",
+            "basis": null,
+            "min": 0.24,
+            "max": 7.0,
+            "unit": "mg",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": []
+    },
+    {
+      "code": "1-20",
+      "ingredient_ko": "셀레늄(또는 셀렌)",
+      "category": "영양성분",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "유해산소로부터 세포를 보호하는데 필요",
+      "rows": [
+        {
+          "functional_claim": "유해산소로부터 세포를 보호하는데 필요",
+          "daily_intake": {
+            "raw": "16.5 ~ 135 μg",
+            "basis": null,
+            "min": 16.5,
+            "max": 135.0,
+            "unit": "μg",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": []
+    },
+    {
+      "code": "1-21",
+      "ingredient_ko": "요오드",
+      "category": "영양성분",
+      "recognition_type": "고시형",
+      "functional_claims_raw": null,
+      "rows": [
+        {
+          "functional_claim": null,
+          "daily_intake": {
+            "raw": "45 ~ 150 μg",
+            "basis": null,
+            "min": 45.0,
+            "max": 150.0,
+            "unit": "μg",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": []
+    },
+    {
+      "code": "1-22",
+      "ingredient_ko": "망간",
+      "category": "영양성분",
+      "recognition_type": "고시형",
+      "functional_claims_raw": null,
+      "rows": [
+        {
+          "functional_claim": null,
+          "daily_intake": {
+            "raw": "0.9 ~ 3.5 mg",
+            "basis": null,
+            "min": 0.9,
+            "max": 3.5,
+            "unit": "mg",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": []
+    },
+    {
+      "code": "1-23",
+      "ingredient_ko": "몰리브덴",
+      "category": "영양성분",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "산화 ･ 환원 효소의 활성에 필요",
+      "rows": [
+        {
+          "functional_claim": "산화 ･ 환원 효소의 활성에 필요",
+          "daily_intake": {
+            "raw": "7.5 ~ 230 μg",
+            "basis": null,
+            "min": 7.5,
+            "max": 230.0,
+            "unit": "μg",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": []
+    },
+    {
+      "code": "1-24",
+      "ingredient_ko": "칼륨",
+      "category": "영양성분",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "체내 물과 전해질 균형에 필요",
+      "rows": [
+        {
+          "functional_claim": "체내 물과 전해질 균형에 필요",
+          "daily_intake": {
+            "raw": "1.05 ~ 3.7 g",
+            "basis": null,
+            "min": 1.05,
+            "max": 3.7,
+            "unit": "g",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": [
+        "신장질환, 위장관질환 등이 있는 경우 섭취 전 전문가와 상담할 것",
+        "이상사례 발생 시 섭취를 중단하고 전문가와 상담할 것"
+      ]
+    },
+    {
+      "code": "1-25",
+      "ingredient_ko": "크롬",
+      "category": "영양성분",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "체내 탄수화물, 지방, 단백질 대사에 관여",
+      "rows": [
+        {
+          "functional_claim": "체내 탄수화물, 지방, 단백질 대사에 관여",
+          "daily_intake": {
+            "raw": "0.009 ~ 9 mg",
+            "basis": null,
+            "min": 0.009,
+            "max": 9.0,
+            "unit": "mg",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": [
+        "당뇨병이 있는 경우 섭취 전 전문가와 상담할 것",
+        "이상사례 발생 시 섭취를 중단하고 전문가와 상담할 것"
+      ]
+    },
+    {
+      "code": "1-26",
+      "ingredient_ko": "식이섬유",
+      "category": "영양성분",
+      "recognition_type": "고시형",
+      "functional_claims_raw": null,
+      "rows": [
+        {
+          "functional_claim": null,
+          "daily_intake": {
+            "raw": "식이섬유로서 5 g 이상",
+            "basis": "식이섬유",
+            "min": 5.0,
+            "max": null,
+            "unit": "g",
+            "bound": "min",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": []
+    },
+    {
+      "code": "1-27",
+      "ingredient_ko": "단백질",
+      "category": "영양성분",
+      "recognition_type": "고시형",
+      "functional_claims_raw": null,
+      "rows": [
+        {
+          "functional_claim": null,
+          "daily_intake": {
+            "raw": "단백질로서 12.0 g 이상",
+            "basis": "단백질",
+            "min": 12.0,
+            "max": null,
+            "unit": "g",
+            "bound": "min",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": []
+    },
+    {
+      "code": "1-28",
+      "ingredient_ko": "필수 지방산",
+      "category": "영양성분",
+      "recognition_type": "고시형",
+      "functional_claims_raw": null,
+      "rows": [
+        {
+          "functional_claim": null,
+          "daily_intake": {
+            "raw": "리놀레산은 4.0 g 이상 또는 리놀렌산은 0.6 g 이상",
+            "basis": null,
+            "min": null,
+            "max": null,
+            "unit": null,
+            "bound": null,
+            "parsed": false
+          }
+        }
+      ],
+      "cautions": []
+    },
+    {
+      "code": "2-1",
+      "ingredient_ko": "인삼",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": null,
+      "rows": [
+        {
+          "functional_claim": "면역력 증진 ･ 피로개선에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "진세노사이드 Rg1과 Rb1의 합계로서 3∼80 mg",
+            "basis": "진세노사이드 Rg1과 Rb1의 합계",
+            "min": 3.0,
+            "max": 80.0,
+            "unit": "mg",
+            "bound": "range",
+            "parsed": true
+          }
+        },
+        {
+          "functional_claim": "뼈 건강에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "진세노사이드 Rg1과 Rb1의 합계로서 25 mg",
+            "basis": "진세노사이드 Rg1과 Rb1의 합계",
+            "min": 25.0,
+            "max": 25.0,
+            "unit": "mg",
+            "bound": "exact",
+            "parsed": true
+          }
+        },
+        {
+          "functional_claim": "간 건강에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "진세노사이드 Rg1과 Rb1의 합계로서 28.8 mg",
+            "basis": "진세노사이드 Rg1과 Rb1의 합계",
+            "min": 28.8,
+            "max": 28.8,
+            "unit": "mg",
+            "bound": "exact",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": [
+        "당뇨치료제 및 혈액항응고제 복용 시 섭취에 주의",
+        "알레르기 체질 등은 개인에 따라 과민반응을 나타낼 수 있음",
+        "이상사례 발생 시 섭취를 중단하고 전문가와 상담할 것"
+      ]
+    },
+    {
+      "code": "2-2",
+      "ingredient_ko": "홍삼",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "면역력 증진･피로개선･혈소판 응집억제를 통한 혈액",
+      "rows": [
+        {
+          "functional_claim": "면역력 증진 ･ 피로개선에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "진세노사이드 Rg1, Rb1 및 Rg3의 합계로서 3 ~ 80 mg",
+            "basis": "진세노사이드 Rg1, Rb1 및 Rg3의 합계",
+            "min": 3.0,
+            "max": 80.0,
+            "unit": "mg",
+            "bound": "range",
+            "parsed": true
+          }
+        },
+        {
+          "functional_claim": "혈소판 응집억제를 통한 혈액흐름 ･ 기억력 개선 ･ 항산화에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "진세노사이드 Rg1, Rb1 및 Rg3의 합계로서 2.4 ~ 80 mg",
+            "basis": "진세노사이드 Rg1, Rb1 및 Rg3의 합계",
+            "min": 2.4,
+            "max": 80.0,
+            "unit": "mg",
+            "bound": "range",
+            "parsed": true
+          }
+        },
+        {
+          "functional_claim": "갱년기 여성의 건강에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "진세노사이드 Rg1, Rb1 및 Rg3의 합계로서 25 ~ 80 mg",
+            "basis": "진세노사이드 Rg1, Rb1 및 Rg3의 합계",
+            "min": 25.0,
+            "max": 80.0,
+            "unit": "mg",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": [
+        "당뇨치료제 및 혈액항응고제 복용 시 섭취에 주의",
+        "알레르기 체질 등은 개인에 따라 과민반응을 나타낼 수 있음",
+        "이상사례 발생 시 섭취를 중단하고 전문가와 상담할 것"
+      ]
+    },
+    {
+      "code": "2-3",
+      "ingredient_ko": "엽록소 함유 식물",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "피부건강 ･ 항산화에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "피부건강 ･ 항산화에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "총엽록소로서 8 ~ 150 mg",
+            "basis": "총엽록소",
+            "min": 8.0,
+            "max": 150.0,
+            "unit": "mg",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": []
+    },
+    {
+      "code": "2-4",
+      "ingredient_ko": "클로렐라",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": null,
+      "rows": [
+        {
+          "functional_claim": "항산화에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "총 엽록소로서 8 ~ 150 mg",
+            "basis": "총 엽록소",
+            "min": 8.0,
+            "max": 150.0,
+            "unit": "mg",
+            "bound": "range",
+            "parsed": true
+          }
+        },
+        {
+          "functional_claim": "면역력 증진·혈중 콜레스테롤 개선·피부건강 에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "총 엽록소로서 125 ~ 150 mg",
+            "basis": "총 엽록소",
+            "min": 125.0,
+            "max": 150.0,
+            "unit": "mg",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": []
+    },
+    {
+      "code": "2-5",
+      "ingredient_ko": "스피루리나",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "항산화 ･ 혈중 콜레스테롤 개선에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "항산화에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "총 엽록소로서 10 ~ 80 mg",
+            "basis": "총 엽록소",
+            "min": 10.0,
+            "max": 80.0,
+            "unit": "mg",
+            "bound": "range",
+            "parsed": true
+          }
+        },
+        {
+          "functional_claim": "혈중 콜레스테롤 개선에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "총 엽록소로서 40 ~ 80 mg",
+            "basis": "총 엽록소",
+            "min": 40.0,
+            "max": 80.0,
+            "unit": "mg",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": []
+    },
+    {
+      "code": "2-6",
+      "ingredient_ko": "녹차추출물",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "항산화 ･ 체지방 감소 ･ 혈중 콜레스테롤 개선에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "항산화 ･ 체지방 감소 ･ 혈중 콜레스테롤 개선에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "카테킨으로서 0.3 ~ 1 g",
+            "basis": "카테킨",
+            "min": 0.3,
+            "max": 1.0,
+            "unit": "g",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": [
+        "어린이, 임산부 및 수유부는 섭취를 피할 것",
+        "간질환이 있거나 의약품 복용 시 전문가와 상담할 것",
+        "카페인이 함유되어 있어 초조감, 불면 등을 나타낼 수 있음",
+        "식사 후 섭취할 것",
+        "카페인을 함유한 식품의 섭취에 주의할 것",
+        "이상사례 발생 시 섭취를 중단하고 전문가와 상담할 것"
+      ]
+    },
+    {
+      "code": "2-8",
+      "ingredient_ko": "프로폴리스추출물",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "항산화 ․ 구강에서의 항균작용에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "항산화 ․ 구강에서의 항균작용에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "총 플라보노이드로서 20 ~ 40 mg (3) 섭취 시 주의사항",
+            "basis": null,
+            "min": null,
+            "max": null,
+            "unit": null,
+            "bound": null,
+            "parsed": false
+          }
+        }
+      ],
+      "cautions": []
+    },
+    {
+      "code": "2-9",
+      "ingredient_ko": "코엔자임Q10",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "항산화 ･ 높은 혈압 감소에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "항산화 ･ 높은 혈압 감소에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "코엔자임Q10으로서 90~100 mg",
+            "basis": "코엔자임Q10",
+            "min": 90.0,
+            "max": 100.0,
+            "unit": "mg",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": [
+        "수유부는 섭취를 피할 것",
+        "항응고제 복용 시 전문가와 상담할 것",
+        "이상사례 발생 시 섭취를 중단하고 전문가와 상담할 것"
+      ]
+    },
+    {
+      "code": "2-10",
+      "ingredient_ko": "대두이소플라본",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "뼈 건강에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "뼈 건강에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "대두이소플라본 비배당체로서 24 ~ 27 mg",
+            "basis": "대두이소플라본 비배당체",
+            "min": 24.0,
+            "max": 27.0,
+            "unit": "mg",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": [
+        "영유아, 어린이, 임산부 및 수유부는 섭취를 피할 것",
+        "남성의 경우 과다 섭취를 피할 것",
+        "대두에 알레르기를 나타내는 사람은 섭취에 주의할 것",
+        "에스트로겐 호르몬에 민감한 사람은 섭취에 주의할 것",
+        "이상사례 발생 시 섭취를 중단하고 전문가와 상담할 것"
+      ]
+    },
+    {
+      "code": "2-11",
+      "ingredient_ko": "구아바잎 추출물",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "식후 혈당상승 억제에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "식후 혈당상승 억제에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "총 폴리페놀로서 120 mg",
+            "basis": "총 폴리페놀",
+            "min": 120.0,
+            "max": 120.0,
+            "unit": "mg",
+            "bound": "exact",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": [
+        "어린이, 임산부 및 수유부는 섭취를 피할 것",
+        "이상사례 발생 시 섭취를 중단하고 전문가와 상담할 것"
+      ]
+    },
+    {
+      "code": "2-12",
+      "ingredient_ko": "바나바잎 추출물",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "식후 혈당상승 억제에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "식후 혈당상승 억제에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "코로솔산으로서 0.45 ~ 1.3 mg",
+            "basis": "코로솔산",
+            "min": 0.45,
+            "max": 1.3,
+            "unit": "mg",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": [
+        "어린이, 임산부 및 수유부는 섭취를 피할 것",
+        "이상사례 발생 시 섭취를 중단하고 전문가와 상담할 것"
+      ]
+    },
+    {
+      "code": "2-13",
+      "ingredient_ko": "은행잎 추출물",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "기억력 개선 ･ 혈행 개선에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "기억력 개선 ･ 혈행 개선에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "플라보놀 배당체로서 28 ~ 36 mg",
+            "basis": "플라보놀 배당체",
+            "min": 28.0,
+            "max": 36.0,
+            "unit": "mg",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": [
+        "어린이, 임산부 및 수유부는 섭취를 피할 것",
+        "수술 전후, 의약품(항응고제) 복용 시 전문가와 상담할 것",
+        "이상사례 발생 시 섭취를 중단하고 전문가와 상담할 것"
+      ]
+    },
+    {
+      "code": "2-14",
+      "ingredient_ko": "밀크씨슬(카르두스 마리아누스) 추출물",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "간 건강에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "간 건강에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "실리마린으로서 130 mg",
+            "basis": "실리마린",
+            "min": 130.0,
+            "max": 130.0,
+            "unit": "mg",
+            "bound": "exact",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": [
+        "어린이, 임산부 및 수유부는 섭취를 피할 것",
+        "알레르기 반응이 나타나는 경우에는 섭취 중단",
+        "설사, 위통, 복부팽만 등의 위장관계 장애가 나타나는 경우에는 섭취에 주의",
+        "이상사례 발생 시 섭취를 중단하고 전문가와 상담할 것"
+      ]
+    },
+    {
+      "code": "2-15",
+      "ingredient_ko": "달맞이꽃종자 추출물",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "식후 혈당상승 억제에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "식후 혈당상승 억제에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "PGG로서 4 ~ 8.4 mg",
+            "basis": "PGG",
+            "min": 4.0,
+            "max": 8.4,
+            "unit": "mg",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": [
+        "어린이, 임산부 및 수유부는 섭취를 피할 것",
+        "이상사례 발생 시 섭취를 중단하고 전문가와 상담할 것"
+      ]
+    },
+    {
+      "code": "2-16",
+      "ingredient_ko": "EPA 및 DHA 함유 유지",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "혈중 중성지질 개선 ･ 혈행 개선 ･ 기억력 개선 ･ 건조한 눈을 개선하여 눈 건강에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "혈중 중성지질 개선 ･ 혈행 개선에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "EPA와 DHA의 합으로서 0.5 ~ 2 g",
+            "basis": "EPA와 DHA의 합",
+            "min": 0.5,
+            "max": 2.0,
+            "unit": "g",
+            "bound": "range",
+            "parsed": true
+          }
+        },
+        {
+          "functional_claim": "기억력 개선에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "EPA와 DHA의 합으로서 0.9 ~ 2 g",
+            "basis": "EPA와 DHA의 합",
+            "min": 0.9,
+            "max": 2.0,
+            "unit": "g",
+            "bound": "range",
+            "parsed": true
+          }
+        },
+        {
+          "functional_claim": "건조한 눈을 개선하여 눈 건강에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "EPA와 DHA의 합으로서 0.6 ~ 2.24 g",
+            "basis": "EPA와 DHA의 합",
+            "min": 0.6,
+            "max": 2.24,
+            "unit": "g",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": [
+        "의약품(항응고제, 항혈소판제, 혈압강하제 등) 복용 시 전문가와 상담할 것",
+        "개인에 따라 피부 관련 이상반응이 발생할 수 있음",
+        "이상사례 발생 시 섭취를 중단하고 전문가와 상담할 것"
+      ]
+    },
+    {
+      "code": "2-17",
+      "ingredient_ko": "감마리놀렌산 함유 유지",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "혈중 콜레스테롤 개선 ･ 혈행개선 ･ 월경전 변화에 의한 불",
+      "rows": [
+        {
+          "functional_claim": "혈중 콜레스테롤 개선 ･ 혈행개선에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "감마리놀렌산으로서 240 ~ 300 mg",
+            "basis": "감마리놀렌산",
+            "min": 240.0,
+            "max": 300.0,
+            "unit": "mg",
+            "bound": "range",
+            "parsed": true
+          }
+        },
+        {
+          "functional_claim": "월경전 변화에 의한 불편한 상태 개선에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "감마리놀렌산으로서 210 ~ 300 mg",
+            "basis": "감마리놀렌산",
+            "min": 210.0,
+            "max": 300.0,
+            "unit": "mg",
+            "bound": "range",
+            "parsed": true
+          }
+        },
+        {
+          "functional_claim": "면역과민반응에 의한 피부상태 개선에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "감마리놀렌산으로서 160 ~ 300 mg",
+            "basis": "감마리놀렌산",
+            "min": 160.0,
+            "max": 300.0,
+            "unit": "mg",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": [
+        "영 ･ 유아 ･ 어린이는 섭취 전 전문가와 상담한 후 섭취할 것 (면역과민반응에 의한 피부상태 개선에 도움을 줄 수 있다는 기능성을 표시 ･ 판매하는 경우에 한함)",
+        "이상사례 발생 시 섭취를 중단하고 전문가와 상담할 것"
+      ]
+    },
+    {
+      "code": "2-18",
+      "ingredient_ko": "레시틴",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "혈중 콜레스테롤 개선에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "혈중 콜레스테롤 개선에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "레시틴으로서 1.2 ~ 18 g",
+            "basis": "레시틴",
+            "min": 1.2,
+            "max": 18.0,
+            "unit": "g",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": [
+        "어린이, 임산부 및 수유부는 섭취를 피할 것",
+        "대두에 알레르기를 나타내는 사람은 섭취에 주의할 것",
+        "이상사례 발생 시 섭취를 중단하고 전문가와 상담할 것"
+      ]
+    },
+    {
+      "code": "2-19",
+      "ingredient_ko": "스쿠알렌",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "항산화에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "항산화에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "스쿠알렌으로서 10 g",
+            "basis": "스쿠알렌",
+            "min": 10.0,
+            "max": 10.0,
+            "unit": "g",
+            "bound": "exact",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": [
+        " 어린이, 임산부 및 수유부는 섭취를 피할 것",
+        " 이상사례 발생 시 섭취를 중단하고 전문가와 상담할 것"
+      ]
+    },
+    {
+      "code": "2-20",
+      "ingredient_ko": "식물스테롤/식물스테롤에스테르",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "혈중 콜레스테롤 개선에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": null,
+          "daily_intake": {
+            "raw": "식물스테롤로서 0.8 ~ 3 g (식물스테롤을 원료로 사용한 경우)",
+            "basis": "식물스테롤",
+            "min": 0.8,
+            "max": 3.0,
+            "unit": "g",
+            "bound": "range",
+            "parsed": true
+          }
+        },
+        {
+          "functional_claim": null,
+          "daily_intake": {
+            "raw": "식물스테롤에스테르로서 1.28 ~ 4.8 g (식물스테롤에스테르를 원료로 사용한 경우)",
+            "basis": "식물스테롤에스테르",
+            "min": 1.28,
+            "max": 4.8,
+            "unit": "g",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": []
+    },
+    {
+      "code": "2-21",
+      "ingredient_ko": "알콕시글리세롤 함유 상어간유",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "면역력 증진에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "면역력 증진에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "알콕시글리세롤로서 0.6 ~ 2.7 g",
+            "basis": "알콕시글리세롤",
+            "min": 0.6,
+            "max": 2.7,
+            "unit": "g",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": []
+    },
+    {
+      "code": "2-22",
+      "ingredient_ko": "옥타코사놀 함유 유지",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "지구력 증진에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "지구력 증진에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "옥타코사놀로서 10 ~ 40 mg",
+            "basis": "옥타코사놀",
+            "min": 10.0,
+            "max": 40.0,
+            "unit": "mg",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": [
+        "어린이, 임산부 및 수유부는 섭취를 피할 것",
+        "이상사례 발생 시 섭취를 중단하고 전문가와 상담할 것"
+      ]
+    },
+    {
+      "code": "2-23",
+      "ingredient_ko": "매실추출물",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "피로 개선에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "피로 개선에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "구연산으로서 1 ~ 1.3 g",
+            "basis": "구연산",
+            "min": 1.0,
+            "max": 1.3,
+            "unit": "g",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": []
+    },
+    {
+      "code": "2-24",
+      "ingredient_ko": "공액리놀레산",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "과체중인 성인의 체지방 감소에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "과체중인 성인의 체지방 감소에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "공액리놀레산으로 1.4 ~ 4.2 g",
+            "basis": "공액리놀레산",
+            "min": 1.4,
+            "max": 4.2,
+            "unit": "g",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": [
+        "영･유아, 임산부 및 수유부는 섭취를 피할 것",
+        "간 질환이 있는 사람은 섭취 전 전문가와 상담할 것",
+        "위장장애가 발생할 수 있음",
+        "식사조절, 운동을 병행하는 것이 체지방 감소에 효과적임",
+        "이상사례 발생 시 섭취를 중단하고 전문가와 상담할 것"
+      ]
+    },
+    {
+      "code": "2-25",
+      "ingredient_ko": "가르시니아캄보지아 추출물",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "탄수화물이 지방으로 합성되는 것을 억제하여 체지방 감소에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "탄수화물이 지방으로 합성되는 것을 억제하여 체지방 감소에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "총(-)-Hydroxycitric acid로서 750 ~ 1,500 mg",
+            "basis": "총 -Hydroxycitric acid",
+            "min": 750.0,
+            "max": 1500.0,
+            "unit": "mg",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": [
+        "어린이, 임산부 및 수유부는 섭취를 피할 것",
+        "간 ･ 신장 ･ 심장질환, 알레르기 및 천식이 있거나 의약품 복용 시 전문가와 상담할 것",
+        "남성의 경우 과다 섭취를 피할 것",
+        "이상사례 발생 시 섭취를 중단하고 전문가와 상담할 것 고시 제2026-43호(2026. 6. 11.), 시행일(2027.1.1.)"
+      ]
+    },
+    {
+      "code": "2-26",
+      "ingredient_ko": "마리골드꽃추출물",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "노화로 인해 감소될 수 있는 황반색소밀도를 유지하여 눈 건강에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "노화로 인해 감소될 수 있는 황반색소밀도를 유지하여 눈 건강에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "루테인으로서 10 ~ 20 mg",
+            "basis": "루테인",
+            "min": 10.0,
+            "max": 20.0,
+            "unit": "mg",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": [
+        "영‧유아, 어린이, 임산부 및 수유부는 섭취를 피할 것",
+        "흡연자는 섭취 시 전문가와 상담할 것",
+        "과다 섭취 시 일시적으로 피부가 황색으로 변할 수 있음",
+        "이상사례 발생 시 섭취를 중단하고 전문가와 상담할 것"
+      ]
+    },
+    {
+      "code": "2-27",
+      "ingredient_ko": "헤마토코쿠스 추출물",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "눈의 피로도 개선에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "눈의 피로도 개선에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "아스타잔틴으로서 4 ~ 12 mg",
+            "basis": "아스타잔틴",
+            "min": 4.0,
+            "max": 12.0,
+            "unit": "mg",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": [
+        "어린이, 임산부 및 수유부는 섭취를 피할 것",
+        "과다 섭취 시 일시적으로 피부가 황색으로 변할 수 있음",
+        "β-카로틴의 흡수를 저해할 수 있음",
+        "이상사례 발생 시 섭취를 중단하고 전문가와 상담할 것"
+      ]
+    },
+    {
+      "code": "2-28",
+      "ingredient_ko": "쏘팔메토 열매 추출물",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "전립선 건강의 유지에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "전립선 건강의 유지에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "로르산으로서 70 ~ 115 mg",
+            "basis": "로르산",
+            "min": 70.0,
+            "max": 115.0,
+            "unit": "mg",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": [
+        "성인남성만 섭취할 것",
+        "수술 전후, 출혈성 질환이 있거나 항응고제 등 복용 시 전문가와 상담할 것",
+        "알레르기 체질 등은 개인에 따라 과민반응을 나타낼 수 있음",
+        " 메스꺼움 등 소화계통의 불편함과 설사를 유발할 수 있으니 식사 후 섭취할 것",
+        "이상사례 발생 시 섭취를 중단하고 전문가와 상담할 것"
+      ]
+    },
+    {
+      "code": "2-29",
+      "ingredient_ko": "포스파티딜세린",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "노화로 인해 저하된 인지력 개선 ･ 자외선에 의한 피부 손상으로부터 피부 건강 유지 ･ 피부보습에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "노화로 인해 저하된 인지력 개선 ･ 자외선에 의한 피부 손상으로부터 피부 건강 유지 ･ 피부보습에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "포스파티딜세린으로서 300 mg",
+            "basis": "포스파티딜세린",
+            "min": 300.0,
+            "max": 300.0,
+            "unit": "mg",
+            "bound": "exact",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": [
+        "임산부 및 수유부는 섭취를 피할 것",
+        "이상사례 발생 시 섭취를 중단하고 전문가와 상담할 것"
+      ]
+    },
+    {
+      "code": "2-30",
+      "ingredient_ko": "글루코사민",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "관절 및 연골 건강에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "관절 및 연골 건강에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "글루코사민염산염 또는 황산염으로서 1.5 g",
+            "basis": "글루코사민염산염 또는 황산염",
+            "min": 1.5,
+            "max": 1.5,
+            "unit": "g",
+            "bound": "exact",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": [
+        "임산부 및 수유부는 섭취를 피할 것",
+        "간 ･ 심장질환, 수술 전후, 고혈압, 당뇨 및 천식이 있거나 의약품(항응고제 등) 복용 시 전문가와 상담할 것",
+        " 게 또는 새우에 알레르기가 있는 사람은 섭취에 주의할 것(게 또는 새우를 원재료로 사용한 경우)",
+        "이상사례 발생 시 섭취를 중단하고 전문가와 상담할 것"
+      ]
+    },
+    {
+      "code": "2-31",
+      "ingredient_ko": "NAG(엔에이지, N-아세틸글루코사민, N-Acetylglucosamine)",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "관절 및 연골 건강 ･ 피부보습에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "관절 및 연골건강에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "N-아세틸글루코사민으로서 0.5 ~ 1 g",
+            "basis": "N-아세틸글루코사민",
+            "min": 0.5,
+            "max": 1.0,
+            "unit": "g",
+            "bound": "range",
+            "parsed": true
+          }
+        },
+        {
+          "functional_claim": "피부보습에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "N-아세틸글루코사민으로서 1 g",
+            "basis": "N-아세틸글루코사민",
+            "min": 1.0,
+            "max": 1.0,
+            "unit": "g",
+            "bound": "exact",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": [
+        "어린이, 임산부 및 수유부는 섭취를 피할 것",
+        " 게 또는 새우에 알레르기가 있는 사람은 섭취에 주의(게 또는 새우를 원재료로 사용한 경우에 한함)",
+        "이상사례 발생 시 섭취를 중단하고 전문가와 상담할 것"
+      ]
+    },
+    {
+      "code": "2-32",
+      "ingredient_ko": "뮤코다당 ･ 단백",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "관절 및 연골건강에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "관절 및 연골건강에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "뮤코다당 ･ 단백으로서 1.2 ~ 1.5 g",
+            "basis": "뮤코다당 ･ 단백",
+            "min": 1.2,
+            "max": 1.5,
+            "unit": "g",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": [
+        "어린이, 임산부 및 수유부는 섭취를 피할 것",
+        "알레르기 체질 등은 개인에 따라 과민반응을 나타낼 수 있음",
+        "이상사례 발생 시 섭취를 중단하고 전문가와 상담할 것"
+      ]
+    },
+    {
+      "code": "2-33",
+      "ingredient_ko": "구아검/구아검가수분해물",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "혈중 콜레스테롤 개선 ･ 식후 혈당상승 억제 ･ 장내 유익균 증식 ･ 배변활동 원활에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "혈중 콜레스테롤 개선 ･ 식후 혈당상승 억제 ･ 장내 유익균 증식 ･ 배변활동 원활에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "구아검/구아검가수분해물 식이섬유로서 5 ~ 11 g",
+            "basis": "구아검/구아검가수분해물 식이섬유",
+            "min": 5.0,
+            "max": 11.0,
+            "unit": "g",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": [
+        " 수유부는 섭취를 피할 것",
+        "반드시 충분한 물과 함께 섭취할 것(액상제외)",
+        "이상사례 발생 시 섭취를 중단하고 전문가와 상담할 것"
+      ]
+    },
+    {
+      "code": "2-34",
+      "ingredient_ko": "글루코만난(곤약, 곤약만난)",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "혈중 콜레스테롤 개선 ･ 배변활동 원활에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "혈중 콜레스테롤 개선 ･ 배변활동 원활에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "글루코만난 식이섬유로서 2.7 ~ 17 g",
+            "basis": "글루코만난 식이섬유",
+            "min": 2.7,
+            "max": 17.0,
+            "unit": "g",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": []
+    },
+    {
+      "code": "2-35",
+      "ingredient_ko": "귀리식이섬유",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "혈중 콜레스테롤 개선 ･ 식후 혈당상승 억제에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "혈중 콜레스테롤 개선에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "귀리 식이섬유로서 4.5 g 이상",
+            "basis": "귀리 식이섬유",
+            "min": 4.5,
+            "max": null,
+            "unit": "g",
+            "bound": "min",
+            "parsed": true
+          }
+        },
+        {
+          "functional_claim": "식후 혈당상승 억제에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "귀리 식이섬유로서 6.0 g 이상",
+            "basis": "귀리 식이섬유",
+            "min": 6.0,
+            "max": null,
+            "unit": "g",
+            "bound": "min",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": [
+        "반드시 충분한 물과 함께 섭취할 것(액상제외)",
+        "이상사례 발생 시 섭취를 중단하고 전문가와 상담할 것"
+      ]
+    },
+    {
+      "code": "2-36",
+      "ingredient_ko": "난소화성말토덱스트린",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "식후 혈당상승 억제 ･ 혈중 중성지질 개선 ･ 배변활동 원활에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "식후 혈당상승 억제에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "난소화성말토덱스트린 식이섬유로서 4.0 ~ 30 g(액상원료는 4.0 ~ 44 g)",
+            "basis": "난소화성말토덱스트린 식이섬유",
+            "min": 4.0,
+            "max": 30.0,
+            "unit": "g",
+            "bound": "range",
+            "parsed": true
+          }
+        },
+        {
+          "functional_claim": "혈중 중성지질 개선에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "난소화성말토덱스트린 식이섬유로서 5.0 ~ 30 g(액상원료는 5.0 ~ 44 g)",
+            "basis": "난소화성말토덱스트린 식이섬유",
+            "min": 5.0,
+            "max": 30.0,
+            "unit": "g",
+            "bound": "range",
+            "parsed": true
+          }
+        },
+        {
+          "functional_claim": "배변활동 원활에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "난소화성말토덱스트린 식이섬유로서 4.2 ~ 30 g(액상원료는 4.2 ~ 44 g)",
+            "basis": "난소화성말토덱스트린 식이섬유",
+            "min": 4.2,
+            "max": 30.0,
+            "unit": "g",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": [
+        "반드시 충분한 물과 함께 섭취할 것(액상제외)",
+        "이상사례 발생 시 섭취를 중단하고 전문가와 상담할 것"
+      ]
+    },
+    {
+      "code": "2-37",
+      "ingredient_ko": "대두식이섬유",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "혈중 콜레스테롤 개선 ･ 식후 혈당상승 억제 ･ 배변활동 원활에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "혈중 콜레스테롤 개선 ･ 배변활동 원활에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "대두 식이섬유로서 20 ~ 60 g",
+            "basis": "대두 식이섬유",
+            "min": 20.0,
+            "max": 60.0,
+            "unit": "g",
+            "bound": "range",
+            "parsed": true
+          }
+        },
+        {
+          "functional_claim": "식후 혈당상승 억제에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "대두 식이섬유로서 10 ~ 60 g",
+            "basis": "대두 식이섬유",
+            "min": 10.0,
+            "max": 60.0,
+            "unit": "g",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": [
+        "반드시 충분한 물과 함께 섭취할 것(액상제외)",
+        "대두에 알레르기를 나타내는 사람은 섭취에 주의"
+      ]
+    },
+    {
+      "code": "2-38",
+      "ingredient_ko": "목이버섯식이섬유",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "배변활동 원활에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "배변활동 원활에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "목이버섯 식이섬유로서 12 g",
+            "basis": "목이버섯 식이섬유",
+            "min": 12.0,
+            "max": 12.0,
+            "unit": "g",
+            "bound": "exact",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": []
+    },
+    {
+      "code": "2-39",
+      "ingredient_ko": "밀식이섬유",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "식후 혈당상승 억제 ･ 배변활동 원활에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "식후 혈당상승 억제에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "밀 식이섬유로서 6 ~ 36 g",
+            "basis": "밀 식이섬유",
+            "min": 6.0,
+            "max": 36.0,
+            "unit": "g",
+            "bound": "range",
+            "parsed": true
+          }
+        },
+        {
+          "functional_claim": "배변활동 원활에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "밀 식이섬유로서 36 g",
+            "basis": "밀 식이섬유",
+            "min": 36.0,
+            "max": 36.0,
+            "unit": "g",
+            "bound": "exact",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": []
+    },
+    {
+      "code": "2-40",
+      "ingredient_ko": "보리식이섬유",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "배변활동 원활에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "배변활동 원활에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "보리 식이섬유로서 20 ~ 25 g",
+            "basis": "보리 식이섬유",
+            "min": 20.0,
+            "max": 25.0,
+            "unit": "g",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": []
+    },
+    {
+      "code": "2-41",
+      "ingredient_ko": "아라비아검(아카시아검)",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "배변활동 원활에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "배변활동 원활에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "아라비아검 식이섬유로서 20 g",
+            "basis": "아라비아검 식이섬유",
+            "min": 20.0,
+            "max": 20.0,
+            "unit": "g",
+            "bound": "exact",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": []
+    },
+    {
+      "code": "2-42",
+      "ingredient_ko": "옥수수겨식이섬유",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "혈중 콜레스테롤 개선 ･ 식후 혈당상승 억제에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "혈중 콜레스테롤 개선 ･ 식후 혈당상승 억제에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "옥수수겨 식이섬유로서 10 g",
+            "basis": "옥수수겨 식이섬유",
+            "min": 10.0,
+            "max": 10.0,
+            "unit": "g",
+            "bound": "exact",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": []
+    },
+    {
+      "code": "2-43",
+      "ingredient_ko": "이눌린/치커리추출물",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "혈중 콜레스테롤 개선 ･ 식후 혈당상승 억제 ･ 배변활동 원활에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "혈중 콜레스테롤 개선 ･ 식후 혈당상승 억제에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "이눌린/치커리추출물 식이섬유로서 7.2 ~ 20 g",
+            "basis": "이눌린/치커리추출물 식이섬유",
+            "min": 7.2,
+            "max": 20.0,
+            "unit": "g",
+            "bound": "range",
+            "parsed": true
+          }
+        },
+        {
+          "functional_claim": "배변활동 원활에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "이눌린/치커리추출물식이섬유로서 6.4 ~ 20 g",
+            "basis": "이눌린/치커리추출물식이섬유",
+            "min": 6.4,
+            "max": 20.0,
+            "unit": "g",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": [
+        "임산부 및 수유부는 섭취를 피할 것",
+        "반드시 충분한 물과 함께 섭취할 것(액상제외)",
+        "이상사례 발생 시 섭취를 중단하고 전문가와 상담할 것"
+      ]
+    },
+    {
+      "code": "2-44",
+      "ingredient_ko": "차전자피식이섬유",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "혈중 콜레스테롤 개선 ･ 배변활동 원활에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "혈중 콜레스테롤 개선에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "차전자피 식이섬유로서 6.0 g 이상",
+            "basis": "차전자피 식이섬유",
+            "min": 6.0,
+            "max": null,
+            "unit": "g",
+            "bound": "min",
+            "parsed": true
+          }
+        },
+        {
+          "functional_claim": "배변활동 원활에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "차전자피 식이섬유로서 5.0 g 이상",
+            "basis": "차전자피 식이섬유",
+            "min": 5.0,
+            "max": null,
+            "unit": "g",
+            "bound": "min",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": [
+        "반드시 충분한 물과 함께 섭취할 것(액상제외)",
+        " 이상사례 발생 시 섭취를 중단하고 전문가와 상담할 것"
+      ]
+    },
+    {
+      "code": "2-45",
+      "ingredient_ko": "폴리덱스트로스",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "배변활동 원활에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "배변활동 원활에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "폴리덱스트로스 식이섬유로서 4.5 ~ 12 g",
+            "basis": "폴리덱스트로스 식이섬유",
+            "min": 4.5,
+            "max": 12.0,
+            "unit": "g",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": []
+    },
+    {
+      "code": "2-46",
+      "ingredient_ko": "호로파종자식이섬유",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "식후 혈당상승 억제에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "식후 혈당상승 억제에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "호로파종자 식이섬유로서 12 ~ 50 g",
+            "basis": "호로파종자 식이섬유",
+            "min": 12.0,
+            "max": 50.0,
+            "unit": "g",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": []
+    },
+    {
+      "code": "2-47",
+      "ingredient_ko": "알로에 겔",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "피부건강 ･ 장 건강 ･ 면역력 증진에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "피부건강 ･ 장 건강 ･ 면역력 증진에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "총다당체 함량으로서 110 ~ 420 mg",
+            "basis": "총다당체 함량",
+            "min": 110.0,
+            "max": 420.0,
+            "unit": "mg",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": []
+    },
+    {
+      "code": "2-48",
+      "ingredient_ko": "영지버섯 자실체 추출물",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "혈행 개선에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "혈행 개선에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "베타글루칸으로서 24 ~ 42 mg",
+            "basis": "베타글루칸",
+            "min": 24.0,
+            "max": 42.0,
+            "unit": "mg",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": []
+    },
+    {
+      "code": "2-49",
+      "ingredient_ko": "키토산/키토올리고당",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "혈중 콜레스테롤 개선 ･ 체지방 감소에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "혈중 콜레스테롤 개선에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "키토산으로서 1.2 ~ 4.5 g",
+            "basis": "키토산",
+            "min": 1.2,
+            "max": 4.5,
+            "unit": "g",
+            "bound": "range",
+            "parsed": true
+          }
+        },
+        {
+          "functional_claim": "체지방 감소에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "키토산으로서 3.0 ~ 4.5 g, 키토올리고당으로서 3 g 고시 제2026-32호(2026. 4. 13.), 시행일(2027.1.1.)",
+            "basis": null,
+            "min": null,
+            "max": null,
+            "unit": null,
+            "bound": null,
+            "parsed": false
+          }
+        }
+      ],
+      "cautions": []
+    },
+    {
+      "code": "2-50",
+      "ingredient_ko": "프락토올리고당",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "장내 유익균 증식 및 배변활동 원활에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "장내 유익균 증식 및 배변활동 원활에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "프락토올리고당으로서 3 ~ 8 g",
+            "basis": "프락토올리고당",
+            "min": 3.0,
+            "max": 8.0,
+            "unit": "g",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": [
+        "섭취 시 가스참, 트림, 복통, 복부팽만감 등이 발생할 수 있음",
+        "이상사례 발생 시 섭취를 중단하고 전문가와 상담할 것"
+      ]
+    },
+    {
+      "code": "2-51",
+      "ingredient_ko": "프로바이오틱스",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "유산균 증식 및 유해균 억제 ･ 배변활동 원활 ･ 장 건강에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "유산균 증식 및 유해균 억제 ･ 배변활동 원활 ･ 장 건강에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "100,000,000(1억) ~ 10,000,000,000(100억) CFU",
+            "basis": null,
+            "min": 100000000.0,
+            "max": 10000000000.0,
+            "unit": "CFU",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": [
+        "질환이 있거나 의약품 복용 시 전문가와 상담할 것",
+        "알레르기 체질 등은 개인에 따라 과민반응을 나타낼 수 있음",
+        "어린이가 함부로 섭취하지 않도록 일일섭취량 방법을 지도할 것",
+        "이상사례 발생 시 섭취를 중단하고 전문가와 상담할 것"
+      ]
+    },
+    {
+      "code": "2-52",
+      "ingredient_ko": "홍국",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "혈중 콜레스테롤 개선에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "혈중 콜레스테롤 개선에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "총 모나콜린 K로서 4 ~ 8 mg",
+            "basis": "총 모나콜린 K",
+            "min": 4.0,
+            "max": 8.0,
+            "unit": "mg",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": [
+        "어린이, 임산부 및 수유부는 섭취를 피할 것 (나) 간 질환이 있거나, 고지혈증 치료제 복용 시 섭취를 피할 것 (다) 이상사례 발생 시 섭취를 중단하고 전문가와 상담할 것"
+      ]
+    },
+    {
+      "code": "2-53",
+      "ingredient_ko": "대두단백",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "혈중 콜레스테롤 개선에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "혈중 콜레스테롤 개선에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "대두단백으로서 15 g 이상",
+            "basis": "대두단백",
+            "min": 15.0,
+            "max": null,
+            "unit": "g",
+            "bound": "min",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": []
+    },
+    {
+      "code": "2-54",
+      "ingredient_ko": "테아닌",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "스트레스로 인한 긴장완화에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "스트레스로 인한 긴장완화에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "L-테아닌으로서 200 ~ 250 mg",
+            "basis": "L-테아닌",
+            "min": 200.0,
+            "max": 250.0,
+            "unit": "mg",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": [
+        "임산부 및 수유부는 섭취를 피할 것",
+        "카페인 함유음료(커피, 홍차, 녹차 등)와의 병용 섭취에 주의할 것(다) 수술전후 환자는 전문가와 상담할 것",
+        "이상사례 발생 시 섭취를 중단하고 전문가와 상담할 것"
+      ]
+    },
+    {
+      "code": "2-55",
+      "ingredient_ko": "엠에스엠(MSM, Methyl sulfonylmethane, 디메틸설폰)",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "관절 및 연골건강에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "관절 및 연골건강에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "엠에스엠(MSM)으로서 1.5 ~ 2.0 g",
+            "basis": "엠에스엠",
+            "min": 1.5,
+            "max": 2.0,
+            "unit": "g",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": [
+        "신장질환이 있는 사람은 섭취 전 전문가와 상담할 것",
+        "이상사례 발생 시 섭취를 중단하고 전문가와 상담할 것"
+      ]
+    },
+    {
+      "code": "2-56",
+      "ingredient_ko": "폴리감마글루탐산",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "체내 칼슘흡수 촉진에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "체내 칼슘흡수 촉진에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "폴리감마글루탐산으로서 60~70 mg",
+            "basis": "폴리감마글루탐산",
+            "min": 60.0,
+            "max": 70.0,
+            "unit": "mg",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": []
+    },
+    {
+      "code": "2-57",
+      "ingredient_ko": "히알루론산",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "피부보습 ･ 자외선에 의한 피부손상으로부터 피부건강 유지에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "피부보습에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "히알루론산으로서 120∼240 mg",
+            "basis": "히알루론산",
+            "min": 120.0,
+            "max": 240.0,
+            "unit": "mg",
+            "bound": "range",
+            "parsed": true
+          }
+        },
+        {
+          "functional_claim": "자외선에 의한 피부손상으로부터 피부건강 유지에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "히알루론산으로서 240 mg",
+            "basis": "히알루론산",
+            "min": 240.0,
+            "max": 240.0,
+            "unit": "mg",
+            "bound": "exact",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": []
+    },
+    {
+      "code": "2-58",
+      "ingredient_ko": "홍경천 추출물",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "스트레스로 인한 피로 개선에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "스트레스로 인한 피로 개선에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "홍경천추출물로서 200 ~ 600 mg",
+            "basis": "홍경천추출물",
+            "min": 200.0,
+            "max": 600.0,
+            "unit": "mg",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": []
+    },
+    {
+      "code": "2-59",
+      "ingredient_ko": "빌베리 추출물",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "눈의 피로 개선에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "눈의 피로 개선에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "빌베리 추출물로서 160 ∼ 240 mg (안토시아노사이드로서 50 ∼ 108 mg)",
+            "basis": "빌베리 추출물",
+            "min": 160.0,
+            "max": 240.0,
+            "unit": "mg",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": []
+    },
+    {
+      "code": "2-60",
+      "ingredient_ko": "마늘",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "혈중 콜레스테롤 개선‧혈압조절에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "혈중 콜레스테롤 개선‧혈압조절에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "마늘 분말로서 0.6 ∼ 1.0 g",
+            "basis": "마늘 분말",
+            "min": 0.6,
+            "max": 1.0,
+            "unit": "g",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": []
+    },
+    {
+      "code": "2-61",
+      "ingredient_ko": "라피노스",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": null,
+      "rows": [
+        {
+          "functional_claim": null,
+          "daily_intake": {
+            "raw": "라피노스로서 3 ~ 5 g",
+            "basis": "라피노스",
+            "min": 3.0,
+            "max": 5.0,
+            "unit": "g",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": []
+    },
+    {
+      "code": "2-62",
+      "ingredient_ko": "분말한천",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "배변활동에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "배변활동에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "분말한천으로서 2 ~ 5 g(총 식이섬유로서 1.6 ~ 4.0 g)",
+            "basis": "분말한천",
+            "min": 2.0,
+            "max": 5.0,
+            "unit": "g",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": [
+        "어린이나 임산부, 수유부는 섭취를 주의해야 함",
+        "충분한 물과 함께 섭취해야 함",
+        "과다 섭취 시 미약한 설사, 구토, 배변량 증가, 배변빈도 증가, 복부 팽만, 두통 등의 부작용을 일으킬 수 있음"
+      ]
+    },
+    {
+      "code": "2-63",
+      "ingredient_ko": "크레아틴",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "근력 운동 시에 운동수행능력 향상에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "근력 운동 시에 운동수행능력 향상에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "크레아틴으로서 3 g",
+            "basis": "크레아틴",
+            "min": 3.0,
+            "max": 3.0,
+            "unit": "g",
+            "bound": "exact",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": [
+        " 신장에 영향을 미치는 약물을 복용하거나 신장 이상의 위험이 있는 사람은 의사와 상담 후에 섭취하여야 함",
+        "어린이, 임산부, 수유부는 섭취를 삼가",
+        "카페인은 크레아틴의 기능을 감소시킬 수 있음",
+        "크레아틴의 섭취는 탈수를 동반할 수 있으므로 충분한 물과 함께 섭취하여야 함",
+        "과다 섭취하지 말 것"
+      ]
+    },
+    {
+      "code": "2-64",
+      "ingredient_ko": "유단백가수분해물",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "스트레스로 인한 긴장 완화·수면의 질 개선에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "스 트레스로 인한 긴장 완화에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "알파에스1카제인 (α S1 - casein) (f91-100) 으로서 2.7 ∼ 4.1 mg",
+            "basis": "알파에스1카제인",
+            "min": 2.7,
+            "max": 4.1,
+            "unit": "mg",
+            "bound": "range",
+            "parsed": true
+          }
+        },
+        {
+          "functional_claim": "수면의 질 개선에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "알파에스1카제인(α S1 - casein) (f91-100) 으로서 5.4 ∼ 8.2 mg",
+            "basis": "알파에스1카제인",
+            "min": 5.4,
+            "max": 8.2,
+            "unit": "mg",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": [
+        "임산부, 수유여성 및 어린이는 섭취에 주의",
+        "우유 및 유제품에 대하여 알레르기를 나타내는 사람은 섭취에 주의"
+      ]
+    },
+    {
+      "code": "2-65",
+      "ingredient_ko": "상황버섯추출물",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "면역기능 개선에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "면역기능 개선에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "상황버섯추출물로서 3.3 g (베타글루칸(β-glucan)으로서 287.1 ~ 534.6 mg)",
+            "basis": "상황버섯추출물로서 3.3 g",
+            "min": 287.1,
+            "max": 534.6,
+            "unit": "mg)",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": []
+    },
+    {
+      "code": "2-66",
+      "ingredient_ko": "토마토추출물",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "항산화에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "항산화에 도움을 줄 수 있음",
+          "daily_intake": null
+        }
+      ],
+      "cautions": [
+        "알레르기 체질이신 분은 개인에 따라 과민반응을 나타낼 수 있음",
+        "과량 섭취 시 피부색이 오렌지색으로 변할 수 있음",
+        "임산부, 수유 여성 및 어린이는 섭취에 주의"
+      ]
+    },
+    {
+      "code": "2-67",
+      "ingredient_ko": "곤약감자추출물",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "피부 보습에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "피부 보습에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "글루코실세라미드(Glucosylceramide)로서 1.2 ~ 1.8 mg",
+            "basis": "글루코실세라미드",
+            "min": 1.2,
+            "max": 1.8,
+            "unit": "mg",
+            "bound": "range",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": []
+    },
+    {
+      "code": "2-68",
+      "ingredient_ko": "회화나무열매추출물",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "갱년기 여성의 건강에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "갱년기 여성의 건강에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "회화나무열매추출물로서 350 mg",
+            "basis": "회화나무열매추출물",
+            "min": 350.0,
+            "max": 350.0,
+            "unit": "mg",
+            "bound": "exact",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": [
+        "어린이, 임산부, 수유부는 섭취에 주의",
+        "에스트로겐 호르몬에 민감한 사람은 섭취에 주의"
+      ]
+    },
+    {
+      "code": "2-69",
+      "ingredient_ko": "콜레우스포스콜리 추출물",
+      "category": "기능성원료",
+      "recognition_type": "고시형",
+      "functional_claims_raw": "체지방 감소에 도움을 줄 수 있음",
+      "rows": [
+        {
+          "functional_claim": "체지방 감소에 도움을 줄 수 있음",
+          "daily_intake": {
+            "raw": "포스콜린으로서 50 mg",
+            "basis": "포스콜린",
+            "min": 50.0,
+            "max": 50.0,
+            "unit": "mg",
+            "bound": "exact",
+            "parsed": true
+          }
+        }
+      ],
+      "cautions": [
+        "어린이, 임산부 및 수유부는 섭취를 피할 것",
+        "항응고제 또는 혈압조절제를 복용하거나 혈압이 낮은 경우 전문가와 상담할 것",
+        "이상사례 발생 시 섭취를 중단하고 전문가와 상담할 것"
+      ]
+    }
+  ]
+}
