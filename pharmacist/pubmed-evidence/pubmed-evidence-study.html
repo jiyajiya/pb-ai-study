@@ -178,6 +178,46 @@
   .greenbox .gd b{color:var(--ink)}
   .varr{text-align:center;color:var(--gold);font-size:1.1rem;line-height:1;padding:8px 0}
 
+  /* 단계마다 실제로 들어가고 나오는 값 */
+  .io{margin-top:9px;padding-top:8px;border-top:1px dashed rgba(169,156,136,.28)}
+  .io div{font-family:var(--mono);font-size:.75rem;color:var(--muted);line-height:1.55;margin:2px 0}
+  .io .i{color:var(--accent2);font-weight:700}
+  .io .o{color:var(--accent);font-weight:700}
+  .io b{color:var(--ink);font-weight:700}
+  .io em{font-style:normal;color:var(--red)}
+
+  /* 열 많은 표는 감싸서 가로 스크롤 */
+  .tscroll{overflow-x:auto;margin:16px 0;border-radius:12px}
+  .tscroll .ttable{display:table;white-space:normal;min-width:920px;margin:0}
+  .tscroll .ttable td{font-size:.86rem;vertical-align:top}
+  .tscroll .ttable td code{white-space:nowrap}
+
+  /* 축소 계단 */
+  .shrink{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:14px 0;
+    padding:13px 16px;border-radius:11px;background:#1F1A14;border:1px solid var(--line)}
+  .shrink .st{font-family:var(--mono);font-size:.8rem;font-weight:700;color:var(--ink);
+    background:rgba(124,196,166,.1);border:1px solid rgba(124,196,166,.35);border-radius:7px;padding:4px 10px}
+  .shrink .ar{color:var(--muted);font-family:var(--mono);font-size:.85rem}
+  .shrink .cap2{font-size:.8rem;color:var(--muted);width:100%}
+
+  /* 접이식 원문 비교 */
+  .fold{margin:14px 0;border:1px solid var(--line);border-radius:12px;background:#1F1A14}
+  .fold>summary{cursor:pointer;padding:12px 16px;font-size:.9rem;font-weight:700;color:var(--gold);
+    list-style:none;display:flex;align-items:center;gap:9px}
+  .fold>summary::-webkit-details-marker{display:none}
+  .fold>summary::before{content:"▸";color:var(--accent)}
+  .fold[open]>summary::before{content:"▾"}
+  .fold>summary .q{font-weight:500;color:var(--muted);font-size:.82rem}
+  .fold-body{padding:0 16px 14px}
+  .sbs{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .sbs pre{margin:6px 0 0}
+  .sbs pre code{font-size:.76rem}
+  .sbs .sbs-h{font-family:var(--mono);font-size:.77rem;font-weight:700}
+  .sbs .sbs-h.a{color:var(--gold)}
+  .sbs .sbs-h.b{color:var(--accent)}
+  .sbs .sbs-s{font-size:.78rem;color:var(--muted);margin-top:3px}
+  @media(max-width:820px){.sbs{grid-template-columns:1fr}}
+
   .fanout{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
   .fanout .mini{border:2px dashed rgba(169,156,136,.5);border-radius:9px;padding:9px 8px;text-align:center;background:rgba(255,255,255,.018)}
   .fanout .mini .mn{font-family:var(--mono);font-size:.74rem;color:var(--ink);font-weight:700}
@@ -236,6 +276,9 @@
   .toggle:hover{filter:brightness(1.08)}
   body.notes-on .toggle{background:var(--accent)}
 
+  .xlink{color:var(--accent);font-weight:700;text-decoration:none;border-bottom:2px solid rgba(124,196,166,.35)}
+  .xlink:hover{border-bottom-color:var(--accent)}
+
   @media print{.nav,.toggle{display:none}.session{opacity:1;transform:none;break-inside:avoid}}
   @media(max-width:640px){.session,.closing{padding:24px 20px}}
 </style>
@@ -278,6 +321,8 @@
       <span>P3-1 <b>파일 저장</b></span><span class="arrow">→</span>
       <span>P6 <b>검증 게이트</b></span>
     </div>
+    <p style="margin-top:18px;font-size:.92rem">🛠 이 구조를 직접 만들어보는 자료는 따로 있습니다 →
+    <a class="xlink" href="pubmed-evidence-workshop.html">실습본 (붙여넣으면서 만드는 8단계)</a></p>
   </header>
 
   <!-- ═══════════════════ 1 ═══════════════════ -->
@@ -441,7 +486,7 @@
   <section class="session" id="s4">
     <div class="s-head"><span class="step">04</span><span class="sec">그림 A · 한 바퀴</span></div>
     <h2 class="s-title">한 번 실행하면 <span class="hl">이런 일이 벌어집니다</span></h2>
-    <p class="caption">왼쪽 세로 초록선이 <b>메인</b>입니다 — 처음부터 끝까지 살아 있습니다. 가운데 점선 상자가 <b>서브에이전트</b> — 불려서 생겼다가, 결과만 넘기고 사라집니다. <b>노란 상자는 저장된 파일</b>이고, 맨 오른쪽 칸은 왜 그렇게 했는지입니다.</p>
+    <p class="caption">왼쪽 세로 초록선이 <b>메인</b>입니다 — 처음부터 끝까지 살아 있습니다. 가운데 점선 상자가 <b>서브에이전트</b> — 불려서 생겼다가, 결과만 넘기고 사라집니다. <b>노란 상자는 저장된 파일</b>이고, 맨 오른쪽 칸은 왜 그렇게 했는지입니다. 상자마다 아래에 <span style="color:var(--accent2);font-family:var(--mono);font-weight:700">IN ▸</span> <span style="color:var(--accent);font-family:var(--mono);font-weight:700">OUT ▸</span> 두 줄이 붙어 있습니다 — <b>그 단계에 실제로 들어가고 나오는 값</b>입니다.</p>
 
     <div class="diag">
       <div class="diag-grid">
@@ -459,8 +504,12 @@
         <div class="mid">
           <div class="greenbox">
             <div class="gn">P1 · 정규화 — 메인이 직접 한다</div>
-            <div class="gd">"마그네슘 수면" → <b>magnesium / sleep quality</b> + MeSH 용어</div>
+            <div class="gd">"마그네슘 수면" → <b>magnesium / sleep quality</b> + MeSH 용어<span style="font-size:.8em"> (PubMed 공식 주제어)</span></div>
             <div class="gd">룩업 표를 먼저 보고, 없으면 추론하되 <b>추론했다고 기록</b></div>
+            <div class="io">
+              <div><span class="i">IN ▸</span> 사람이 친 한 줄 — <b>"마그네슘 수면"</b></div>
+              <div><span class="o">OUT ▸</span> 정규화 JSON <b>8키</b> — ingredient_ko/en · outcome_ko/en · mesh_terms[3] · synonyms[3] · exclude_terms · inferred</div>
+            </div>
           </div>
         </div>
         <div class="why">
@@ -476,6 +525,11 @@
             <div class="ad">PubMed 검색 <b>4회</b> · 회차마다 최대 40건 훑기</div>
             <div class="ad">톤(T1/T2/T3) 판정 → 채굴할 <b>PMID 최대 8개</b> 선별</div>
             <div class="tools">tools: <b>Bash</b> — 초록 원문·수치 반환 금지</div>
+            <div class="io">
+              <div><span class="i">IN ▸</span> 위 8키 중 <b>6키만</b> — ko 이름과 inferred는 메인에 남는다</div>
+              <div><span class="o">OUT ▸</span> JSON 1개 — <b>tone · tone_reason · evidence_map · pmids[] · guideline_hit</b> · needs_decomposition · search_terms_used</div>
+              <div><em>버림 ▸</em> 훑은 초록 전문 (최대 160건) — scout과 함께 소멸</div>
+            </div>
             <div class="gone">↓ 소멸</div>
           </div>
         </div>
@@ -493,6 +547,11 @@
             <div class="ad">5슬롯 = 효과크기 · 용량기간 · 대상조건 · 형태 · <b>저자 결론</b></div>
             <div class="ad">모든 값에 <b>원문 인용문(quote)</b>을 붙여서 반환</div>
             <div class="tools">tools: <b>Bash</b> — 해석·요약·번역 금지</div>
+            <div class="io">
+              <div><span class="i">IN ▸</span> miner 1개당 <b>3키뿐</b> — <b>{pmid, ingredient_en, outcome_en}</b>. 톤도, 다른 논문도 모른다</div>
+              <div><span class="o">OUT ▸</span> {pmid, design, direction, subgroup_only, <b>slots{effect·dose·population·form·conclusion}</b>} — effect만 필드 7개</div>
+              <div><em>버림 ▸</em> 초록 전문. 메인엔 <b>슬롯에 묶인 quote 문장만</b> 올라온다</div>
+            </div>
             <div class="gone">↓ 소멸</div>
           </div>
         </div>
@@ -505,6 +564,10 @@
         <div class="lane nodot"><div class="node"></div><div class="call">P3-1 · 직접 저장</div></div>
         <div class="mid">
           <div class="filebox">raw_slots.json &nbsp;·&nbsp; meta.json</div>
+          <div class="io" style="border-top:none;padding-top:2px">
+            <div><span class="i">IN ▸</span> miner 반환값 <b>최대 8개</b> (실패한 <code class="inl" style="font-size:.72rem">{"error":"fetch_failed"}</code>도 그대로)</div>
+            <div><span class="o">OUT ▸</span> <b>raw_slots.json</b> = 그 배열 그대로 · <b>meta.json</b> = 딱 5키 (topic · tone · tone_reason · evidence_map · guideline_hit)</div>
+          </div>
           <div class="varr">↓</div>
         </div>
         <div class="why">
@@ -520,6 +583,11 @@
             <div class="ad"><b>AI가 아닙니다.</b> 파이썬 코드입니다</div>
             <div class="ad">PubMed에서 초록을 <b>다시 직접 받아와</b> 글자 단위로 대조</div>
             <div class="ad">안 맞으면 그 값을 <b>지워버립니다</b> (null)</div>
+            <div class="io">
+              <div><span class="i">IN ▸</span> 파일 2개 → 검사 대상 <b>최대 40슬롯</b> (8편 × 5슬롯)</div>
+              <div><span class="o">OUT ▸</span> <b>evidence-pack.json</b> — verdict(pass/review/block) · verdict_reasons[] · papers[]{슬롯마다 verified·reason} · integrity(철회·이해충돌) · verification(통과/폐기 수) · warnings[]</div>
+              <div><em>폐기 ▸</em> 게이트에 걸린 값은 <b>null</b>, 원값은 rejected_value로 감사용만</div>
+            </div>
             <div class="tools" style="color:var(--accent2)">사라지지 않습니다 — 파일이니까요</div>
           </div>
         </div>
@@ -538,8 +606,136 @@
         <span><i></i>메인 — 세션 하나, 끝까지 살아 있음</span>
         <span><i class="dash"></i>서브에이전트 — 점선은 사라진다는 뜻</span>
         <span><i class="gold"></i>파일 — 서브에이전트가 사라져도 남음</span>
+        <span><i class="red"></i>버림 — 그 단계에서 폐기되는 것</span>
       </div>
     </div>
+
+    <div class="case">
+      <div class="case-label"><span class="dot"></span>값 이동표 — 단계마다 무엇이 넘어가고 무엇이 죽는가</div>
+      <div class="tscroll">
+      <table class="ttable">
+        <tr><th>단계</th><th>입력</th><th>나오는 값</th><th>다음으로 넘어가는 것</th><th>여기서 버려지는 것</th></tr>
+        <tr>
+          <td><b>P1</b> 정규화<br><span style="font-size:.85em">메인 직접</span></td>
+          <td>사람이 친 한 줄<br><code>마그네슘 수면</code></td>
+          <td>정규화 JSON <b>8키</b><br><span style="font-size:.85em">mesh_terms · synonyms · exclude_terms · inferred 포함</span></td>
+          <td>그중 <b>6키</b>만 scout에게<br><span style="font-size:.85em">ko 이름은 메인에 남아 <code>topic</code>이 된다</span></td>
+          <td>없음 — <b>사람이 확인하는 유일한 지점</b></td>
+        </tr>
+        <tr>
+          <td><b>P2</b> evidence-scout<br><span style="font-size:.85em">서브 ×1</span></td>
+          <td>6키 JSON</td>
+          <td>검색 4회 → 톤 판정 JSON<br><span style="font-size:.85em">tone · tone_reason · evidence_map · pmids[] · guideline_hit · needs_decomposition</span></td>
+          <td><b>분기에 쓰는 건 3개</b>(tone · pmids · needs_decomposition)<br>나머지는 손대지 말고 <code>meta.json</code>으로</td>
+          <td><b>훑은 초록 전문 전부</b><br><span style="font-size:.85em">최대 160건이 scout과 함께 소멸</span></td>
+        </tr>
+        <tr>
+          <td><b>P3</b> abstract-miner<br><span style="font-size:.85em">서브 ×최대 8 동시</span></td>
+          <td>1개당 <b>3키</b><br><code>{pmid, ingredient_en, outcome_en}</code></td>
+          <td>논문 1편의 <b>5슬롯 + quote</b><br><span style="font-size:.85em">design · direction · subgroup_only 동봉</span></td>
+          <td>miner 8개 반환값 그대로<br><span style="font-size:.85em">실패 레코드도 버리지 않고 함께</span></td>
+          <td>초록 전문<br><span style="font-size:.85em">메인엔 <b>quote 문장만</b> 올라온다</span></td>
+        </tr>
+        <tr>
+          <td><b>P3-1</b> 파일 저장<br><span style="font-size:.85em">메인 직접</span></td>
+          <td>miner 반환 8개 + P1·P2 메타</td>
+          <td><code>raw_slots.json</code> · <code>meta.json</code></td>
+          <td><b>파일</b> — 스크립트는 대화를 못 읽는다</td>
+          <td>없음 — <b>한 글자도 고치지 않는다</b></td>
+        </tr>
+        <tr class="hi">
+          <td><b>P6</b> verify_evidence.py<br><span style="font-size:.85em">AI 아님</span></td>
+          <td>파일 2개 = <b>최대 40슬롯</b></td>
+          <td><code>evidence-pack.json</code><br><span style="font-size:.85em">verdict · papers[] · integrity · verification · warnings</span></td>
+          <td>게이트 <b>C1·C1b·C2·C3·C4·C5</b>를 통과한 값만</td>
+          <td>걸린 슬롯 → <b>null</b><br><span style="font-size:.85em">철회 논문은 통째로 제외</span></td>
+        </tr>
+        <tr>
+          <td><b>출력</b><br><span style="font-size:.85em">메인 직접</span></td>
+          <td>팩 JSON</td>
+          <td>표 2장 (슬롯 · 논문)</td>
+          <td>사람에게<br><span style="font-size:.85em">한글화·정돈은 여기서 사람이</span></td>
+          <td><code>verified:false</code>인 값<br><span style="font-size:.85em">팩에 보여도 표에 옮기지 않는다</span></td>
+        </tr>
+      </table>
+      </div>
+      <div class="shrink">
+        <span class="st">검색 160건</span><span class="ar">→</span>
+        <span class="st">JSON 1개</span><span class="ar">→</span>
+        <span class="st">8 PMID</span><span class="ar">→</span>
+        <span class="st">40 슬롯</span><span class="ar">→</span>
+        <span class="st">게이트 통과분</span>
+        <span class="cap2">이 파이프라인의 정체는 <b>축소</b>입니다. 각 화살표에서 무엇이 넘어가고 무엇이 죽는지가 설계의 전부입니다.</span>
+      </div>
+    </div>
+
+    <details class="fold">
+      <summary>논문 1편이 실제로 어떻게 변하는가 <span class="q">— raw_slots.json 한 레코드 → 팩 한 레코드 (펼쳐보기)</span></summary>
+      <div class="fold-body">
+        <div class="sbs">
+          <div>
+            <div class="sbs-h a">① miner가 낸 것 · raw_slots.json</div>
+            <div class="sbs-s">AI가 만든 값. 아직 아무도 검사하지 않았다</div>
+<pre><code>{
+  <span class="s">"pmid"</span>: <span class="s">"23853635"</span>,
+  <span class="s">"design"</span>: <span class="s">"rct"</span>,
+  <span class="s">"direction"</span>: <span class="s">"positive"</span>,
+  <span class="s">"subgroup_only"</span>: <span class="k">true</span>,
+  <span class="s">"slots"</span>: {
+    <span class="s">"effect"</span>: {
+      <span class="s">"value"</span>: <span class="s">"17.36"</span>,
+      <span class="s">"unit"</span>: <span class="s">"min"</span>,
+      <span class="s">"measure"</span>: <span class="k">null</span>,
+      <span class="s">"unit_type"</span>: <span class="s">"absolute"</span>,   <span class="c">// 판정 무시됨</span>
+      <span class="s">"comparator"</span>: <span class="s">"placebo"</span>,
+      <span class="s">"significance"</span>: <span class="s">"P = 0.002"</span>,
+      <span class="s">"quote"</span>: <span class="s">"Sleep onset latency
+        decreased by 17.36 min ... (P = 0.002)."</span>
+    },
+    <span class="s">"dose"</span>: { <span class="s">"value"</span>: <span class="s">"500"</span>, <span class="s">"unit"</span>: <span class="s">"mg"</span>,
+             <span class="s">"quote"</span>: <span class="s">"The subjects received
+             500 mg magnesium ... for 8 weeks."</span> },
+    <span class="s">"population"</span>: { <span class="s">"value"</span>: <span class="s">"46"</span>, ... },
+    <span class="s">"form"</span>: <span class="k">null</span>,             <span class="c">// 초록에 없음</span>
+    <span class="s">"conclusion"</span>: { <span class="s">"quote"</span>: <span class="s">"CONCLUSION:
+      ... appears to improve ..."</span> }
+  }
+}</code></pre>
+          </div>
+          <div>
+            <div class="sbs-h b">② 팩에 남은 것 · evidence-pack.json</div>
+            <div class="sbs-s">스크립트가 초록을 재조회해 대조한 뒤. <b>필드가 늘어난다</b></div>
+<pre><code>{
+  <span class="s">"pmid"</span>: <span class="s">"23853635"</span>,
+  <span class="s">"design"</span>: <span class="s">"rct"</span>,
+  <span class="s">"direction"</span>: <span class="s">"positive"</span>,
+  <span class="s">"subgroup_only"</span>: <span class="k">true</span>,
+  <span class="b">"year"</span>: <span class="s">"2012"</span>,          <span class="c">// ← 스크립트가 붙임</span>
+  <span class="b">"journal"</span>: <span class="s">"J Res Med Sci"</span>,
+  <span class="b">"integrity"</span>: { <span class="s">"retracted"</span>: <span class="k">false</span>,
+     <span class="s">"has_erratum"</span>: <span class="k">false</span>,
+     <span class="s">"coi_statement"</span>: <span class="k">null</span>,
+     <span class="s">"coi_available"</span>: <span class="k">false</span> },
+  <span class="b">"design_check"</span>: { <span class="s">"agrees"</span>: <span class="k">true</span> },
+  <span class="b">"abstract_sha256"</span>: <span class="s">"9f2c..."</span>,
+  <span class="b">"url"</span>: <span class="s">"https://pubmed.ncbi.nlm.nih.gov/..."</span>,
+  <span class="s">"slots"</span>: {
+    <span class="s">"effect"</span>: { <span class="s">"value"</span>: <span class="s">"17.36"</span>, <span class="s">"unit"</span>: <span class="s">"min"</span>,
+      <span class="b">"verified"</span>: <span class="k">true</span>, <span class="s">"unit_type"</span>: <span class="s">"absolute"</span>,
+      <span class="s">"comparator"</span>: <span class="s">"placebo"</span>, ... },
+    <span class="s">"dose"</span>: { <span class="s">"value"</span>: <span class="s">"500"</span>, <span class="b">"verified"</span>: <span class="k">true</span>, ... },
+    <span class="s">"population"</span>: { <span class="b">"verified"</span>: <span class="k">true</span>, ... },
+    <span class="s">"form"</span>: { <span class="s">"value"</span>: <span class="k">null</span>, <span class="b">"verified"</span>: <span class="k">false</span>,
+              <span class="b">"reason"</span>: <span class="s">"not_extracted"</span> },
+    <span class="s">"conclusion"</span>: { <span class="b">"verified"</span>: <span class="k">true</span>, ... }
+  }
+}</code></pre>
+          </div>
+        </div>
+        <div class="fix"><span class="tag">읽는 법</span><b>왼쪽엔 <code class="inl">verified</code>가 없고 오른쪽엔 슬롯마다 있습니다.</b> 그 한 필드가 "AI가 말한 값"과 "원문에 실재하는 값"의 차이입니다. <code class="inl">form</code>은 양쪽 모두 비어 있지만, 오른쪽은 <b>왜 비었는지</b>(<code class="inl">not_extracted</code>)까지 적혀 있습니다.</div>
+        <div class="anal">값이 틀렸을 때는 오른쪽이 이렇게 됩니다 — <code class="inl">"value": null, "verified": false, "reason": "value_not_in_quote", "rejected_value": "17"</code>. <b>원값은 지워지지 않고 <code class="inl">rejected_value</code>로 옮겨집니다.</b> 무엇이 왜 걸렸는지 추적하라고 둔 것이지, 쓰라고 둔 것이 아닙니다.</div>
+      </div>
+    </details>
 
     <div class="case">
       <div class="case-label"><span class="dot"></span>왜 P3-1(파일 저장)이 따로 있나</div>
@@ -567,6 +763,8 @@
       <p class="say">두 번째 상자를 보세요. 논문 수십 편을 훑었지만 메인으로 넘어온 것은 톤과 PMID 목록뿐입니다. 나머지 초록은 scout 컨텍스트와 함께 사라졌고, 그게 의도한 동작입니다.</p>
       <ul>
         <li>"왜 8개죠?" → PubMed 호출 제한 + 카드뉴스 한 편에 8편이면 충분.</li>
+        <li><b>값 이동표</b>는 맨 오른쪽 "버려지는 것" 열만 세로로 읽어주세요. 그게 이 도구의 설계입니다. 아래 <b>축소 계단</b>(160 → 1 → 8 → 40)이 한 줄 요약입니다.</li>
+        <li>접이식 <b>"논문 1편이 실제로 어떻게 변하는가"</b>는 질문이 나올 때만 펼치세요. 핵심은 오른쪽에만 있는 <code>verified</code> 필드 하나입니다.</li>
         <li>P3-1을 빼면 <b>P6이 아예 실행되지 않습니다.</b> 스크립트의 입력을 만드는 단계라고 설명하세요.</li>
         <li>마지막 표의 ❌ 줄을 강조. "AI 도구인데 빈칸을 낸다"가 이 도구의 설계 목표입니다.</li>
       </ul>
@@ -769,6 +967,8 @@
     <div class="s-head"><span class="step">08</span><span class="sec">조각 2 · agents/evidence-scout.md</span></div>
     <h2 class="s-title">evidence-scout — <span class="hl">판정하고 고른다. 숫자는 안 뽑는다</span></h2>
     <p class="s-intro">지시문이 부여한 역할은 "근거중심의학 훈련을 받은 DI 담당 약사"입니다. 논문 수십 편을 훑고 <b>JSON 하나</b>만 반환합니다.</p>
+
+    <div class="fix"><span class="tag">왜 ×1인가</span>miner는 8개인데 scout은 하나입니다. 톤 판정이 <b>4회 검색 결과를 전부 합쳐야 나오는 판단 하나</b>라서요 — R1만 봐도 1차(메타분석)와 4차(가이드라인)를 <b>동시에 아는 누군가</b>가 필요합니다. 검색 회차별로 쪼개면 각자는 자기 조각만 알게 되고, 결국 합쳐서 판정할 다섯 번째 에이전트가 또 필요해집니다. 분할 기준은 병렬 가능 여부가 아니라 <b>독립 작업이냐(miner → 8개), 전체를 봐야 하는 판단 하나냐(scout → 1개)</b>입니다.</div>
 
     <div class="case">
       <div class="case-label"><span class="dot"></span>검색을 4번 나눠 던진다 — 각각 목적이 다름</div>
@@ -1240,6 +1440,9 @@ effect = { value: <span class="s">"500"</span>, unit: <span class="s">"mg"</span
     <h2 class="s-title">돌려보고 <span class="hl">"빈칸이 나오는지"</span>를 본다</h2>
     <p class="s-intro">잘 되는 걸 확인하는 실습이 아닙니다. <b>안 되는 게 제대로 안 되는지</b>를 확인하는 실습입니다.</p>
 
+    <div class="anal"><b>실습을 수업으로 진행한다면</b> 이 섹션 대신 <a class="xlink" href="pubmed-evidence-workshop.html">실습본</a>을 쓰세요.
+    플러그인을 설치하는 대신 <b>파일을 하나씩 복사·붙여넣기로 직접 만들며</b> 같은 내용을 8단계로 진행합니다. 아래는 설치해서 돌려보는 축약판입니다.</div>
+
     <div class="warn"><b>시작 전 각자 준비.</b> NCBI API 키 발급은 실습 시간을 잡아먹습니다. 아래 3)번을 <b>미리</b> 해두세요. 키 없이 돌리면 miner 8개가 동시에 붙는 순간 호출 제한(초당 3회)에 걸리고, 그 실패가 "조회 실패"로 조용히 묻혀서 원인을 찾기 어렵습니다.</div>
 
     <div class="case">
@@ -1430,6 +1633,18 @@ python3 scripts/test_verify_evidence.py   <span class="c"># → ok</span></code>
   });
   document.addEventListener('keydown',function(e){
     if(e.key==='n'&&!/input|textarea/i.test(e.target.tagName)) btn.click();
+  });
+
+  // 인쇄물에서 접힌 내용이 사라지지 않게 — 인쇄 직전에 전부 펼친다
+  window.addEventListener('beforeprint',function(){
+    document.querySelectorAll('details.fold').forEach(function(d){
+      if(!d.open){ d.dataset.wasClosed='1'; d.open=true; }
+    });
+  });
+  window.addEventListener('afterprint',function(){
+    document.querySelectorAll('details.fold[data-was-closed]').forEach(function(d){
+      d.open=false; delete d.dataset.wasClosed;
+    });
   });
 </script>
 </body>
