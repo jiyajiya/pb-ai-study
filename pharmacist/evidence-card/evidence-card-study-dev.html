@@ -398,13 +398,13 @@
     <div class="case">
       <div class="case-label"><span class="dot"></span>로컬 설치 — 경로를 직접 넘길 수 없다</div>
 <pre><code><span class="c"># install은 마켓플레이스에서만. 로컬 레포를 먼저 마켓플레이스로 등록한다</span>
-claude plugin marketplace add /abs/path/pharmacist/evidence-card
-claude plugin install evidence-card@evidence-card
-
 <span class="c"># 넘기는 경로는 .claude-plugin/marketplace.json 이 있는 디렉토리.</span>
 <span class="c"># 모노레포에서 레포 루트를 넘기면 못 찾는다.</span>
 
-claude plugin validate .    <span class="c"># 설치 전 매니페스트 검증</span>
+claude plugin validate /abs/path/pharmacist/evidence-card    <span class="c"># 설치 전 매니페스트 검증</span>
+
+claude plugin marketplace add /abs/path/pharmacist/evidence-card
+claude plugin install evidence-card@evidence-card
 <span class="k">export</span> NCBI_API_KEY=<span class="s">"..."</span>    <span class="c"># 없으면 3 req/s 제한 → 병렬 8개가 즉시 429</span></code></pre>
     </div>
 

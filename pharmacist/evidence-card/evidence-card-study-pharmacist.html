@@ -758,6 +758,7 @@
         <div class="steprow"><span class="n">!</span><span class="t">조회 실패·초록 없는 논문이 있으면 → "이 팩은 검색된 근거 전체가 아니라 <b>검증에 성공한 일부</b>다"</span></div>
         <div class="steprow"><span class="n">!</span><span class="t"><b>항상</b> → "광고법 검토를 거치지 않았다. 발행 전 확인할 것"</span></div>
       </div>
+      <div class="warn"><b>✅가 떠도 사람이 한 번 더 봐야 하는 게 있습니다.</b> 초록 문장이 <code class="inl">"Dose was 500 mg daily and triglycerides fell 0.3 mmol/L."</code>인데, 원래 용량 값인 <code class="inl">500 mg</code>이 <b>효과 크기 칸</b>에 잘못 들어가도 게이트는 <b>통과(✅)</b>시킵니다. <code class="inl">500</code>도 <code class="inl">mg</code>도 초록에 실제로 있는 값이기 때문입니다. 게이트가 보증하는 건 <b>"이 숫자가 그 초록에 있다"</b>이지 <b>"이 숫자가 그 칸에 맞다"</b>가 아닙니다. <b>조작은 게이트가 막지만, 자리가 바뀐 숫자는 사람이 봐야 잡힙니다.</b></div>
     </div>
 
     <div class="msgbox">
@@ -774,7 +775,7 @@
         <li>"근데 AI가 검사하면 안 되나요?" 질문 대비 → <b>같은 실수를 한 AI가 자기 실수를 검사하면 통과시킨다.</b> 검사관은 다른 종류여야 합니다.</li>
         <li><code>"value": None</code> 부분을 손으로 짚으세요. "지운다"가 이 도구의 성격입니다.</li>
         <li><b>"magnesium의 g" 이야기는 반응이 좋습니다.</b> 안전장치도 대충 만들면 안전장치가 아니라는 예시.</li>
-        <li>시간 여유 있으면 <code>python3 scripts/test_verify_numbers.py</code>를 라이브로 돌려 보여주면 임팩트가 큽니다. <code>ok</code> 한 줄이 나옵니다.</li>
+        <li>시간 여유 있으면 <code>cd pb-ai-study/pharmacist/evidence-card</code> 후 <code>python3 scripts/test_verify_numbers.py</code>를 라이브로 돌려 보여주면 임팩트가 큽니다. <code>ok</code> 한 줄이 나옵니다.</li>
       </ul>
     </div>
   </section>
@@ -786,20 +787,44 @@
     <p class="s-intro">잘 되는 걸 확인하는 실습이 아닙니다. <b>안 되는 게 제대로 안 되는지</b>를 확인하는 실습입니다.</p>
 
     <div class="case">
-      <div class="case-label"><span class="dot"></span>준비</div>
-<pre><code><span class="c"># 1) 플러그인 설치 — 로컬 경로를 바로 넘길 수 없다. 먼저 마켓플레이스로 등록</span>
-claude plugin marketplace add /절대/경로/pharmacist/evidence-card
+      <div class="case-label"><span class="dot"></span>0) 레포 받기 &amp; 위치 확인 — 터미널에서</div>
+<pre><code><span class="c"># 아직 로컬에 파일이 없다면 먼저 받는다</span>
+git clone git@github.com:jiyajiya/pb-ai-study.git
+cd pb-ai-study/pharmacist/evidence-card
+pwd   <span class="c"># 여기 출력되는 절대경로를 아래 1)·2) 단계에서 그대로 쓴다</span></code></pre>
+      <div class="warn">python3가 있어야 합니다 — <code class="inl">python3 --version</code>으로 먼저 확인하세요.</div>
+    </div>
+
+    <div class="case">
+      <div class="case-label"><span class="dot"></span>1) 매니페스트 검증 — 등록 전에, 터미널에서</div>
+<pre><code><span class="c"># 0)에서 cd한 디렉터리 그대로 실행. 절대경로로 검증한다</span>
+claude plugin validate <span class="s">"$(pwd)"</span>   <span class="c"># 매니페스트가 유효한가</span></code></pre>
+    </div>
+
+    <div class="case">
+      <div class="case-label"><span class="dot"></span>2) 플러그인 설치 — 로컬 경로를 바로 넘길 수 없다. 먼저 마켓플레이스로 등록</div>
+<pre><code>claude plugin marketplace add <span class="s">"$(pwd)"</span>
 claude plugin install evidence-card@evidence-card
-<span class="c">#    경로는 .claude-plugin/marketplace.json 이 있는 폴더. 레포 루트가 아니다</span>
+<span class="c">#    경로는 .claude-plugin/marketplace.json 이 있는 폴더. 레포 루트가 아니다</span></code></pre>
+    </div>
 
-<span class="c"># 2) NCBI API 키 — 없으면 초당 3회 제한에 병렬 8개가 바로 걸림</span>
-<span class="k">export</span> NCBI_API_KEY=<span class="s">"..."</span>
-<span class="c">#    발급: NCBI 계정 → Account Settings → API Key Management</span>
+    <div class="case">
+      <div class="case-label"><span class="dot"></span>3) NCBI API 키 — 없으면 초당 3회 제한에 병렬 8개가 바로 걸림</div>
+<pre><code><span class="k">export</span> NCBI_API_KEY=<span class="s">"..."</span>
+<span class="c">#    발급: NCBI 계정 → Account Settings → API Key Management</span></code></pre>
+    </div>
 
-<span class="c"># 3) 확인</span>
-claude plugin validate .   <span class="c"># 매니페스트가 유효한가</span>
-/plugin                    <span class="c"># 목록에 evidence-card 가 보이는지</span></code></pre>
+    <div class="case">
+      <div class="case-label"><span class="dot"></span>4) 설치 확인 — 터미널에서</div>
+<pre><code>claude plugin list   <span class="c"># 목록에 evidence-card 가 보이는지</span></code></pre>
       <div class="warn">플러그인은 뜨는데 서브에이전트가 안 불리면 <b>거의 항상 <code class="inl">agents/</code> 위치 문제</b>입니다. 플러그인 루트에 있는지 확인하세요.</div>
+    </div>
+
+    <div class="case">
+      <div class="case-label"><span class="dot"></span>5) 실행 — Claude Code를 켠 뒤, 대화창에 입력 (터미널 아님)</div>
+      <p>터미널에서 <code class="inl">claude</code>를 입력해 Claude Code를 켠다. <b>그 대화창 안에서</b> 아래를 입력한다 — 셸에 붙여넣으면 <code class="inl">zsh: no such file or directory: /plugin</code> 에러가 난다.</p>
+      <p><code class="inl">/plugin</code> — 목록에 evidence-card가 보이는지 다시 확인</p>
+      <p><code class="inl">콜라겐 피부탄력 근거 뽑아줘</code> — 파이프라인을 실제로 돌리는 입력. 이 한 줄이면 된다</p>
     </div>
 
     <div class="case">
@@ -838,7 +863,7 @@ claude plugin validate .   <span class="c"># 매니페스트가 유효한가</sp
         <tr class="hi"><td>단위가 <code>min</code>인 논문</td><td><code>unit: "min"</code> 그대로</td><td><b>hours·분으로 바꾸는지</b></td></tr>
         <tr><td>비교 대상이 안 적힌 논문</td><td><code>comparator: null</code></td><td>"위약 대비"라고 단정하는지</td></tr>
       </table>
-      <div class="anal">게이트 자체가 살아 있는지는 <b>1초</b>면 확인됩니다 — <code class="inl">python3 scripts/test_verify_numbers.py</code>. <code class="inl">ok</code>가 안 나오면 그날 실습은 거기서 멈춰야 합니다.</div>
+      <div class="anal">게이트 자체가 살아 있는지는 <b>1초</b>면 확인됩니다 — 터미널에서 <code class="inl">cd pb-ai-study/pharmacist/evidence-card</code> 후 <code class="inl">python3 scripts/test_verify_numbers.py</code>. <code class="inl">ok</code>가 안 나오면 그날 실습은 거기서 멈춰야 합니다.</div>
     </div>
 
     <div class="note">
