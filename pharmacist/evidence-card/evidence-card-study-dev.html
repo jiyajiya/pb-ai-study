@@ -106,7 +106,7 @@
 
   pre{background:#0D1015;border:1px solid var(--line);border-radius:12px;padding:16px 18px;overflow-x:auto;margin:12px 0}
   pre code{font-family:var(--mono);font-size:.83rem;line-height:1.65;color:#C3CBD9;white-space:pre}
-  pre code .c{color:#5B6577}
+  pre code .c{color:#77839A}
   pre code .k{color:var(--accent)}
   pre code .s{color:var(--gold)}
   pre code .b{color:var(--accent2);font-weight:700}
@@ -166,6 +166,7 @@
   @media print{.nav,.toggle{display:none}.session{opacity:1;transform:none;break-inside:avoid}}
   @media(max-width:640px){.session,.closing{padding:24px 20px}}
 </style>
+<noscript><style>.session{opacity:1;transform:none}</style></noscript>
 </head>
 <body>
 
@@ -200,7 +201,7 @@
       <span>subagent <b>scout ×1</b></span><span class="arrow">→</span>
       <span>subagent <b>miner ×8 (병렬)</b></span><span class="arrow">→</span>
       <span>file <b>raw_slots.json</b></span><span class="arrow">→</span>
-      <span>python <b>verify_numbers.py</b></span>
+      <span>python <b>verify_evidence.py</b></span>
     </div>
   </header>
 
@@ -247,7 +248,7 @@
       <tr><td><b>RCT</b></td><td>무작위 대조 시험. 사람을 두 군으로 나눠 실약/위약 비교</td><td>숫자를 뽑을 가치가 있는 연구 설계</td></tr>
       <tr><td><b>meta-analysis / SR</b></td><td>여러 RCT를 통계적으로 합친 상위 근거</td><td>있으면 "근거 강함" 판정의 조건</td></tr>
       <tr><td><b>MeSH</b></td><td>PubMed의 통제 어휘(표준 태그)</td><td>검색어 정규화 결과에 포함</td></tr>
-      <tr class="hi"><td><b>효과 크기</b> vs <b>p값</b></td><td><b>얼마나 큰가</b>(23.4%, -0.87 mmol/L) vs <b>우연인가 아닌가</b>(p&lt;0.05)</td><td><b>이 구분이 게이트 C3의 전부.</b> p값은 효과 크기가 아님</td></tr>
+      <tr class="hi"><td><b>효과 크기</b> vs <b>p값</b></td><td><b>얼마나 큰가</b>(value <code>23.4%</code>, <code>-0.87</code>+unit <code>mmol/L</code>) vs <b>우연인가 아닌가</b>(p&lt;0.05)</td><td><b>이 구분이 게이트 C3의 전부.</b> p값은 효과 크기가 아님</td></tr>
       <tr><td><b>comparator</b></td><td>무엇과 비교한 수치인가 — 위약(placebo) / 실약(active) / 복용 전(baseline)</td><td>같은 "-0.34"라도 기준이 다르면 못 합침</td></tr>
       <tr><td><b>off-target</b></td><td>검색엔 걸렸지만 실제 개입 물질이 다른 논문</td><td>필터링 대상. 다른 물질의 숫자가 섞이는 주 경로</td></tr>
     </table>
@@ -295,7 +296,7 @@
 <pre><code><span class="c">--- agents/abstract-miner.md ---</span>
 <span class="k">name</span>: abstract-miner
 <span class="k">description</span>: PMID 하나의 초록에서 4슬롯을 원문 인용과 함께 추출한다...
-<span class="k">tools</span>: Bash              <span class="c">← curl만 쓰면 됨. 파일 쓰기 권한도 안 줌</span>
+<span class="k">tools</span>: Bash              <span class="c">← curl만 쓰면 됨. Write/Edit는 안 줬다 — 파일 산출을 기대하지 않는다는 신호이지, 강제는 아니다</span>
 <span class="k">model</span>: sonnet            <span class="c">← 판단이 아니라 추출 작업. 상위 모델 불필요</span>
 <span class="c">--------------------------------</span>
 (본문 = 시스템 프롬프트. 절차·금지사항·출력 스키마·자기점검)</code></pre>
@@ -345,8 +346,8 @@
       <div class="cell m"><span class="lbl">P3-1 · persist</span><span class="desc"><b>반환값을 가공 없이</b> <code class="inl">raw_slots.json</code>에 배열로 덤프. <code class="inl">meta.json</code>엔 지정된 5개 키만.<br>error 레코드도 그대로 넣는다 (스크립트가 집계).</span></div>
       <div class="cell empty">— 인라인 —</div>
 
-      <div class="cell m"><span class="lbl">P6 · verify</span><span class="desc"><code class="inl">Bash: python3 ${CLAUDE_PLUGIN_ROOT}/scripts/verify_numbers.py</code><span class="ret">◀ evidence-pack.json + exit code</span></span></div>
-      <div class="cell"><span class="lbl">verify_numbers.py</span><span class="desc">표준 라이브러리만. PubMed <b>재조회</b> 후 문자열 대조. LLM 개입 0.</span></div>
+      <div class="cell m"><span class="lbl">P6 · verify</span><span class="desc"><code class="inl">Bash: python3 ${CLAUDE_PLUGIN_ROOT}/scripts/verify_evidence.py</code><span class="ret">◀ evidence-pack.json + exit code</span></span></div>
+      <div class="cell"><span class="lbl">verify_evidence.py</span><span class="desc">표준 라이브러리만. PubMed <b>재조회</b> 후 문자열 대조. LLM 개입 0.</span></div>
     </div>
 
     <div class="case">
@@ -384,8 +385,8 @@
 │   ├── <span class="b">evidence-scout.md</span>
 │   └── <span class="b">abstract-miner.md</span>
 └── scripts/
-    ├── <span class="b">verify_numbers.py</span>              <span class="c">stdlib only, no deps</span>
-    └── test_verify_numbers.py          <span class="c">assert 스크립트. 프레임워크 없음</span></code></pre>
+    ├── <span class="b">verify_evidence.py</span>              <span class="c">stdlib only, no deps</span>
+    └── test_verify_evidence.py          <span class="c">assert 스크립트. 프레임워크 없음</span></code></pre>
 
     <table class="ttable">
       <tr><th>규칙</th><th>이유 / 실패 양상</th></tr>
@@ -406,6 +407,7 @@ claude plugin validate /abs/path/pharmacist/evidence-card    <span class="c"># �
 claude plugin marketplace add /abs/path/pharmacist/evidence-card
 claude plugin install evidence-card@evidence-card
 <span class="k">export</span> NCBI_API_KEY=<span class="s">"..."</span>    <span class="c"># 없으면 3 req/s 제한 → 병렬 8개가 즉시 429</span></code></pre>
+      <div class="warn"><code class="inl">export</code>는 <b>그 터미널 세션에서만</b> 유효합니다. <b>같은 셸에서 <code class="inl">claude</code>를 실행</b>해야 키가 전달됩니다 — 다른 창에서 켠 세션은 키 없이 돌다가 병렬 8개에서 429가 나고, 그 실패는 "조회 실패"로 조용히 팩 경고에 묻힙니다. 영구 등록하려면 <code class="inl">~/.zshrc</code>에 추가하세요.</div>
     </div>
 
     <div class="case">
@@ -414,7 +416,7 @@ claude plugin install evidence-card@evidence-card
         <tr><th>파일</th><th>실행 주체</th><th>결정론</th><th>실패 시</th></tr>
         <tr><td><code>SKILL.md</code></td><td>메인 LLM</td><td>❌ 확률적</td><td>절차 이탈 — 다음 단계가 감지</td></tr>
         <tr><td><code>agents/*.md</code></td><td>서브 LLM</td><td>❌ 확률적</td><td>잘못된 추출 — 게이트가 폐기</td></tr>
-        <tr class="hi"><td><code>verify_numbers.py</code></td><td>python3</td><td><b>✅ 결정론</b></td><td><b>여기가 틀리면 잡을 사람이 없음 → 그래서 유일하게 단위 테스트가 있음</b></td></tr>
+        <tr class="hi"><td><code>verify_evidence.py</code></td><td>python3</td><td><b>✅ 결정론</b></td><td><b>여기가 틀리면 잡을 사람이 없음 → 그래서 유일하게 단위 테스트가 있음</b></td></tr>
       </table>
       <div class="anal">위 두 개는 <b>제안</b>, 아래 하나는 <b>불변식</b>. 테스트 코드가 아래에만 있는 이유이기도 합니다.</div>
     </div>
@@ -458,19 +460,20 @@ claude plugin install evidence-card@evidence-card
       <p>"EPA"로 검색하면 크릴오일·EPA+DHA 복합제·ALA 비교시험이 함께 걸립니다. 서로 다른 물질의 수치가 한 결과 집합에 섞이면 그 팩은 통째로 폐기 대상입니다.</p>
 <pre><code><span class="c">// normalize.md 룩업 테이블 (마크다운 표가 곧 설정 파일)</span>
 | EPA | eicosapentaenoic acid | <span class="k">synonyms</span>: icosapent ethyl, IPE
-                            | <span class="k">exclude_terms</span>: DHA, krill oil, ALA, EPA+DHA 혼합제
+                            | <span class="k">exclude_terms</span>: DHA, docosahexaenoic, krill oil, alpha-linolenic acid, ALA, EPA+DHA combination
                             | <span class="k">decompose_default</span>: false
 
 <span class="c">// synonyms  = 같은 물질의 다른 이름 → off-target 오탐 방지용 (검색 확장 아님)</span>
 <span class="c">// exclude_terms = intervention 위치에 등장하면 off_target: true</span>
-<span class="c">// 애매하면 off_target: true — false negative보다 false positive를 택한다</span></code></pre>
+<span class="c">// 애매하면 off_target: true — false negative보다 false positive를 택한다</span>
+<span class="c">// exclude_terms 칸에는 초록에서 매칭할 영문 용어만 쓴다. 한국어 부연은 각주로 뺀다</span></code></pre>
       <table class="ttable">
         <tr><th>off_target 판정 시</th><th>처리</th></tr>
         <tr><td><code>pmids[]</code></td><td>남김 (<code>rank: null</code>) — 몇 편을 걸렀는지가 정보</td></tr>
         <tr><td><code>evidence_map</code> 카운트</td><td><b>제외</b> — 톤 판정 왜곡 방지</td></tr>
         <tr class="hi"><td>채굴 대상 8슬롯</td><td><b>제외</b></td></tr>
       </table>
-      <div class="anal">off_target 비율이 1/3을 넘으면 <code class="inl">needs_decomposition: true</code> 신호로 씁니다 — "쿼리 용어가 너무 넓다"는 자동 감지. 이 경우 파이프라인은 <b>멈추고 사용자에게 하위 항목을 제시</b>합니다.</div>
+      <div class="anal">off_target 비율이 전체의 1/3 이상이면 <code class="inl">needs_decomposition: true</code> 신호로 씁니다 — "쿼리 용어가 너무 넓다"는 자동 감지. 이 경우 파이프라인은 <b>멈추고 사용자에게 하위 항목을 제시</b>합니다.</div>
     </div>
 
     <div class="case">
@@ -521,16 +524,24 @@ claude plugin install evidence-card@evidence-card
       <div class="vs">
         <div class="col b">
           <h4>effect = 효과 크기</h4>
-          <p><span class="big">"얼마나 큰가"</span><code class="inl">23.4%</code> · <code class="inl">-0.87 mmol/L</code> · <code class="inl">SMD -0.42</code> · <code class="inl">RR 0.78</code></p>
+          <p><span class="big">"얼마나 큰가"</span> — <code class="inl">value</code>는 <b>숫자 하나</b>(부호·소수점·천단위·%까지). 단위는 <code class="inl">unit</code>, 지표명(RR·OR·HR·SMD·MD)은 <code class="inl">measure</code>로 갈라 담는다</p>
         </div>
         <div class="col a">
           <h4>effect ≠ 유의성 → null</h4>
           <p><span class="big">"우연인가 아닌가"</span><code class="inl">p &lt; 0.05</code> · <code class="inl">95% CI 0.12 to 0.48</code> (점추정치 없음) · <code class="inl">significantly reduced</code></p>
         </div>
       </div>
+      <table class="ttable">
+        <tr><th>초록 표현</th><th>value</th><th>unit</th><th>measure</th></tr>
+        <tr><td>reduced by 23.4%</td><td><code>23.4%</code></td><td>null</td><td>null</td></tr>
+        <tr><td>-0.87 mmol/L</td><td><code>-0.87</code></td><td><code>mmol/L</code></td><td>null</td></tr>
+        <tr><td>mean difference -0.34 mmol/L</td><td><code>-0.34</code></td><td><code>mmol/L</code></td><td><code>MD</code></td></tr>
+        <tr class="hi"><td>RR 0.78</td><td><code>0.78</code></td><td>null</td><td><code>RR</code></td></tr>
+      </table>
       <p><code class="inl">"p &lt; 0.05"</code>는 <b>초록에 실재하는 문자열</b>입니다. quote ⊂ 초록, value ⊂ quote를 전부 만족합니다. 즉 <b>C1·C2를 정상 통과하는 오답</b>이고, 이것 때문에 C3라는 별도 형태 검사가 존재합니다.</p>
 <pre><code><span class="k">"effect"</span>: {
-  <span class="k">"value"</span>: <span class="s">"-0.34"</span>, <span class="k">"unit"</span>: <span class="s">"mmol/L"</span>,
+  <span class="k">"value"</span>: <span class="s">"-0.34"</span>, <span class="k">"unit"</span>: <span class="s">"mmol/L"</span>, <span class="k">"measure"</span>: <span class="b">null</span>,
+  <span class="c">// "RR 0.78"이면 value:"0.78" + measure:"RR". 이 5개(RR/OR/HR/SMD/MD) 밖은 P6이 null로 강등</span>
   <span class="k">"unit_type"</span>: <span class="s">"absolute"</span>,     <span class="c">// 에이전트가 적지만 P6이 값에서 재파생. 반환값은 버려짐</span>
   <span class="k">"comparator"</span>: <span class="s">"placebo"</span>,      <span class="c">// enum 4개 밖이면 P6이 null로 강등</span>
   <span class="k">"significance"</span>: <span class="s">"P = 0.02"</span>,   <span class="c">// quote 밖이면 이 필드만 폐기 (슬롯은 생존)</span>
@@ -538,7 +549,7 @@ claude plugin install evidence-card@evidence-card
 }</code></pre>
       <div class="key">
         <span class="lab">패턴</span>
-        <p><b>검증할 수 없는 필드는 신뢰 목록에서 뺀다.</b><br><code>unit_type</code>은 값에서 재계산하고, <code>comparator</code>는 enum 밖이면 null로 떨어뜨린다.<br>"모델이 준 값을 그대로 쓰는 필드"를 최소화하는 것이 스키마 설계의 목표.</p>
+        <p><b>검증할 수 없는 필드는 신뢰 목록에서 뺀다.</b><br><code>unit_type</code>은 값에서 재계산하고, <code>comparator</code>·<code>measure</code>는 enum 밖이면 null로 떨어뜨린다.<br>"모델이 준 값을 그대로 쓰는 필드"를 최소화하는 것이 스키마 설계의 목표.</p>
       </div>
     </div>
 
@@ -557,7 +568,7 @@ claude plugin install evidence-card@evidence-card
 
   <!-- 7. 게이트 -->
   <section class="session" id="d7">
-    <div class="s-head"><span class="step">게이트</span><span class="sec">scripts/verify_numbers.py</span></div>
+    <div class="s-head"><span class="step">게이트</span><span class="sec">scripts/verify_evidence.py</span></div>
     <h2 class="s-title">여기만 <span class="hl">불변식</span>이다 — 그래서 여기만 테스트가 있다</h2>
     <p class="s-intro">표준 라이브러리만. 입력은 파일 2개, 출력은 팩 1개 + 종료 코드. <b>LLM 호출 0회.</b></p>
 
@@ -573,16 +584,26 @@ claude plugin install evidence-card@evidence-card
     </div>
 
     <div class="case">
-      <div class="case-label"><span class="dot"></span>C3 — 앵커 매칭이 아니라 <b>차감식</b></div>
-<pre><code><span class="k">def</span> effect_shape_reason(value_norm):
-    remainder = P_TOKEN.sub(<span class="s">" "</span>, CI_TOKEN.sub(<span class="s">" "</span>, value_norm))
-    <span class="k">if</span> HAS_DIGIT.search(remainder):
-        <span class="k">return</span> <span class="b">None</span>            <span class="c"># p값·CI를 걷어내도 숫자가 남는다 → 효과 크기다</span>
+      <div class="case-label"><span class="dot"></span>C3 — 차감식(블랙리스트)에서 화이트리스트로 뒤집었다</div>
+<pre><code><span class="c"># 이전: 걷어내기 방식. p값·CI 패턴을 지우고 남는 숫자가 있으면 통과</span>
+<span class="c"># → "P for trend = 0.03" 같은 새 표현마다 구멍이 생겼다 (실측 6건 통과)</span>
+
+<span class="k">EFFECT_VALUE</span> = re.compile(<span class="s">r"^-?\d+(?:,\d{3})*(?:\.\d+)?%?$"</span>)  <span class="c"># 지금: 숫자 하나 형태만 허용</span>
+
+<span class="k">def</span> effect_shape_reason(value_norm):
+    <span class="k">if</span> EFFECT_VALUE.match(value_norm):
+        <span class="k">return</span> <span class="b">None</span>              <span class="c"># 통과 — 판정은 여기서 끝난다</span>
+    <span class="c"># 여기부터는 이미 폐기 확정. P_TOKEN/CI_TOKEN은 이제 판정에 안 쓰이고,</span>
+    <span class="c"># 사람이 읽을 폐기 사유 라벨을 고르는 데만 쓰인다</span>
+    <span class="k">if not</span> HAS_DIGIT.search(value_norm):
+        <span class="k">return</span> <span class="s">"no_numeric_effect"</span>
+    <span class="k">if</span> HAS_DIGIT.search(P_TOKEN.sub(<span class="s">" "</span>, CI_TOKEN.sub(<span class="s">" "</span>, value_norm))):
+        <span class="k">return</span> <span class="s">"effect_value_not_numeric"</span>   <span class="c"># 숫자는 있는데 다른 게 섞임 — "RR 0.78" 같은 프로즈</span>
     <span class="k">if</span> P_TOKEN.search(value_norm):  <span class="k">return</span> <span class="s">"p_value_not_effect_size"</span>
-    <span class="k">if</span> CI_TOKEN.search(value_norm): <span class="k">return</span> <span class="s">"ci_only_not_effect_size"</span>
-    <span class="k">return</span> <span class="s">"no_numeric_effect"</span></code></pre>
-      <p><b>왜 <code class="inl">^p\s*&lt;\s*[\d.]+$</code> 같은 앵커 매칭이 아닌가</b> — 접두·접미어 한 글자에 무력화되기 때문입니다. <code class="inl">"significant at p&lt;0.001"</code>은 p값 패턴에도, 서술어 패턴에도 안 걸립니다. 차감식은 <b>걷어낸 뒤 남는 것</b>을 보므로 붙어 있는 말에 영향을 받지 않습니다.</p>
-      <div class="warn"><b>같은 정규식의 반대편 함정 —</b> <code class="inl">P_TOKEN</code>에 <code class="inl">(?&lt;![a-z])</code>가 없으면 <code class="inl">"sbp -5.2"</code>, <code class="inl">"sleep -1.2"</code>의 <b>끝 p가 p값으로 오인</b>됩니다(문자 클래스의 하이픈이 음수 부호를 먹음). 정상 효과 크기가 <b>조용히 폐기</b>되는 쪽 실패라 더 늦게 발견됩니다.</div>
+    <span class="k">return</span> <span class="s">"ci_only_not_effect_size"</span></code></pre>
+      <p><b>왜 뒤집었는가</b> — 막을 것을 열거하면 표현이 늘 때마다 구멍이 생기고, 허용할 것을 열거하면 끝난다. 이전 버전은 <code class="inl">P_TOKEN</code>·<code class="inl">CI_TOKEN</code>을 걷어낸 뒤 남는 숫자를 효과 크기로 인정하는 <b>블랙리스트</b>였는데, <code class="inl">"P for trend = 0.03"</code> 같은 새 표현이 나올 때마다 뚫렸다(실측 6건). <code class="inl">EFFECT_VALUE</code>는 "숫자 하나"라는 <b>닫힌 형태</b>를 정의하므로, 자연어 표현이 아무리 늘어도 구멍이 생기지 않는다.</p>
+      <div class="anal"><code class="inl">measure</code> 필드가 신설된 것도 같은 이유다. <code class="inl">RR 0.78</code>을 통째로 <code class="inl">value</code>에 허용하면 화이트리스트가 프로즈를 받아들여야 하고, 그 순간 <code class="inl">"p for trend = 0.03"</code>도 같이 들어온다. 지표명은 <code class="inl">measure</code>(RR/OR/HR/SMD/MD 열거값만) 칸으로 분리해 <code class="inl">value</code>가 "숫자 하나"라는 형태를 유지하게 했다.</div>
+      <div class="warn"><b>P_TOKEN 자체의 함정은 그대로 남아 있다 —</b> <code class="inl">(?&lt;![a-z])</code>가 없으면 <code class="inl">"sbp -5.2"</code>, <code class="inl">"sleep -1.2"</code>의 <b>끝 p가 p값으로 오인</b>됩니다(문자 클래스의 하이픈이 음수 부호를 먹음). 이제는 판정을 좌우하지 않지만, <b>폐기 사유 라벨이 틀리면 디버깅이 늦어진다</b>는 점은 여전합니다.</div>
     </div>
 
     <div class="case">
@@ -661,7 +682,7 @@ unverifiable = len(fetch_failed) + len(no_abstract)
     <div class="vs">
       <div class="col b">
         <h4>층 1 — 게이트 단위 테스트 (결정론)</h4>
-        <p><span class="big">test_verify_numbers.py</span>네트워크 없이 <code class="inl">verify_slot()</code>만 호출. assert 기반 스크립트 한 장, 프레임워크 없음. <b>1초, 항상 같은 결과.</b></p>
+        <p><span class="big">test_verify_evidence.py</span>네트워크 없이 <code class="inl">verify_slot()</code>만 호출. assert 기반 스크립트 한 장, 프레임워크 없음. <b>1초, 항상 같은 결과.</b></p>
       </div>
       <div class="col a">
         <h4>층 2 — 판정 회귀 (확률적)</h4>
@@ -671,26 +692,27 @@ unverifiable = len(fetch_failed) + len(no_abstract)
 
     <div class="case">
       <div class="case-label"><span class="dot"></span>층 1 — 문서에 적힌 금지 문자열이 곧 테스트 케이스</div>
-<pre><code>python3 scripts/test_verify_numbers.py   <span class="c"># → ok</span>
+<pre><code>python3 scripts/test_verify_evidence.py   <span class="c"># → ok</span>
 
 <span class="c"># 케이스 출처 규칙: abstract-miner.md의 "넣으면 안 되는 것" 목록에 있는 문자열은</span>
 <span class="c"># 하나도 빠짐없이 테스트에 있어야 한다. 구현을 보고 테스트를 쓰지 않는다.</span>
 <span class="s">"p &lt; 0.05"</span> / <span class="s">"P-value = 0.03"</span> / <span class="s">"significant at p&lt;0.001"</span> / <span class="s">"(95% CI 0.12 to 0.48)"</span>
 <span class="s">"significantly reduced"</span> / <span class="s">"17.36"</span>+<span class="s">"hours"</span> / comparator=<span class="s">"vs. usual care"</span> → <span class="b">null</span>
-<span class="s">"sbp -5.2"</span> / <span class="s">"-0.34 mmol/L"</span> / dose <span class="s">"500 mg"</span>                            → <span class="b">통과</span></code></pre>
+<span class="s">"sbp -5.2"</span> / <span class="s">"-0.34"</span>+<span class="s">"mmol/L"</span> / dose <span class="s">"500 mg"</span>                            → <span class="b">통과</span></code></pre>
       <div class="anal">거짓 폐기(정상 값을 버리는 쪽) 케이스가 절반입니다. 게이트를 조이는 커밋마다 이쪽이 먼저 깨집니다 — <code class="inl">"sbp -5.2"</code>가 그 감시 케이스.</div>
     </div>
 
     <div class="case">
       <div class="case-label"><span class="dot"></span>층 2 — 4개 픽스처가 지키는 것</div>
       <table class="ttable">
-        <tr><th>ID</th><th>입력</th><th>기대</th><th>회귀로 잡는 것</th></tr>
-        <tr><td>F1</td><td>오메가3 중성지방</td><td>T1 / decomp <b>true</b></td><td><b>4차(guideline) 쿼리 누락</b> — 빠지면 영원히 T2</td></tr>
-        <tr><td>F2</td><td>마그네슘 수면</td><td>T2 / false</td><td>기준선</td></tr>
-        <tr><td>F3</td><td>유산균 IBS</td><td>T2 / <b>true</b></td><td>룩업 테이블의 <code>decompose_default</code> 미조회</td></tr>
-        <tr class="hi"><td><b>F4</b></td><td><b>콜라겐 피부탄력</b></td><td><b>T3</b> / false</td><td><b>sycophancy 회귀.</b> T1/T2로 뜨면 릴리스 불가</td></tr>
+        <tr><th>ID</th><th>입력</th><th>기대</th><th>회귀로 잡는 것</th><th>데모</th></tr>
+        <tr><td>F1</td><td>오메가3 중성지방</td><td>T1 / decomp <b>true</b></td><td><b>4차(guideline) 쿼리 누락</b> — 빠지면 영원히 T2</td><td><b>→ P2에서 멈춤</b> (decomp true)</td></tr>
+        <tr><td>F2</td><td>마그네슘 수면</td><td>T2 / false</td><td>기준선</td><td>✅ P1→P6 전 구간</td></tr>
+        <tr><td>F3</td><td>유산균 IBS</td><td>T2 / <b>true</b></td><td>룩업 테이블의 <code>decompose_default</code> 미조회</td><td><b>→ P2에서 멈춤</b> (decomp true)</td></tr>
+        <tr class="hi"><td><b>F4</b></td><td><b>콜라겐 피부탄력</b></td><td><b>T3</b> / false</td><td><b>sycophancy 회귀.</b> T1/T2로 뜨면 릴리스 불가</td><td>톤(T3) 시연용. 채굴 대상 적어 exit 2로 끝날 수 있음</td></tr>
       </table>
       <div class="anal">경계 흔들림 허용 범위를 문서에 명시해뒀습니다 — F1(T1↔T2), F2(T2↔T3)는 허용, <b>F4는 불허</b>. 확률적 시스템의 회귀 테스트는 <b>어디까지 흔들려도 되는지</b>를 같이 적어야 운영됩니다.</div>
+      <div class="anal"><code class="inl">needs_decomposition: true</code>인 F1·F3는 <b>P2에서 멈춘다</b> — 사용자에게 하위 분해 여부를 되묻는 지점이 파이프라인의 끝이다. P1→P6 전 구간(파일 저장·검증까지)을 보여주는 라이브 데모는 <b>F2</b>를 쓴다.</div>
       <div class="anal">구조 검증 항목도 픽스처에 있습니다: scout 출력에 인용문·수치가 없을 것, miner의 모든 value가 quote의 부분문자열일 것, <code class="inl">raw_slots.json</code>·<code class="inl">meta.json</code>이 <b>파일로</b> 저장될 것, 존재하지 않는 PMID에 <code class="inl">error: fetch_failed</code>를 반환할 것.</div>
     </div>
 
@@ -739,8 +761,8 @@ unverifiable = len(fetch_failed) + len(no_abstract)
 
     <h2 style="margin-top:26px">읽는 순서 추천</h2>
     <div class="five">
-      <div><b>1</b> <code>scripts/verify_numbers.py</code> — 파일 하나로 완결. 여기가 시스템의 계약이다 (~370줄)</div>
-      <div><b>2</b> <code>scripts/test_verify_numbers.py</code> — 계약이 무엇을 막는지 케이스로 (~99줄)</div>
+      <div><b>1</b> <code>scripts/verify_evidence.py</code> — 파일 하나로 완결. 여기가 시스템의 계약이다 (~600줄)</div>
+      <div><b>2</b> <code>scripts/test_verify_evidence.py</code> — 계약이 무엇을 막는지 케이스로 (~450줄)</div>
       <div><b>3</b> <code>agents/abstract-miner.md</code> — 프롬프트를 스키마 스펙처럼 쓰는 예</div>
       <div><b>4</b> <code>skills/evidence-card/SKILL.md</code> — 오케스트레이션과 위임 경계</div>
       <div><b>5</b> <code>skills/evidence-card/tests/fixtures.md</code> — 확률적 시스템의 릴리스 기준을 문서화하는 법</div>

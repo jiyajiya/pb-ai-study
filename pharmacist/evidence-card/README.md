@@ -21,7 +21,7 @@ evidence-card/                          ← 플러그인 루트
 │   ├── evidence-scout.md               ← 서브에이전트 (격리 컨텍스트)
 │   └── abstract-miner.md               ← 서브에이전트 (격리 컨텍스트, 병렬)
 └── scripts/
-    └── verify_numbers.py               ← 결정론적 검증 게이트 (LLM 아님)
+    └── verify_evidence.py               ← 결정론적 검증 게이트 (LLM 아님)
 ```
 
 ### 왜 이 배치인가
@@ -52,7 +52,7 @@ SKILL.md 로드
   │                                  · 각자 초록 1편
   │   ◀──── 5슬롯 + quote ────────   · 서로 격리 → 숫자 교차오염 없음
   │
-  └─ P6 Bash 실행 ───────────────▶ verify_numbers.py
+  └─ P6 Bash 실행 ───────────────▶ verify_evidence.py
       ◀──── evidence-pack.json ──    · PubMed 재조회 후 대조
                                      · 철회·이해충돌도 같은 응답에서 확인
                                      · LLM 판단 개입 없음
@@ -77,7 +77,7 @@ miner가 돌려주는 `quote`는 **글자 하나 안 바꾼 원문 문장**이�
 실질적 이유는 원문을 못 보게 하는 게 아니라, 메인이 보는 원문을
 **검증 가능한 최소 단위로 줄이는 것**이다.
 
-그리고 숫자의 최종 판정은 어느 쪽이든 LLM이 하지 않는다 — `verify_numbers.py`가
+그리고 숫자의 최종 판정은 어느 쪽이든 LLM이 하지 않는다 — `verify_evidence.py`가
 PubMed를 재조회해 대조한다. 컨텍스트 격리는 그 검증을 **가능하게 만드는
 설계**이지, 그 자체가 안전장치는 아니다.
 
@@ -121,6 +121,11 @@ export NCBI_API_KEY="..."   # 없으면 초당 3회 제한 → 병렬 8개가 �
 ```
 
 발급: NCBI 계정 → Account Settings → API Key Management
+
+`export`는 **그 터미널 세션에서만** 유효하다. **같은 셸에서 `claude`를 실행**해야
+키가 전달된다 — 다른 창에서 세션을 켜면 키 없이 돌다가 병렬 8개에서 429가 나고,
+그 실패는 "조회 실패"로 조용히 팩 경고에 묻힌다. 매번 다시 치기 싫으면
+`~/.zshrc`에 영구 등록해둔다.
 
 ## 확인
 

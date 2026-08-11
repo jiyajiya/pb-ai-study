@@ -110,7 +110,7 @@
 
   pre{background:#15110C;border:1px solid var(--line);border-radius:12px;padding:16px 18px;overflow-x:auto;margin:12px 0}
   pre code{font-family:var(--mono);font-size:.83rem;line-height:1.65;color:#CFC5B4;white-space:pre}
-  pre code .c{color:#6E6455}
+  pre code .c{color:#8A7F6D}
   pre code .k{color:var(--accent)}
   pre code .s{color:var(--gold)}
   pre code .b{color:var(--accent2);font-weight:700}
@@ -173,6 +173,7 @@
   @media print{.nav,.toggle{display:none}.session{opacity:1;transform:none;break-inside:avoid}}
   @media(max-width:640px){.session,.closing{padding:24px 20px}}
 </style>
+<noscript><style>.session{opacity:1;transform:none}</style></noscript>
 </head>
 <body>
 
@@ -378,7 +379,7 @@
       <div class="cell empty">— 직접 수행 —</div>
 
       <div class="cell m"><span class="lbl">P6 · 스크립트 실행</span><span class="desc">파이썬을 돌립니다. 스크립트는 대화가 아니라 <b>파일</b>을 읽습니다.<span class="ret">◀ 받는 것: evidence-pack.json</span></span></div>
-      <div class="cell"><span class="lbl">verify_numbers.py</span><span class="desc"><b>AI가 아닙니다.</b> PubMed에서 초록을 <b>다시 직접 받아와</b> 글자 단위로 대조. 안 맞으면 그 숫자를 <b>지워버립니다.</b></span></div>
+      <div class="cell"><span class="lbl">verify_evidence.py</span><span class="desc"><b>AI가 아닙니다.</b> PubMed에서 초록을 <b>다시 직접 받아와</b> 글자 단위로 대조. 안 맞으면 그 숫자를 <b>지워버립니다.</b></span></div>
     </div>
 
     <div class="anal">주목할 점 — <b>메인 책상에 올라오는 원문은 논문당 최대 4문장, 그것도 "어느 PMID의 어느 슬롯"에 묶인 채로</b>입니다. 그래야 마지막에 한 문장씩 대조할 수 있습니다.</div>
@@ -435,8 +436,8 @@
 │   ├── <span class="b">evidence-scout.md</span>              <span class="c">← 조수 1 (별도 책상)</span>
 │   └── <span class="b">abstract-miner.md</span>              <span class="c">← 조수 2 (별도 책상, 병렬)</span>
 └── scripts/
-    ├── <span class="b">verify_numbers.py</span>              <span class="c">← 검증 게이트 (AI 아님)</span>
-    └── test_verify_numbers.py          <span class="c">← 게이트가 안 뚫렸는지 보는 시험지</span>
+    ├── <span class="b">verify_evidence.py</span>              <span class="c">← 검증 게이트 (AI 아님)</span>
+    └── test_verify_evidence.py          <span class="c">← 게이트가 안 뚫렸는지 보는 시험지</span>
 </code></pre>
 
     <table class="ttable">
@@ -453,7 +454,7 @@
         <tr><th>종류</th><th>정체</th><th>실행되는 곳</th><th>믿을 수 있나</th></tr>
         <tr><td><b>SKILL.md</b></td><td>절차서 (한국어 지시문)</td><td>메인 책상</td><td>AI가 읽고 따름 → 흔들릴 수 있음</td></tr>
         <tr><td><b>agents/*.md</b></td><td>조수 지시문 (한국어)</td><td>별도 책상</td><td>AI가 읽고 따름 → 흔들릴 수 있음</td></tr>
-        <tr class="hi"><td><b>verify_numbers.py</b></td><td><b>파이썬 코드</b></td><td>터미널</td><td><b>매번 똑같음. 안 흔들림</b></td></tr>
+        <tr class="hi"><td><b>verify_evidence.py</b></td><td><b>파이썬 코드</b></td><td>터미널</td><td><b>매번 똑같음. 안 흔들림</b></td></tr>
       </table>
       <p>앞의 두 개는 <b>"이렇게 해줘"</b>이고, 마지막 하나는 <b>"이건 이렇게 된다"</b>입니다. 이 차이가 다음 섹션들의 주제입니다.</p>
     </div>
@@ -480,7 +481,7 @@
       <div class="steps">
         <div class="steprow"><span class="n">①</span><span class="t"><b>검증되지 않은 숫자는 출력하지 않는다.</b> 검증 실패 슬롯은 <code class="inl">null</code>로 두고 사유를 남긴다. 그럴듯한 숫자를 만들어내는 것이 이 도구의 <b>유일한 치명적 실패</b></span></div>
         <div class="steprow"><span class="n">②</span><span class="t"><b>오케스트레이터가 보는 원문은 검증 가능한 최소 단위로 제한한다.</b> 초록 전문은 조수 안에서만 살아 있다 폐기되고, 메인에는 <b>슬롯에 묶인 인용문만</b> 올라온다</span></div>
-        <div class="steprow"><span class="n">③</span><span class="t"><b>숫자 검증은 AI가 하지 않는다.</b> <code class="inl">verify_numbers.py</code>만이 판정한다</span></div>
+        <div class="steprow"><span class="n">③</span><span class="t"><b>숫자 검증은 AI가 하지 않는다.</b> <code class="inl">verify_evidence.py</code>만이 판정한다</span></div>
       </div>
       <div class="fix"><span class="tag">정정</span>②를 예전엔 "원문을 절대 안 올린다"로 적었지만, 실제 코드의 문장은 <b>"검증 가능한 최소 단위로 제한한다"</b>입니다. 인용문은 올라옵니다 — 올라와야 대조가 됩니다.</div>
     </div>
@@ -562,7 +563,7 @@
         <tr><td>톤 판정 재료에서는</td><td><b>제외</b> — 다른 물질 논문이 근거 지형을 왜곡하면 안 됨</td></tr>
         <tr class="hi"><td>숫자 채굴 대상에서는</td><td><b>제외</b> — 8개 자리를 차지하지 못함</td></tr>
       </table>
-      <div class="anal">판단 기준 하나 — <b>애매하면 버린다.</b> 보수적으로 버리는 쪽이 잘못된 숫자를 내보내는 것보다 낫습니다. 그리고 off_target이 전체의 1/3을 넘으면 <b>"성분 이름이 너무 넓다"</b>는 신호로 읽어 하위 분해를 제안합니다.</div>
+      <div class="anal">판단 기준 하나 — <b>애매하면 버린다.</b> 보수적으로 버리는 쪽이 잘못된 숫자를 내보내는 것보다 낫습니다. 그리고 off_target이 전체의 1/3 이상이면 <b>"성분 이름이 너무 넓다"</b>는 신호로 읽어 하위 분해를 제안합니다.</div>
     </div>
 
     <div class="case">
@@ -638,13 +639,19 @@
       <div class="vs">
         <div class="col b">
           <h4>effect에 넣어도 되는 것</h4>
-          <p><span class="big">"얼마나 큰가"</span>변화율 <code class="inl">23.4%</code> · 변화량 <code class="inl">-0.87 mmol/L</code> · 군간 차이 <code class="inl">SMD -0.42</code> · 위험도 비 <code class="inl">RR 0.78</code></p>
+          <p><span class="big">"얼마나 큰가"</span> — <b>숫자 칸(value)에는 숫자만.</b> 단위·지표명(RR·OR·HR·SMD·MD)·p값은 <b>각자 칸이 따로</b> 있습니다</p>
         </div>
         <div class="col a">
           <h4>넣으면 안 되는 것 → null</h4>
           <p><span class="big">"우연이 아닌가"</span>p값 단독 <code class="inl">p &lt; 0.05</code> · 신뢰구간만 <code class="inl">95% CI 0.12–0.48</code> · 서술어 <code class="inl">significantly reduced</code></p>
         </div>
       </div>
+      <table class="ttable">
+        <tr><th>초록 표현</th><th>숫자 칸(value)</th><th>단위 칸(unit)</th><th>지표명 칸(measure)</th></tr>
+        <tr><td>reduced by 23.4%</td><td><code>23.4%</code></td><td>—</td><td>—</td></tr>
+        <tr><td>-0.87 mmol/L</td><td><code>-0.87</code></td><td><code>mmol/L</code></td><td>—</td></tr>
+        <tr class="hi"><td>RR 0.78</td><td><code>0.78</code></td><td>—</td><td><code>RR</code></td></tr>
+      </table>
       <div class="warn"><b>카드뉴스에 "p&lt;0.05 감소"라고 쓸 수 없습니다.</b> p값은 "우연이 아니다"라는 통계 판정이지 크기가 아닙니다. 초록에 유의성만 있고 크기가 없으면 그 논문의 effect는 <b>null이 정답</b>입니다. 저자도 크기를 안 밝혔다는 뜻이니까요.</div>
       <div class="anal">p값은 <b>버리지 않고</b> <code class="inl">significance</code> 칸에 따로 담습니다. 단, <b>효과 크기 문장과 같은 문장에 있는 p값</b>만. 다른 문장에서 끌어오면 다른 지표의 p값이 붙습니다.</div>
     </div>
@@ -655,6 +662,7 @@
 <pre><code><span class="k">"effect"</span>: {
   <span class="k">"value"</span>: <span class="s">"-0.34"</span>,
   <span class="k">"unit"</span>: <span class="s">"mmol/L"</span>,
+  <span class="k">"measure"</span>: <span class="b">null</span>,                 <span class="c">← RR/OR/HR/SMD/MD 중 하나. "RR 0.78"이면 value:"0.78"+measure:"RR"</span>
   <span class="k">"unit_type"</span>: <span class="s">"absolute"</span>,      <span class="c">← %인지 절대량인지 (스크립트가 값에서 다시 정합니다)</span>
   <span class="k">"comparator"</span>: <span class="s">"placebo"</span>,       <span class="c">← placebo / active / baseline / null 넷 중 하나만</span>
   <span class="k">"significance"</span>: <span class="s">"P = 0.02"</span>,    <span class="c">← p값은 버리지 말고 여기 따로</span>
@@ -687,9 +695,9 @@
     </div>
   </section>
 
-  <!-- 8. verify_numbers.py -->
+  <!-- 8. verify_evidence.py -->
   <section class="session" id="s8">
-    <div class="s-head"><span class="step">조각 4</span><span class="sec">scripts/verify_numbers.py</span></div>
+    <div class="s-head"><span class="step">조각 4</span><span class="sec">scripts/verify_evidence.py</span></div>
     <h2 class="s-title">마지막 관문은 <span class="hl">AI가 아니다</span></h2>
     <p class="s-intro">지금까지는 전부 "이렇게 해줘"였습니다. 여기서부터는 <b>"이렇게 된다"</b>입니다. 파이썬 코드는 기분도 없고 아부도 안 합니다.</p>
 
@@ -701,7 +709,7 @@
         <div class="steprow"><span class="n">C3</span><span class="t"><b>(effect 한정) 그 값이 효과 크기의 형태인가</b> — 원문에 실재하지만 효과 크기가 아닌 것(<code class="inl">p &lt; 0.05</code>)을 걸러냄</span></div>
         <div class="steprow"><span class="n">C4</span><span class="t"><b>unit이 그 quote 안에 있는가</b> — <code class="inl">17.36</code> + <code class="inl">hours</code>처럼 <b>단위만 바꾼 60배 뻥튀기</b>를 잡음</span></div>
       </div>
-      <div class="anal">C3가 왜 따로 필요한가 — <code class="inl">"p &lt; 0.05"</code>는 <b>초록에 진짜로 있는 문자열</b>이라 C1·C2를 멀쩡히 통과합니다. <b>프롬프트 규칙만으로는 새어 나오기 때문에</b> 정규식으로 한 겹 더 막습니다.</div>
+      <div class="anal">C3가 왜 따로 필요한가 — <code class="inl">"p &lt; 0.05"</code>는 <b>초록에 진짜로 있는 문자열</b>이라 C1·C2를 멀쩡히 통과합니다. <b>프롬프트 규칙만으로는 새어 나오기 때문에</b> 정규식으로 한 겹 더 막습니다. 규칙은 간단합니다 — <b>숫자 칸(value)에는 숫자만 들어갑니다. 단위·지표명·p값은 각자 칸이 따로 있습니다.</b> 그 칸에 숫자 하나가 아닌 게 들어오면 그 자리에서 폐기됩니다.</div>
       <div class="anal">C4가 왜 따로 필요한가 — 값과 단위를 <b>따로 받는 구조</b>라서 그렇습니다. 값만 검사하면 단위 칸은 무방비입니다. 그리고 카드에 찍히는 건 둘의 <b>합</b>입니다.</div>
     </div>
 
@@ -717,9 +725,9 @@
     <span class="k">return</span> {<span class="s">"value"</span>: <span class="b">None</span>, <span class="s">"verified"</span>: <span class="b">False</span>,
             <span class="s">"reason"</span>: <span class="s">"value_not_in_quote"</span>}
 
-<span class="c"># C3: effect 슬롯만 — 원문에 있어도 효과 크기가 아니면 폐기</span>
+<span class="c"># C3: effect 슬롯만 — 숫자 하나 형태가 아니면 폐기 (단위·지표명·p값은 이미 다른 칸)</span>
 <span class="k">if</span> slot_name == <span class="s">"effect"</span>:
-    reason = effect_shape_reason(value_norm)   <span class="c"># p값·CI·서술어 탐지</span>
+    reason = effect_shape_reason(value_norm)   <span class="c"># 숫자 하나 형태인지만 검사</span>
     <span class="k">if</span> reason:
         <span class="k">return</span> {<span class="s">"value"</span>: <span class="b">None</span>, <span class="s">"verified"</span>: <span class="b">False</span>, <span class="s">"reason"</span>: reason}
 
@@ -775,7 +783,7 @@
         <li>"근데 AI가 검사하면 안 되나요?" 질문 대비 → <b>같은 실수를 한 AI가 자기 실수를 검사하면 통과시킨다.</b> 검사관은 다른 종류여야 합니다.</li>
         <li><code>"value": None</code> 부분을 손으로 짚으세요. "지운다"가 이 도구의 성격입니다.</li>
         <li><b>"magnesium의 g" 이야기는 반응이 좋습니다.</b> 안전장치도 대충 만들면 안전장치가 아니라는 예시.</li>
-        <li>시간 여유 있으면 <code>cd pb-ai-study/pharmacist/evidence-card</code> 후 <code>python3 scripts/test_verify_numbers.py</code>를 라이브로 돌려 보여주면 임팩트가 큽니다. <code>ok</code> 한 줄이 나옵니다.</li>
+        <li>시간 여유 있으면 <code>cd pb-ai-study/pharmacist/evidence-card</code> 후 <code>python3 scripts/test_verify_evidence.py</code>를 라이브로 돌려 보여주면 임팩트가 큽니다. <code>ok</code> 한 줄이 나옵니다.</li>
       </ul>
     </div>
   </section>
@@ -812,6 +820,7 @@ claude plugin install evidence-card@evidence-card
       <div class="case-label"><span class="dot"></span>3) NCBI API 키 — 없으면 초당 3회 제한에 병렬 8개가 바로 걸림</div>
 <pre><code><span class="k">export</span> NCBI_API_KEY=<span class="s">"..."</span>
 <span class="c">#    발급: NCBI 계정 → Account Settings → API Key Management</span></code></pre>
+      <div class="warn"><b>키를 export한 그 터미널에서 <code class="inl">claude</code>를 실행하세요.</b> 다른 창에서 Claude Code를 켜면 키 없이 돌다가 429 오류가 나는데, 그 실패가 "조회 실패"로 조용히 묻혀서 원인을 찾기 어렵습니다. 매번 다시 치기 싫으면 <code class="inl">~/.zshrc</code>에 추가해두세요.</div>
     </div>
 
     <div class="case">
@@ -830,13 +839,14 @@ claude plugin install evidence-card@evidence-card
     <div class="case">
       <div class="case-label star"><span class="dot"></span>회귀 테스트 4종 — 이 4개가 이 도구의 시험지</div>
       <table class="ttable">
-        <tr><th>ID</th><th>입력</th><th>기대 톤</th><th>하위분해</th><th>이 케이스가 잡는 것</th></tr>
-        <tr><td>F1</td><td>오메가3 중성지방</td><td><b>T1</b></td><td><b>true</b></td><td>근거 강한 걸 T2로 낮춰보지 않는지 (4차 검색 확인)</td></tr>
-        <tr><td>F2</td><td>마그네슘 수면</td><td><b>T2</b></td><td>false</td><td>기준 케이스 (조건부 판정)</td></tr>
-        <tr><td>F3</td><td>유산균 과민성대장증후군</td><td><b>T2</b></td><td><b>true</b></td><td>균주 단위로 내려가야 함을 감지하는지</td></tr>
-        <tr class="hi"><td><b>F4</b></td><td><b>콜라겐 피부탄력</b></td><td><b>T3</b></td><td>false</td><td><b>가장 중요.</b> 대중 인식 강한 성분을 올려주지 않는지</td></tr>
+        <tr><th>ID</th><th>입력</th><th>기대 톤</th><th>하위분해</th><th>이 케이스가 잡는 것</th><th>데모</th></tr>
+        <tr><td>F1</td><td>오메가3 중성지방</td><td><b>T1</b></td><td><b>true</b></td><td>근거 강한 걸 T2로 낮춰보지 않는지 (4차 검색 확인)</td><td><b>→ P2에서 멈춤</b></td></tr>
+        <tr><td>F2</td><td>마그네슘 수면</td><td><b>T2</b></td><td>false</td><td>기준 케이스 (조건부 판정)</td><td>✅ P1→P6 전 구간</td></tr>
+        <tr><td>F3</td><td>유산균 과민성대장증후군</td><td><b>T2</b></td><td><b>true</b></td><td>균주 단위로 내려가야 함을 감지하는지</td><td><b>→ P2에서 멈춤</b></td></tr>
+        <tr class="hi"><td><b>F4</b></td><td><b>콜라겐 피부탄력</b></td><td><b>T3</b></td><td>false</td><td><b>가장 중요.</b> 대중 인식 강한 성분을 올려주지 않는지</td><td>톤 메시지용 (채굴 대상 적음)</td></tr>
       </table>
       <div class="anal"><b>F4가 T1이나 T2로 나오면 릴리스 불가</b>입니다. 라우터가 "근거 있어 보이게" 기울었다는 뜻이고, 그러면 이 도구의 존재 이유가 무너집니다.</div>
+      <div class="anal">F1·F3는 하위분해가 <b>true</b>라서 <b>P2에서 멈춥니다</b> — 사용자에게 성분을 쪼갤지 되묻는 지점이 파이프라인의 끝입니다. evidence-pack까지 안 나오는 게 정상이니 "고장 났다"로 읽지 마세요.</div>
       <div class="anal">F1의 하위분해가 <b>true인 이유</b> — EPA와 DHA는 중성지방에 대한 효과가 실제로 다릅니다. "오메가3"로 뭉뚱그리면 서로 다른 물질의 숫자가 한 표에 섞입니다. (초기 픽스처는 false를 기대했는데 <b>그쪽이 틀렸습니다.</b>)</div>
     </div>
 
@@ -863,13 +873,14 @@ claude plugin install evidence-card@evidence-card
         <tr class="hi"><td>단위가 <code>min</code>인 논문</td><td><code>unit: "min"</code> 그대로</td><td><b>hours·분으로 바꾸는지</b></td></tr>
         <tr><td>비교 대상이 안 적힌 논문</td><td><code>comparator: null</code></td><td>"위약 대비"라고 단정하는지</td></tr>
       </table>
-      <div class="anal">게이트 자체가 살아 있는지는 <b>1초</b>면 확인됩니다 — 터미널에서 <code class="inl">cd pb-ai-study/pharmacist/evidence-card</code> 후 <code class="inl">python3 scripts/test_verify_numbers.py</code>. <code class="inl">ok</code>가 안 나오면 그날 실습은 거기서 멈춰야 합니다.</div>
+      <div class="anal">게이트 자체가 살아 있는지는 <b>1초</b>면 확인됩니다 — 터미널에서 <code class="inl">cd pb-ai-study/pharmacist/evidence-card</code> 후 <code class="inl">python3 scripts/test_verify_evidence.py</code>. <code class="inl">ok</code>가 안 나오면 그날 실습은 거기서 멈춰야 합니다.</div>
     </div>
 
     <div class="note">
       <div class="lab">발표자 노트</div>
-      <p><b>라이브 데모는 F4(콜라겐 피부탄력) 하나만</b> 하세요. 시간도 맞고 메시지도 가장 셉니다.</p>
-      <p class="say">콜라겐 먹으면 피부 좋아진다, 다들 아시죠. 이 도구를 돌리면 T3, 그러니까 <b>"근거 약함"</b>이 나옵니다. 도구가 고장 난 게 아니라, <b>이게 정답이라서</b> 이렇게 나오는 거예요.</p>
+      <p><b>라이브 데모는 2단으로 나누세요 — 전 구간은 F2, 톤 메시지는 F4.</b></p>
+      <p class="say">P1→P6 전 구간(파일 저장·검증까지, "실습 중 눈으로 확인할 것 6가지"를 다 보여주는 것)은 <b>F2(마그네슘 수면)</b>로 도세요. F4(콜라겐 피부탄력)는 근거가 약해서 채굴 대상이 적고, 운이 나쁘면 종료 코드 2로 끝나 6가지 중 상당수를 못 보여줄 수 있습니다.</p>
+      <p class="say">대신 F4는 <b>톤 판정 메시지를 꽂는 용도</b>로 따로 돌리세요. 콜라겐 먹으면 피부 좋아진다, 다들 아시죠. 이 도구를 돌리면 T3, 그러니까 <b>"근거 약함"</b>이 나옵니다. 도구가 고장 난 게 아니라, <b>이게 정답이라서</b> 이렇게 나오는 거예요.</p>
       <ul>
         <li>실행이 오래 걸리면(1~3분) 그동안 "지금 조수 8명이 각자 논문 한 편씩 읽고 있다"고 진행 상황을 해설하세요. 빈 시간이 오히려 설명 기회입니다.</li>
         <li>결과에 ❌ 빈칸이 나오면 <b>실패가 아니라 성공</b>이라고 반드시 짚어주세요. 여기서 안 짚으면 청중은 도구가 약하다고 오해합니다.</li>
