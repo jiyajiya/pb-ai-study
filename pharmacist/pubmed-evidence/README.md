@@ -45,7 +45,7 @@ SKILL.md 로드
   ├─ P1 정규화 (직접)
   │
   ├─ P2 위임 ────────────────────▶ evidence-scout
-  │                                  · PubMed 30편 스캔
+  │                                  · 검색 4회 × 최대 40건 스캔
   │                                  · 초록 원문이 여기 쌓임
   │   ◀──── JSON 요약만 반환 ────    · 종료 시 전부 폐기
   │        {tone, pmids}
@@ -70,7 +70,7 @@ miner가 돌려주는 `quote`는 **글자 하나 안 바꾼 원문 문장**이�
 
 | | 서브에이전트 없이 | 이 구조 |
 |---|---|---|
-| 메인에 들어오는 원문 | 초록 30편 전문 | 논문당 최대 5문장 |
+| 메인에 들어오는 원문 | 스캔한 초록 전문 (검색 4회 × 최대 40건) | 논문당 최대 5문장 |
 | 그 문장의 출처 | 섞여 있음 | 슬롯·PMID에 묶여 있음 |
 | 검증 가능성 | 불가 (무엇을 대조할지 모름) | 가능 (quote 단위로 대조) |
 
@@ -88,16 +88,27 @@ PubMed를 재조회해 대조한다. 컨텍스트 격리는 그 검증을 **가�
 ### 방법 A — 로컬 마켓플레이스로 설치 (개발 중 권장)
 
 `claude plugin install`은 **마켓플레이스에서만** 설치한다. 로컬 경로를
-직접 넘길 수 없으므로, 이 레포를 마켓플레이스로 먼저 등록한다.
+직접 넘길 수 없으므로, 마켓플레이스를 먼저 등록한다.
 
 ```bash
-claude plugin marketplace add /절대/경로/pubmed-evidence
+claude plugin marketplace add /절대/경로/pharmacist
+claude plugin install pubmed-evidence@pharma-bros
+claude plugin install kr-claims@pharma-bros        # 국내 기준 대조까지 할 때
+```
+
+`marketplace add`에 넘기는 경로는 레포 루트가 아니라
+**`.claude-plugin/marketplace.json`이 있는 디렉토리**다. 이 레포에는 그런 곳이
+둘이다 — 두 플러그인을 함께 등록하는 `pharmacist/`와, 이 플러그인 하나만
+등록하는 `pharmacist/pubmed-evidence/`. 위처럼 `pharmacist/`를 쓰는 것을 기본으로
+한다. 이걸 단독으로 떼어 쓸 때만 아래를 쓴다.
+
+```bash
+claude plugin marketplace add /절대/경로/pharmacist/pubmed-evidence
 claude plugin install pubmed-evidence@pubmed-evidence
 ```
 
-`marketplace add`에 넘기는 경로는 레포 루트가 아니라 **플러그인 디렉토리**
-(`.claude-plugin/marketplace.json`이 있는 곳, 여기서는 `pharmacist/pubmed-evidence`)다.
-모노레포에서 레포 루트를 넘기면 찾지 못한다.
+**둘을 다 등록하지는 마라.** 같은 플러그인이 두 마켓플레이스에 잡혀
+어느 쪽 사본이 설치됐는지 추적하기 어려워진다.
 매니페스트가 유효한지는 설치 전에 확인할 수 있다:
 
 ```bash
@@ -144,7 +155,8 @@ export NCBI_API_KEY="..."   # 없으면 초당 3회 제한 → 병렬 8개가 �
 |---|---|---|
 | **조작** | 초록에 없는 숫자·단위를 만들어내기 (C1~C4) | — |
 | **오배치** | — | 같은 문장의 **다른** 숫자를 잘못된 슬롯에 넣기 |
-| **철회 논문** | 철회·정오표는 PubMed 응답에서 읽어 제외한다 | 팩 생성 이후에 일어난 철회 |
+| **철회 논문** | 철회된 논문은 슬롯이 전부 통과해도 팩에서 뺀다 | 팩 생성 이후에 일어난 철회 |
+| **정오표·우려 표명** | 붙어 있다는 사실을 `warnings`에 올린다 | — 제외하지 않는다. 수치가 정정 대상인지는 사람이 원문에서 본다 |
 | **이해충돌** | 진술 원문을 팩에 싣는다 | 진술이 없는 논문의 실제 후원 관계 |
 
 ```
