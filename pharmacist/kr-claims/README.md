@@ -19,7 +19,7 @@ kr-claims/                      ← 플러그인 루트
 │   ├── check_kr_claims.py     ← 조회 / 대조 (스킬이 실행)
 │   └── test_kr_claims.py      ← 네트워크 없이 도는 계약 검사
 ├── data/
-│   └── kr_claims.json         ← 84KB. **플러그인에 동봉되어 배포된다**
+│   └── kr_claims.json         ← 85KB. **플러그인에 동봉되어 배포된다**
 └── raw/                       ← 고시 원문. 개정 시에만 생겼다 지운다 (git 미추적)
 ```
 
@@ -213,7 +213,7 @@ python3 scripts/check_kr_claims.py \
 
 | | pubmed-evidence P6 | kr-claims |
 |---|---|---|
-| 묻는 것 | 이 숫자가 그 초록에 실재하는가 | 이 숫자를 국내에서 써도 되는가 |
+| 묻는 것 | 이 값이 그 초록의 인용문 안에 있는가 | 이 용량을 국내에서 써도 되는가 |
 | 기준 | PubMed 초록 | 식약처 고시 |
 | 실패 형태 | 환각·조작 | 광고법 위반·용량 일탈 |
 

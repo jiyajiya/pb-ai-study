@@ -9,32 +9,48 @@
 | `kr-claims/` | 식약처 고시 대조 (공용 플러그인) | 결정론적 게이트 — LLM에 맡기면 안 되는 판정 |
 | `pubmed-evidence/` | PubMed 근거 수집·검증 플러그인 | 숫자 환각 차단, 플러그인 배치 |
 
-세 개가 한 흐름으로 이어진다.
+**셋의 배포 방식이 다르다.** `kr-claims`·`pubmed-evidence`는 `pharmacist/.claude-plugin/marketplace.json`에
+등록된 배포 플러그인이라 마켓플레이스로 설치하면 어디서든 쓸 수 있다. `ingredient-analysis`는
+플러그인이 아니라 `ingredient-analysis/.claude/` 아래의 **프로젝트 로컬 설정**이다 — 반드시
+`cd pharmacist/ingredient-analysis` 한 뒤 그 디렉토리를 cwd로 켠 세션에서만 스킬·에이전트가 보인다.
+저장소 루트에서 `claude`를 켜면 이 스킬·에이전트는 아예 나타나지 않는다.
+
+세 개가 이렇게 맞물린다.
 
 ```
 성분 × 증상
    │
-   ├─ pubmed-evidence ──→ evidence-pack.json   "이 숫자가 그 논문에 실재하는가"
-   │                          │
-   │                          ↓
-   ├─ kr-claims ──────→ kr-report.json       "이 숫자를 국내에서 써도 되는가"
-   │                          │
-   │                          ↓
-   └─ ingredient-analysis ─→ copy/{성분}-v3.md   "그래서 뭐라고 쓸 것인가"
+   ├─ pubmed-evidence ──→ evidence-pack.json      "이 값이 그 초록의 인용문 안에 있는가"
+   │                            │
+   │                            ↓ (--pack 대조 모드)
+   │       kr-claims ────→ kr-report.json         "이 용량을 국내에서 써도 되는가"
+   │
+   └─ ingredient-analysis
+          └ 0라운드에 kr-claims 조회 모드 ─→ research/{성분}-고시.json
+                                                  ↓
+                                             copy/{성분}-v3.md   "그래서 뭐라고 쓸 것인가"
 ```
+
+`kr-claims`는 두 모드로 양쪽에 붙는다 — 팩의 용량을 고시와 대조하는 **대조 모드**(`--pack`,
+`kr-report.json` 출력)와, 인정 문구·섭취량을 꺼내오는 **조회 모드**다. `ingredient-analysis`는
+`evidence-pack`도 `kr-report.json`도 받지 않는다 — 0라운드에서 쓰는 것은 조회 모드 결과
+(`research/{성분}-고시.json`) 뿐이다. **대조 모드는 실제로 동작하는 기능이지만, 이 저장소의
+세 스킬 중 어느 것도 자동으로 호출하지 않는다** — 필요하면 사람이 직접 `check_kr_claims.py
+--pack`을 실행해야 한다. 팩과 카피를 잇는 것은 자동화된 파일 체인이 아니라 사람이다.
 
 ---
 
 ## ingredient-analysis/ — 서브에이전트 파이프라인
 
 조사 → 카피 → 검수 → 수정을 **각각 다른 담당(서브에이전트)** 에게 맡기고,
-메인 에이전트는 검증과 판정만 한다. `/성분조사 {성분명}` 하나로 돈다.
+메인 에이전트는 검증과 판정만 한다. `/ingredient-analysis {성분명}` 하나로 돈다.
 
 ```
 ingredient-analysis/
 ├── .claude/
 │   ├── skills/
-│   │   ├── 성분조사/SKILL.md      0~4라운드 파이프라인 + 종료 판정 규칙
+│   │   ├── ingredient-analysis/   0~4라운드 파이프라인 + 종료 판정 규칙
+│   │   │   └── SKILL.md
 │   │   └── sag/SKILL.md           위임 자체의 규칙 (지시문·병렬·검증)
 │   └── agents/
 │       ├── researcher.md          웹 검색 O · 쓰기 O
@@ -114,7 +130,9 @@ kr-claims/                     ← 플러그인 루트
 
 ```
 pubmed-evidence/                       ← 플러그인 루트
-├── .claude-plugin/plugin.json         매니페스트. 여기엔 매니페스트만 둔다
+├── .claude-plugin/
+│   ├── plugin.json                    매니페스트
+│   └── marketplace.json               단독 설치용 마켓플레이스 등록 (기본은 상위 pharmacist/ 사용)
 ├── skills/pubmed-evidence/
 │   ├── SKILL.md                       오케스트레이터 (메인 컨텍스트)
 │   ├── references/normalize.md        한글↔영문 성분명 — 필요할 때만 읽힌다
@@ -122,7 +140,9 @@ pubmed-evidence/                       ← 플러그인 루트
 ├── agents/                            ← 스킬 밑이 아니라 루트여야 등록된다
 │   ├── evidence-scout.md              지형 스캔 → 톤(T1/T2/T3) 판정 (1회)
 │   └── abstract-miner.md              초록 1편 → 5슬롯 + 인용문 (병렬)
-└── scripts/verify_evidence.py         결정론적 게이트 — LLM 아님
+└── scripts/
+    ├── verify_evidence.py             결정론적 게이트 — LLM 아님
+    └── test_verify_evidence.py        네트워크 없이 도는 계약 검사
 ```
 
 P1 정규화(메인 직접) → P2 스캔 → P3 채굴(병렬) → P6 검증 순으로 돈다.
@@ -139,8 +159,8 @@ miner가 돌려주는 `quote`는 글자 하나 안 바꾼 원문이고, **그건
 
 ### 게이트가 보증하는 것과 못 하는 것
 
-C1~C4는 "이 값이 그 초록에 실재한다"만 본다. 같은 문장의 용량 숫자가 효과 크기
-자리에 들어가도 통과한다. **조작은 막고 오배치는 못 막는다.** 철회 논문은 슬롯이
+C1~C5는 "그 인용문이 그 PMID 초록에 있고, 그 값이 인용문 안에 있다"만 본다.
+같은 문장의 용량 숫자가 효과 크기 자리에 들어가도 통과한다. **조작은 막고 오배치는 못 막는다.** 철회 논문은 슬롯이
 전부 통과해도 제외하고, 이해충돌은 진술 원문만 싣고 판정하지 않는다.
 막을 수 있는 것만 기계로 막고 남는 것은 팩의 `warnings`로 사람에게 넘긴다.
 
@@ -152,7 +172,7 @@ C1~C4는 "이 값이 그 초록에 실재한다"만 본다. 같은 문장의 용
 
 | | pubmed-evidence | kr-claims |
 |---|---|---|
-| 묻는 것 | 이 숫자가 그 초록에 실재하는가 | 이 숫자를 국내에서 써도 되는가 |
+| 묻는 것 | 이 값이 그 초록의 인용문 안에 있는가 | 이 용량을 국내에서 써도 되는가 |
 | 기준 | PubMed 초록 | 식약처 고시 |
 | 실패 형태 | 환각·조작 | 광고법 위반·용량 일탈 |
 
