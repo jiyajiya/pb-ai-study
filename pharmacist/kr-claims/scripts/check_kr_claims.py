@@ -115,6 +115,30 @@ def find_ingredient(claims: dict, query: str) -> tuple[list[dict], str]:
     return [], "none"
 
 
+# 고시 인정 문구의 서술어. 이 셋으로 끝나지 않으면 인정 문구가 아닐 수 있다.
+#
+# 파서가 「기능성 내용」 자리에서 뽑았다는 것이 그것이 문구라는 뜻은 아니다.
+# 1-8 나이아신은 이 값이 "니코틴산인 경우"·"니코틴산아미드인 경우"다 —
+# 기능성이 아니라 어느 형태에 해당하는지를 가르는 조건문이고, 그대로 표의
+# 「인정 기능성 문구」 칸에 옮기면 없는 기능성을 만든 것이 된다.
+#
+# "…인 경우"를 막는 대신 "무엇이 문구인가"를 닫는다. 막을 것을 열거하면
+# 새 표현이 나올 때마다 구멍이 생기고, 그건 이 저장소가 C3에서 이미
+# 겪은 실패다. 동봉 데이터 99행 중 97행이 이 셋으로 끝난다
+# (도움을 줄 수 있음 87 · 필요 9 · 관여 1).
+#
+# 고시가 개정돼 새 서술어가 생기면 그 행이 "확인 필요"로 뜬다. 폐기가
+# 아니라 사람에게 한 번 보이는 것이므로 그쪽 오탐이 반대보다 싸다.
+CLAIM_TAILS = ("도움을 줄 수 있음", "필요", "관여")
+
+
+def claim_shape(text: str | None) -> str:
+    """인정 문구의 꼴인가. null/공란은 별도 경로(S2)가 이미 다룬다."""
+    if not text or not text.strip():
+        return "empty"
+    return "ok" if text.strip().endswith(CLAIM_TAILS) else "unexpected"
+
+
 UNIT_MODIFIERS = ("α-TE", "RAE", "DFE", "NE", "TE")
 
 
@@ -361,6 +385,7 @@ def run(args) -> int:
         rows = []
         for r in e.get("rows", []):
             rows.append({"functional_claim": r.get("functional_claim"),
+                         "claim_shape": claim_shape(r.get("functional_claim")),
                          "daily_intake_raw": (r.get("daily_intake") or {}).get("raw")})
             for d in doses:
                 c = compare_dose(d["value"], d["unit"], r.get("daily_intake"))
@@ -399,6 +424,18 @@ def run(args) -> int:
     if any(r.get("functional_claim") is None for m in matches for r in m.get("rows", [])):
         warnings.append("이 원료는 고시 인정 문구를 추출하지 못한 행이 있다 — "
                         "원문을 직접 확인해야 한다. 비어 있다고 문구를 생성하지 말 것.")
+    # 문구 칸이 채워져 있어도 그것이 인정 문구가 아닐 수 있다 (1-8 나이아신의
+    # "니코틴산인 경우"). 빈 칸보다 위험하다 — 빈 칸은 사람이 채워야 한다는
+    # 신호라도 되지만, 이건 그냥 옮겨 적힌다.
+    odd_claims = [f'{m.get("ingredient_ko")}({m.get("code")}): {r.get("functional_claim")}'
+                  for m in matches for r in m.get("rows", [])
+                  if r.get("claim_shape") == "unexpected"]
+    if odd_claims:
+        warnings.append(
+            "인정 문구의 꼴이 아닌 행이 있다 — 고시가 문구 자리에 적용 조건을 적어 둔 "
+            "경우다(예: 1-8 나이아신 '니코틴산인 경우'). 기능성이 아니므로 표의 "
+            f"「인정 기능성 문구」 칸에 그대로 옮기지 말고 '확인 필요'로 둘 것: "
+            f"{'; '.join(odd_claims)}")
     # S10: raw에 시행 전 개정 주석("고시 제…호", "시행일(…)")이 섞여 있으면
     # parsed:false라 비교는 막혀도, raw를 그대로 보여주는 리포트는 시행 전
     # 개정치를 현행처럼 읽힐 수 있다.
@@ -440,6 +477,9 @@ def run(args) -> int:
         verdict_reasons.append("기준 성분(basis)이 논문 용량과 같은지 확인되지 않았다")
     if any(r.get("functional_claim") is None for m in matches for r in m.get("rows", [])):
         verdict_reasons.append("인정 문구를 추출하지 못한 행이 있다")
+    if odd_claims:
+        verdict_reasons.append(f"인정 문구의 꼴이 아닌 행이 {len(odd_claims)}건 있다 "
+                               "(적용 조건이 문구 자리에 들어간 경우)")
     if dup_hit_names:
         verdict_reasons.append("같은 이름으로 여러 코드가 등재돼 있다")
 

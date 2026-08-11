@@ -741,29 +741,45 @@ assert _dose_out["verified"], _dose_out
 
 
 # ══════════════════════════════════════════════════════════════════
-# R1: 둘째 문장이 **숫자로 시작하면** 문장 경계로 잡히지 않았다.
-# SENTENCE_BREAK가 [.!?]\s+[A-Z(] 라서 숫자 시작을 놓쳤고, 하필 그것이
-# S1이 막으려던 바로 그 재현 케이스의 어순만 뒤집은 형태다.
+# R1: 문장 경계는 다음 글자를 **열거하지 않는다**.
+#
+# 이 자리는 두 번 뚫렸고 두 번 다 허용 목록이 짧아서였다.
+#   [A-Z(]     → 숫자 시작을 놓침    ("…daily. 17.36 min was…")
+#   [A-Z(0-9]  → 그리스문자·소문자를 놓침 ("…weeks. α-Tocopherol rose…")
+# 자연어의 문장 첫 글자는 열린 집합이라 열거로는 끝나지 않는다. \S로 닫았다.
+# 아래 케이스들은 **전부 같은 문장 쌍이고 둘째 문장 첫 글자만 다르다** —
+# 어느 하나라도 통과하면 그 글자 종류가 통째로 구멍이라는 뜻이다.
 # ══════════════════════════════════════════════════════════════════
 
-DIGIT_SENT_Q = ("Subjects received 500 mg magnesium daily. "
-                "17.36 min was the mean reduction in sleep onset latency.")
-DIGIT_SENT_ABS = normalize(DIGIT_SENT_Q)
+for _head in ["17.36 min", "Tocopherol", "α-Tocopherol", "β-Glucan", "ω-3 intake",
+              "p27 expression", "the mean value", "'quoted' text", "[bracketed] text"]:
+    _q = f"Subjects received 500 mg magnesium daily. {_head} was the mean reduction."
+    assert has_multiple_sentences(_q), _head
+    # 초록은 min인데 카드에는 mg으로 찍히던 경로
+    r = verify_slot("effect", slot("17.36", _q, unit="mg"), normalize(_q))
+    assert not r["verified"] and r["reason"] == "quote_multiple_sentences", (_head, r)
+    assert r["value"] is None, (_head, r)
 
-assert has_multiple_sentences(DIGIT_SENT_Q), DIGIT_SENT_Q
-# 초록은 min인데 카드에는 mg으로 찍히던 경로
-r = verify_slot("effect", slot("17.36", DIGIT_SENT_Q, unit="mg"), DIGIT_SENT_ABS)
-assert not r["verified"] and r["reason"] == "quote_multiple_sentences", r
-assert r["value"] is None, r
-
-# 오탐 방지: 약어 뒤에 숫자가 와도 문장 경계가 아니다
+# 오탐 방지: ABBREV_TAIL에 있는 약어 뒤는 무엇이 오든 문장 경계가 아니다
 for abbr_digit in [
     "Results reported by Smith et al. 2020 showed a 23.4% reduction overall.",
     "See protocol No. 3 for the randomization details used in this trial.",
     "The outcome is summarized in Fig. 2 of the supplementary material.",
     "Treatment vs. 500 mg placebo showed a mean difference of -0.34 mmol/L.",
+    "Statins (e.g. atorvastatin) reduced LDL by 23.4% compared with placebo.",
 ]:
     assert not has_multiple_sentences(abbr_digit), abbr_digit
+
+# \S의 대가: ABBREV_TAIL에 **없는** 약어는 이제 경계로 오인된다. 멀쩡한
+# 단일 문장이 quote_multiple_sentences로 폐기된다는 뜻이다 — 값이 새는
+# 것이 아니라 값을 잃는 쪽이므로 감수한다(fail-closed). 목록을 넓혀
+# 되살리려 하면 그때마다 진짜 경계도 같이 숨는다. 이 계약을 고정해 둔다.
+for _known_false_reject in [
+    "Patients received 10 mg i.v. administration once daily for 8 weeks.",
+    "Dosing was p.o. twice daily in the intervention arm of the trial.",
+    "Enrollment was approx. 500 subjects across the participating sites.",
+]:
+    assert has_multiple_sentences(_known_false_reject), _known_false_reject
 
 
 # ══════════════════════════════════════════════════════════════════

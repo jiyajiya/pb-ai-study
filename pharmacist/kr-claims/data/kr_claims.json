@@ -102,7 +102,10 @@
     "dropped_non_ingredient_blocks": [
       "13-2"
     ],
-    "note": "missing/unparsed 항목은 고시 원문을 보고 사람이 채워야 한다. 빈 값을 '해당 없음'으로 읽지 말 것."
+    "missing_codes": [
+      "2-7"
+    ],
+    "note": "missing/unparsed 항목은 고시 원문을 보고 사람이 채워야 한다. 빈 값을 '해당 없음'으로 읽지 말 것. missing_codes는 코드 수열의 결번이다 — 파서가 놓친 것인지 고시에서 폐지된 번호인지는 원문을 봐야 갈린다. ※ 이 파일의 missing_codes는 재빌드가 아니라 손으로 넣은 값이다 (고시 원문 raw/가 없어 재빌드하지 못했다). 원문 재확보 시 build_kr_claims.py로 재빌드해 이 값을 대체할 것."
   },
   "ingredients": [
     {

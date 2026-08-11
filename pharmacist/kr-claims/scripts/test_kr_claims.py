@@ -528,6 +528,49 @@ assert any("개별인정형" in r for r in rep["verdict_reasons"]), rep["verdict
 # 어느 커버리지 필드에도 안 남아 "처음부터 없었던 것"처럼 보였다.
 # ══════════════════════════════════════════════════════════════════════
 
+# ══════════════════════════════════════════════════════════════════════
+# R5: 문구 칸이 채워져 있어도 인정 문구가 아닐 수 있다 (1-8 나이아신의
+# "니코틴산인 경우"는 기능성이 아니라 적용 조건이다). 빈 칸보다 위험하다 —
+# 빈 칸은 채우라는 신호라도 되지만 이건 그냥 표로 옮겨진다.
+# 막을 것을 열거하지 않고 허용할 서술어를 닫는다.
+# ══════════════════════════════════════════════════════════════════════
+
+from check_kr_claims import claim_shape  # noqa: E402
+
+assert claim_shape("혈중 콜레스테롤 개선에 도움을 줄 수 있음") == "ok"
+assert claim_shape("탄수화물과 에너지 대사에 필요") == "ok"          # 영양성분 템플릿
+assert claim_shape("체내 탄수화물, 지방, 단백질 대사에 관여") == "ok"
+assert claim_shape("니코틴산인 경우") == "unexpected"                 # 1-8
+assert claim_shape("니코틴산아미드인 경우") == "unexpected"           # 1-8
+assert claim_shape(None) == "empty"
+assert claim_shape("   ") == "empty"
+
+_ODD = {"code": "1-8", "ingredient_ko": "나이아신", "category": "영양성분",
+        "recognition_type": "고시형", "functional_claims_raw": "raw",
+        "rows": [{"functional_claim": "니코틴산인 경우",
+                  "daily_intake": {"raw": "3.5 ~ 23 mg", "basis": None, "min": 3.5,
+                                   "max": 23.0, "unit": "mg", "bound": "range",
+                                   "parsed": True}}],
+        "cautions": ["주의"]}
+_write_claims(_claims, [_ODD])
+rc, _ = _run_main(["check_kr_claims.py", "--claims", _claims,
+                   "--ingredient", "나이아신", "--output", _out])
+assert rc == 0, rc
+rep = json.load(open(_out, encoding="utf-8"))
+assert rep["matches"][0]["rows"][0]["claim_shape"] == "unexpected", rep["matches"]
+assert rep["verdict"] == "review", rep
+assert any("문구의 꼴이 아닌" in r for r in rep["verdict_reasons"]), rep["verdict_reasons"]
+# 경고에는 어느 행인지 원문이 실려야 사람이 확인할 수 있다
+assert any("니코틴산인 경우" in w for w in rep["warnings"]), rep["warnings"]
+
+# 정상 문구만 있으면 이 사유는 붙지 않는다
+_write_claims(_claims, [_CLEAN])
+rc, _ = _run_main(["check_kr_claims.py", "--claims", _claims,
+                   "--ingredient", "키토산", "--output", _out])
+rep = json.load(open(_out, encoding="utf-8"))
+assert not any("문구의 꼴이 아닌" in r for r in rep["verdict_reasons"]), rep["verdict_reasons"]
+
+
 from build_kr_claims import missing_sequence_codes  # noqa: E402
 
 _e = lambda c: {"code": c}  # noqa: E731
@@ -537,6 +580,9 @@ _seq = lambda g, ns: [_e(f"{g}-{n}") for n in ns]  # noqa: E731
 assert missing_sequence_codes(_seq(2, [1, 2, 3, 4, 5, 6, 8]), []) == ["2-7"]
 # dropped로 잡힌 코드는 결번이 아니다 — 이미 다른 필드에 남아 있다
 assert missing_sequence_codes(_seq(13, [1, 3]), ["13-2"]) == []
+# dropped는 군의 상한을 정하지 않는다. 원료 항목이 하나도 없는 군에서
+# 없는 결번을 만들어내던 경로 — 실제 데이터의 13-2가 "13-1 유실"을 낳았다.
+assert missing_sequence_codes(_seq(1, [1, 2]), ["13-2"]) == []
 # 연속이면 빈 목록
 assert missing_sequence_codes(_seq(1, [1, 2, 3]), []) == []
 # 1번부터 센다 — 군의 앞쪽이 통째로 안 읽힌 경우가 가장 위험하다

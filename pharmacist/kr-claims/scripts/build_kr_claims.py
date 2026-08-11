@@ -150,15 +150,26 @@ def missing_sequence_codes(entries: list[dict], dropped: list[str]) -> list[str]
     코드가 연속이라는 보장은 고시에 없다(폐지된 원료의 번호는 빈다).
     그래서 실패로 만들지 않고 사실만 남긴다 — 사람이 원문에서 판단할 몫이다.
     """
-    seen = {e["code"] for e in entries} | set(dropped)
-    groups: dict[str, list[int]] = {}
-    for code in seen:
-        m = re.fullmatch(r"(\d+)-(\d+)", code)
-        if m:
-            groups.setdefault(m.group(1), []).append(int(m.group(2)))
+    def parse(codes) -> dict[str, set[int]]:
+        out: dict[str, set[int]] = {}
+        for code in codes:
+            m = re.fullmatch(r"(\d+)-(\d+)", code)
+            if m:
+                out.setdefault(m.group(1), set()).add(int(m.group(2)))
+        return out
+
+    # 군의 존재와 상한은 **원료 항목만으로** 정한다. dropped를 기준점으로
+    # 쓰면 원료가 하나도 없는 군이 생겨난다 — 13-2(원료 아닌 블록) 하나 때문에
+    # "13-1이 유실됐다"가 나오는 식이다. 실제로 그렇게 나왔고, 없는 유실을
+    # 보고하는 커버리지는 있는 유실을 놓치는 것만큼 빨리 신뢰를 잃는다.
+    groups = parse(e["code"] for e in entries)
+    # dropped는 상한을 정하지는 않되, 그 번호가 설명됐다는 사실은 반영한다.
+    accounted = parse(dropped)
+
     missing = []
     for g, nums in groups.items():
-        missing += [f"{g}-{n}" for n in range(1, max(nums) + 1) if n not in nums]
+        known = nums | accounted.get(g, set())
+        missing += [f"{g}-{n}" for n in range(1, max(nums) + 1) if n not in known]
     return sorted(missing, key=lambda c: tuple(int(p) for p in c.split("-")))
 
 
