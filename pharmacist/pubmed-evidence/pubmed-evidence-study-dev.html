@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>개발자용 · LLM 출력에 결정론적 게이트 붙이기 — evidence-card</title>
+<title>개발자용 · LLM 출력에 결정론적 게이트 붙이기 — pubmed-evidence</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -172,7 +172,7 @@
 
 <nav class="nav">
   <div class="nav-inner">
-    <span class="brand">개발자용 · evidence-card</span>
+    <span class="brand">개발자용 · pubmed-evidence</span>
     <a href="#d0">문제</a>
     <a href="#d1">도메인</a>
     <a href="#d2">구조</a>
@@ -184,7 +184,7 @@
     <a href="#d8">테스트</a>
     <a href="#d9">이식</a>
     <a href="#d10">한계</a>
-    <a class="alt" href="./evidence-card-study-pharmacist.html">약사용 →</a>
+    <a class="alt" href="./pubmed-evidence-study-pharmacist.html">약사용 →</a>
   </div>
 </nav>
 
@@ -373,11 +373,11 @@
     <h2 class="s-title">디렉토리가 <span class="hl">계약</span>이다 — 어기면 조용히 무시</h2>
     <p class="s-intro">Claude Code 플러그인은 정해진 위치만 스캔합니다. 잘못 두면 <b>에러 없이 로드가 안 됩니다.</b> 이 클래스의 실패는 디버깅 비용이 큽니다.</p>
 
-<pre><code>evidence-card/                          <span class="c">← 플러그인 루트 = ${CLAUDE_PLUGIN_ROOT}</span>
+<pre><code>pubmed-evidence/                          <span class="c">← 플러그인 루트 = ${CLAUDE_PLUGIN_ROOT}</span>
 ├── .claude-plugin/
 │   ├── plugin.json                     <span class="c">매니페스트</span>
 │   └── marketplace.json                <span class="c">로컬 설치용 등록 정보</span>
-├── skills/evidence-card/
+├── skills/pubmed-evidence/
 │   ├── <span class="b">SKILL.md</span>                    <span class="c">frontmatter(name/description) + 절차 본문</span>
 │   ├── references/normalize.md         <span class="c">지연 로드. 본문에서 참조할 때만 읽힘</span>
 │   └── tests/fixtures.md
@@ -402,10 +402,10 @@
 <span class="c"># 넘기는 경로는 .claude-plugin/marketplace.json 이 있는 디렉토리.</span>
 <span class="c"># 모노레포에서 레포 루트를 넘기면 못 찾는다.</span>
 
-claude plugin validate /abs/path/pharmacist/evidence-card    <span class="c"># 설치 전 매니페스트 검증</span>
+claude plugin validate /abs/path/pharmacist/pubmed-evidence    <span class="c"># 설치 전 매니페스트 검증</span>
 
-claude plugin marketplace add /abs/path/pharmacist/evidence-card
-claude plugin install evidence-card@evidence-card
+claude plugin marketplace add /abs/path/pharmacist/pubmed-evidence
+claude plugin install pubmed-evidence@pubmed-evidence
 <span class="k">export</span> NCBI_API_KEY=<span class="s">"..."</span>    <span class="c"># 없으면 3 req/s 제한 → 병렬 8개가 즉시 429</span></code></pre>
       <div class="warn"><code class="inl">export</code>는 <b>그 터미널 세션에서만</b> 유효합니다. <b>같은 셸에서 <code class="inl">claude</code>를 실행</b>해야 키가 전달됩니다 — 다른 창에서 켠 세션은 키 없이 돌다가 병렬 8개에서 429가 나고, 그 실패는 "조회 실패"로 조용히 팩 경고에 묻힙니다. 영구 등록하려면 <code class="inl">~/.zshrc</code>에 추가하세요.</div>
     </div>
@@ -764,8 +764,8 @@ unverifiable = len(fetch_failed) + len(no_abstract)
       <div><b>1</b> <code>scripts/verify_evidence.py</code> — 파일 하나로 완결. 여기가 시스템의 계약이다 (~600줄)</div>
       <div><b>2</b> <code>scripts/test_verify_evidence.py</code> — 계약이 무엇을 막는지 케이스로 (~450줄)</div>
       <div><b>3</b> <code>agents/abstract-miner.md</code> — 프롬프트를 스키마 스펙처럼 쓰는 예</div>
-      <div><b>4</b> <code>skills/evidence-card/SKILL.md</code> — 오케스트레이션과 위임 경계</div>
-      <div><b>5</b> <code>skills/evidence-card/tests/fixtures.md</code> — 확률적 시스템의 릴리스 기준을 문서화하는 법</div>
+      <div><b>4</b> <code>skills/pubmed-evidence/SKILL.md</code> — 오케스트레이션과 위임 경계</div>
+      <div><b>5</b> <code>skills/pubmed-evidence/tests/fixtures.md</code> — 확률적 시스템의 릴리스 기준을 문서화하는 법</div>
     </div>
 
     <div class="msgbox" style="margin-bottom:0">

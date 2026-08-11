@@ -93,7 +93,7 @@ miner 프롬프트에 아래를 넣고 돌려본다. 전부 `null`이 나와야 
 ```bash
 for t in "오메가3 중성지방" "마그네슘 수면" "유산균 과민성대장증후군" "콜라겐 피부탄력"; do
   echo "=== $t ==="
-  # /evidence-card "$t" 실행 후 tone 확인
+  # /pubmed-evidence "$t" 실행 후 tone 확인
 done
 ```
 

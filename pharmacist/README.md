@@ -7,14 +7,14 @@
 |---|---|---|
 | `ingredient-analysis/` | 성분 하나로 상품 문구를 뽑는 파이프라인 | 서브에이전트 분업·도구 제약·파일 인계 |
 | `kr-claims/` | 식약처 고시 대조 (공용 도구) | 결정론적 게이트 — LLM에 맡기면 안 되는 판정 |
-| `evidence-card/` | PubMed 근거 수집·검증 플러그인 | 숫자 환각 차단, 플러그인 배치 |
+| `pubmed-evidence/` | PubMed 근거 수집·검증 플러그인 | 숫자 환각 차단, 플러그인 배치 |
 
 세 개가 한 흐름으로 이어진다.
 
 ```
 성분 × 증상
    │
-   ├─ evidence-card ──→ evidence-pack.json   "이 숫자가 그 논문에 실재하는가"
+   ├─ pubmed-evidence ──→ evidence-pack.json   "이 숫자가 그 논문에 실재하는가"
    │                          │
    │                          ↓
    ├─ kr-claims ──────→ kr-report.json       "이 숫자를 국내에서 써도 되는가"
@@ -74,7 +74,7 @@ ingredient-analysis/
 ## kr-claims/ — 식약처 고시 대조 (공용)
 
 「건강기능식품의 기준 및 규격」 고시전문에서 **인정 기능성 문구**와 **일일섭취량**을
-추출해 두고, 콘텐츠마다 대조한다. `evidence-card`와 `ingredient-analysis` 양쪽이
+추출해 두고, 콘텐츠마다 대조한다. `pubmed-evidence`와 `ingredient-analysis` 양쪽이
 호출하므로 스크립트는 여기 한 벌만 둔다.
 
 ```
@@ -102,17 +102,51 @@ kr-claims/
 
 ---
 
-## evidence-card/ — 근거 수집·검증 플러그인
+## pubmed-evidence/ — 근거 수집·검증 플러그인
 
 성분 × 효능 조합의 PubMed 근거를 모아 `evidence-pack.json`을 만들고,
-초록에 실재하지 않는 숫자를 스크립트 게이트로 걸러낸다.
-구조와 실습 절차는 `evidence-card/README.md` 참고. *(정리 중 — 확정 후 이 절 보강)*
+초록에 실재하지 않는 숫자를 스크립트 게이트로 걸러낸다. 앞의 둘과 달리
+**플러그인으로 패키징돼 있다** — 스킬·서브에이전트·스크립트가 한 덩어리로
+설치되고 서로를 `${CLAUDE_PLUGIN_ROOT}` 기준으로 참조한다.
+
+```
+pubmed-evidence/                       ← 플러그인 루트
+├── .claude-plugin/plugin.json         매니페스트. 여기엔 매니페스트만 둔다
+├── skills/pubmed-evidence/
+│   ├── SKILL.md                       오케스트레이터 (메인 컨텍스트)
+│   ├── references/normalize.md        한글↔영문 성분명 — 필요할 때만 읽힌다
+│   └── tests/fixtures.md              회귀 테스트 4주제
+├── agents/                            ← 스킬 밑이 아니라 루트여야 등록된다
+│   ├── evidence-scout.md              지형 스캔 → 톤(T1/T2/T3) 판정 (1회)
+│   └── abstract-miner.md              초록 1편 → 5슬롯 + 인용문 (병렬)
+└── scripts/verify_evidence.py         결정론적 게이트 — LLM 아님
+```
+
+P1 정규화(메인 직접) → P2 스캔 → P3 채굴(병렬) → P6 검증 순으로 돈다.
+`.claude-plugin/`에 다른 디렉토리를 넣으면 **에러 없이 조용히 무시된다** —
+배치 규칙을 어겼을 때 알려주지 않는다는 점이 이 실습의 절반이다.
+
+### 서브에이전트를 쓰는 이유 — 격리가 아니라 표면 축소
+
+miner가 돌려주는 `quote`는 글자 하나 안 바꾼 원문이고, **그건 메인 컨텍스트에
+들어온다.** 안 들어오면 P6이 대조할 것이 없다. 바뀌는 것은 양과 형태다 —
+초록 30편 전문 대신 논문당 최대 5문장이, 슬롯·PMID에 묶인 채로 올라온다.
+`ingredient-analysis`가 파일로 인계하는 것을 여기서는 반환값으로 하는 셈이다.
+
+### 게이트가 보증하는 것과 못 하는 것
+
+C1~C4는 "이 값이 그 초록에 실재한다"만 본다. 같은 문장의 용량 숫자가 효과 크기
+자리에 들어가도 통과한다. **조작은 막고 오배치는 못 막는다.** 철회 논문은 슬롯이
+전부 통과해도 제외하고, 이해충돌은 진술 원문만 싣고 판정하지 않는다.
+막을 수 있는 것만 기계로 막고 남는 것은 팩의 `warnings`로 사람에게 넘긴다.
+
+설치 절차, NCBI API 키, 배치 근거는 `pubmed-evidence/README.md`에 있다.
 
 ---
 
 ## 두 게이트는 서로를 대신하지 못한다
 
-| | evidence-card | kr-claims |
+| | pubmed-evidence | kr-claims |
 |---|---|---|
 | 묻는 것 | 이 숫자가 그 초록에 실재하는가 | 이 숫자를 국내에서 써도 되는가 |
 | 기준 | PubMed 초록 | 식약처 고시 |

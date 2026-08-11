@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>약사 스터디 · 서브에이전트 실습 — evidence-card</title>
+<title>약사 스터디 · 서브에이전트 실습 — pubmed-evidence</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -191,7 +191,7 @@
     <a href="#s8">검증게이트</a>
     <a href="#s9">실습</a>
     <a href="#s10">마무리</a>
-    <a class="alt" href="./evidence-card-study-dev.html">개발자용 →</a>
+    <a class="alt" href="./pubmed-evidence-study-dev.html">개발자용 →</a>
   </div>
 </nav>
 
@@ -200,9 +200,9 @@
 <div class="wrap">
 
   <header class="hero">
-    <div class="kicker">Pharmacist Study · evidence-card plugin</div>
+    <div class="kicker">Pharmacist Study · pubmed-evidence plugin</div>
     <h1>AI에게 일을 <span class="hl">쪼개서</span> 시킨다<br>— 서브에이전트 실습</h1>
-    <p>PubMed 근거로 카드뉴스 자료를 만드는 <b>evidence-card</b> 플러그인을 뜯어보며,<br>왜 하나의 AI가 아니라 <b>여러 개로 나누고, 마지막엔 스크립트가 검사하는지</b>를 이해합니다.</p>
+    <p>PubMed 근거로 카드뉴스 자료를 만드는 <b>pubmed-evidence</b> 플러그인을 뜯어보며,<br>왜 하나의 AI가 아니라 <b>여러 개로 나누고, 마지막엔 스크립트가 검사하는지</b>를 이해합니다.</p>
     <div class="flow">
       <span>P1 <b>정규화</b></span><span class="arrow">→</span>
       <span>P2 <b>근거 스캔</b></span><span class="arrow">→</span>
@@ -252,7 +252,7 @@
 
     <div class="steps">
       <div class="steprow"><span class="n">①</span><span class="t"><b>서브에이전트가 왜 필요한가</b>를 "역할 분담"이 아니라 <b>"메인 책상에 올라오는 원문을 검증 가능한 최소 단위로 줄이는 것"</b>으로 설명할 수 있다</span></div>
-      <div class="steprow"><span class="n">②</span><span class="t">evidence-card의 <b>P1 → P2 → P3 → P3-1 → P6 흐름</b>과 각 단계의 담당자를 그릴 수 있다</span></div>
+      <div class="steprow"><span class="n">②</span><span class="t">pubmed-evidence의 <b>P1 → P2 → P3 → P3-1 → P6 흐름</b>과 각 단계의 담당자를 그릴 수 있다</span></div>
       <div class="steprow"><span class="n">③</span><span class="t">"이 숫자는 왜 믿을 수 있나?"에 <b>C1·C2·C3·C4 검증 계약</b>으로 답할 수 있다</span></div>
     </div>
 
@@ -269,7 +269,7 @@
     <div class="note">
       <div class="lab">발표자 노트</div>
       <p>여기서 <b>범위를 먼저 못 박는 게 중요</b>합니다. "AI가 카드뉴스 다 만들어주는 거예요?"라는 기대가 생기면 뒤 설명이 전부 실망으로 흘러갑니다.</p>
-      <p class="say">이건 카피 써주는 도구가 아니에요. <b>믿을 수 있는 숫자 카드</b>까지만 만들어주고, 그다음은 사람 일입니다.</p>
+      <p class="say">이건 카피 써주는 도구가 아니에요. <b>논문에서 확인된 숫자와 그 출처</b>까지만 만들어주고, 그다음은 사람 일입니다.</p>
       <ul><li>오른쪽 열(하지 않는 것)을 먼저 읽고 왼쪽으로 넘어가면 기대 관리가 깔끔합니다.</li></ul>
     </div>
   </section>
@@ -296,7 +296,7 @@
         <div class="desc">조수가 논문 30편을 다 펼쳐놓고 읽어도, 나에게 오는 건 <b>"결론: T2, 볼 논문 8개"</b>라는 쪽지 한 장뿐. 30편의 초록은 조수 책상과 함께 사라집니다.</div>
       </div>
       <table class="ttable">
-        <tr><th>서브에이전트를 이루는 3가지</th><th>evidence-card에서는</th><th>왜 중요한가</th></tr>
+        <tr><th>서브에이전트를 이루는 3가지</th><th>pubmed-evidence에서는</th><th>왜 중요한가</th></tr>
         <tr><td><b>별도 책상</b> (격리된 컨텍스트)</td><td>scout 1개, miner 8개가 각자 자기 책상</td><td>서로가 본 것이 섞이지 않는다</td></tr>
         <tr><td><b>고정된 지시문</b> (역할·금지사항)</td><td><code>agents/*.md</code> 파일 한 장</td><td>매번 같은 규칙으로 일한다</td></tr>
         <tr class="hi"><td><b>정해진 반환 형식</b></td><td>JSON 한 덩어리만. 설명·서문 금지</td><td><b>메인 책상에 뭐가 올라올지를 내가 정한다</b></td></tr>
@@ -421,12 +421,12 @@
     <h2 class="s-title">폴더 구조는 <span class="hl">취향이 아니라 규칙</span>이다</h2>
     <p class="s-intro">Claude Code가 "여기 있는 것만 읽는다"고 정해둔 자리가 있습니다. 어긋나면 <b>에러도 없이 조용히 무시</b>됩니다.</p>
 
-<pre><code>evidence-card/                          <span class="c">← 플러그인 루트</span>
+<pre><code>pubmed-evidence/                          <span class="c">← 플러그인 루트</span>
 ├── .claude-plugin/
 │   ├── plugin.json                     <span class="c">← 명찰</span>
 │   └── marketplace.json                <span class="c">← 로컬 설치용 등록 정보</span>
 ├── skills/
-│   └── evidence-card/
+│   └── pubmed-evidence/
 │       ├── <span class="b">SKILL.md</span>                    <span class="c">← 오케스트레이터 (메인 책상)</span>
 │       ├── references/
 │       │   └── normalize.md            <span class="c">← 한글↔영문 성분명 표 (필요할 때만 로드)</span>
@@ -783,7 +783,7 @@
         <li>"근데 AI가 검사하면 안 되나요?" 질문 대비 → <b>같은 실수를 한 AI가 자기 실수를 검사하면 통과시킨다.</b> 검사관은 다른 종류여야 합니다.</li>
         <li><code>"value": None</code> 부분을 손으로 짚으세요. "지운다"가 이 도구의 성격입니다.</li>
         <li><b>"magnesium의 g" 이야기는 반응이 좋습니다.</b> 안전장치도 대충 만들면 안전장치가 아니라는 예시.</li>
-        <li>시간 여유 있으면 <code>cd pb-ai-study/pharmacist/evidence-card</code> 후 <code>python3 scripts/test_verify_evidence.py</code>를 라이브로 돌려 보여주면 임팩트가 큽니다. <code>ok</code> 한 줄이 나옵니다.</li>
+        <li>시간 여유 있으면 <code>cd pb-ai-study/pharmacist/pubmed-evidence</code> 후 <code>python3 scripts/test_verify_evidence.py</code>를 라이브로 돌려 보여주면 임팩트가 큽니다. <code>ok</code> 한 줄이 나옵니다.</li>
       </ul>
     </div>
   </section>
@@ -798,7 +798,7 @@
       <div class="case-label"><span class="dot"></span>0) 레포 받기 &amp; 위치 확인 — 터미널에서</div>
 <pre><code><span class="c"># 아직 로컬에 파일이 없다면 먼저 받는다</span>
 git clone git@github.com:jiyajiya/pb-ai-study.git
-cd pb-ai-study/pharmacist/evidence-card
+cd pb-ai-study/pharmacist/pubmed-evidence
 pwd   <span class="c"># 여기 출력되는 절대경로를 아래 1)·2) 단계에서 그대로 쓴다</span></code></pre>
       <div class="warn">python3가 있어야 합니다 — <code class="inl">python3 --version</code>으로 먼저 확인하세요.</div>
     </div>
@@ -812,7 +812,7 @@ claude plugin validate <span class="s">"$(pwd)"</span>   <span class="c"># 매�
     <div class="case">
       <div class="case-label"><span class="dot"></span>2) 플러그인 설치 — 로컬 경로를 바로 넘길 수 없다. 먼저 마켓플레이스로 등록</div>
 <pre><code>claude plugin marketplace add <span class="s">"$(pwd)"</span>
-claude plugin install evidence-card@evidence-card
+claude plugin install pubmed-evidence@pubmed-evidence
 <span class="c">#    경로는 .claude-plugin/marketplace.json 이 있는 폴더. 레포 루트가 아니다</span></code></pre>
     </div>
 
@@ -825,14 +825,14 @@ claude plugin install evidence-card@evidence-card
 
     <div class="case">
       <div class="case-label"><span class="dot"></span>4) 설치 확인 — 터미널에서</div>
-<pre><code>claude plugin list   <span class="c"># 목록에 evidence-card 가 보이는지</span></code></pre>
+<pre><code>claude plugin list   <span class="c"># 목록에 pubmed-evidence 가 보이는지</span></code></pre>
       <div class="warn">플러그인은 뜨는데 서브에이전트가 안 불리면 <b>거의 항상 <code class="inl">agents/</code> 위치 문제</b>입니다. 플러그인 루트에 있는지 확인하세요.</div>
     </div>
 
     <div class="case">
       <div class="case-label"><span class="dot"></span>5) 실행 — Claude Code를 켠 뒤, 대화창에 입력 (터미널 아님)</div>
       <p>터미널에서 <code class="inl">claude</code>를 입력해 Claude Code를 켠다. <b>그 대화창 안에서</b> 아래를 입력한다 — 셸에 붙여넣으면 <code class="inl">zsh: no such file or directory: /plugin</code> 에러가 난다.</p>
-      <p><code class="inl">/plugin</code> — 목록에 evidence-card가 보이는지 다시 확인</p>
+      <p><code class="inl">/plugin</code> — 목록에 pubmed-evidence가 보이는지 다시 확인</p>
       <p><code class="inl">콜라겐 피부탄력 근거 뽑아줘</code> — 파이프라인을 실제로 돌리는 입력. 이 한 줄이면 된다</p>
     </div>
 
@@ -873,7 +873,7 @@ claude plugin install evidence-card@evidence-card
         <tr class="hi"><td>단위가 <code>min</code>인 논문</td><td><code>unit: "min"</code> 그대로</td><td><b>hours·분으로 바꾸는지</b></td></tr>
         <tr><td>비교 대상이 안 적힌 논문</td><td><code>comparator: null</code></td><td>"위약 대비"라고 단정하는지</td></tr>
       </table>
-      <div class="anal">게이트 자체가 살아 있는지는 <b>1초</b>면 확인됩니다 — 터미널에서 <code class="inl">cd pb-ai-study/pharmacist/evidence-card</code> 후 <code class="inl">python3 scripts/test_verify_evidence.py</code>. <code class="inl">ok</code>가 안 나오면 그날 실습은 거기서 멈춰야 합니다.</div>
+      <div class="anal">게이트 자체가 살아 있는지는 <b>1초</b>면 확인됩니다 — 터미널에서 <code class="inl">cd pb-ai-study/pharmacist/pubmed-evidence</code> 후 <code class="inl">python3 scripts/test_verify_evidence.py</code>. <code class="inl">ok</code>가 안 나오면 그날 실습은 거기서 멈춰야 합니다.</div>
     </div>
 
     <div class="note">

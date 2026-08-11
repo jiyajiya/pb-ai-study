@@ -3,7 +3,7 @@
 「건강기능식품의 기준 및 규격」 고시전문에서 **인정 기능성 문구**와
 **일일섭취량**을 추출해, 논문 근거 팩과 대조한다.
 
-`evidence-card`와 `ingredient-analysis` 양쪽에서 쓴다.
+`pubmed-evidence`와 `ingredient-analysis` 양쪽에서 쓴다.
 **호출은 경로가 아니라 스킬 이름으로 한다** — `${CLAUDE_PLUGIN_ROOT}`는
 자기 플러그인만 가리키므로 다른 플러그인이 이쪽 스크립트 위치를 알 수 없다.
 설치 위치가 바뀌어도 스킬 이름은 그대로다.
@@ -33,10 +33,10 @@ kr-claims/                      ← 플러그인 루트
 ```bash
 claude plugin marketplace add /절대/경로/pharmacist
 claude plugin install kr-claims@pharma-bros
-claude plugin install evidence-card@pharma-bros    # 함께 쓸 때
+claude plugin install pubmed-evidence@pharma-bros    # 함께 쓸 때
 ```
 
-`kr-claims`만 설치해도 조회 모드는 동작한다. `evidence-card`는 이게 없으면
+`kr-claims`만 설치해도 조회 모드는 동작한다. `pubmed-evidence`는 이게 없으면
 후속 대조 단계를 건너뛴다 — 서로 **필수 의존이 아니다.**
 
 ## 데이터가 배포 시점에 얼어붙는다
@@ -72,7 +72,7 @@ claude plugin install evidence-card@pharma-bros    # 함께 쓸 때
 ```
 
 원료당 범위 하나로 저장하면 중성지질 콘텐츠에 기억력 기준이 붙는다.
-이 키는 evidence-card의 입력(`성분 × 증상`)과 같아서 그대로 조인된다.
+이 키는 pubmed-evidence의 입력(`성분 × 증상`)과 같아서 그대로 조인된다.
 
 **`basis`("EPA와 DHA의 합")를 반드시 함께 본다.** 논문이 EPA 단독 용량을
 쓰는데 고시는 합계 기준이면 두 숫자를 직접 비교할 수 없다. 리포트는
@@ -187,7 +187,7 @@ python3 scripts/check_kr_claims.py \
 
 ## 두 게이트의 역할 분담
 
-| | evidence-card P6 | kr-claims |
+| | pubmed-evidence P6 | kr-claims |
 |---|---|---|
 | 묻는 것 | 이 숫자가 그 초록에 실재하는가 | 이 숫자를 국내에서 써도 되는가 |
 | 기준 | PubMed 초록 | 식약처 고시 |

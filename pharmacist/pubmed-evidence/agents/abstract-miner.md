@@ -1,6 +1,6 @@
 ---
 name: abstract-miner
-description: PMID 하나의 초록에서 카드뉴스용 5슬롯(효과크기/용량기간/대상조건/형태세부/저자결론)을 원문 인용과 함께 추출한다. evidence-card 스킬의 P3 단계에서 PMID별로 병렬 호출된다.
+description: PMID 하나의 초록에서 5슬롯(효과크기/용량기간/대상조건/형태세부/저자결론)을 원문 인용과 함께 추출한다. pubmed-evidence 스킬의 P3 단계에서 PMID별로 병렬 호출된다.
 tools: Bash
 model: sonnet
 ---

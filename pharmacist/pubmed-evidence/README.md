@@ -1,17 +1,19 @@
-# evidence-card
+# pubmed-evidence
 
-성분 × 효능 조합의 PubMed 근거를 수집·검증해 카드뉴스용 `evidence-pack.json`을 만든다.
+성분 × 효능 조합의 PubMed 근거를 수집해 `evidence-pack.json`을 만든다.
 **숫자 환각을 스크립트 게이트로 차단하는 것**이 이 플러그인의 존재 이유다.
+카피도 카드도 만들지 않는다 — 산출물은 인용문·PMID·무결성 정보가 붙은
+검증 결과 레코드이고, 문안은 하류(`ingredient-analysis`)가 쓴다.
 
 ## 구조
 
 ```
-evidence-card/                          ← 플러그인 루트
+pubmed-evidence/                          ← 플러그인 루트
 ├── .claude-plugin/
 │   ├── plugin.json                     ← 플러그인 매니페스트
 │   └── marketplace.json                ← 로컬 설치용 마켓플레이스 등록
 ├── skills/
-│   └── evidence-card/
+│   └── pubmed-evidence/
 │       ├── SKILL.md                    ← 오케스트레이터 (메인 컨텍스트)
 │       ├── references/
 │       │   └── normalize.md            ← 한글↔영문 성분명 매핑 (필요시 로드)
@@ -89,12 +91,12 @@ PubMed를 재조회해 대조한다. 컨텍스트 격리는 그 검증을 **가�
 직접 넘길 수 없으므로, 이 레포를 마켓플레이스로 먼저 등록한다.
 
 ```bash
-claude plugin marketplace add /절대/경로/evidence-card
-claude plugin install evidence-card@evidence-card
+claude plugin marketplace add /절대/경로/pubmed-evidence
+claude plugin install pubmed-evidence@pubmed-evidence
 ```
 
 `marketplace add`에 넘기는 경로는 레포 루트가 아니라 **플러그인 디렉토리**
-(`.claude-plugin/marketplace.json`이 있는 곳, 여기서는 `pharmacist/evidence-card`)다.
+(`.claude-plugin/marketplace.json`이 있는 곳, 여기서는 `pharmacist/pubmed-evidence`)다.
 모노레포에서 레포 루트를 넘기면 찾지 못한다.
 매니페스트가 유효한지는 설치 전에 확인할 수 있다:
 
@@ -105,10 +107,10 @@ claude plugin validate .
 ### 방법 B — 플러그인 안 쓰고 흩어놓기 (빠른 테스트)
 
 ```bash
-mkdir -p ~/.claude/skills/evidence-card ~/.claude/agents
-cp -r skills/evidence-card/* ~/.claude/skills/evidence-card/
+mkdir -p ~/.claude/skills/pubmed-evidence ~/.claude/agents
+cp -r skills/pubmed-evidence/* ~/.claude/skills/pubmed-evidence/
 cp agents/*.md               ~/.claude/agents/
-cp -r scripts                ~/.claude/skills/evidence-card/
+cp -r scripts                ~/.claude/skills/pubmed-evidence/
 # 이 경우 SKILL.md의 ${CLAUDE_PLUGIN_ROOT}를 실제 경로로 바꿔야 한다
 ```
 
@@ -130,7 +132,7 @@ export NCBI_API_KEY="..."   # 없으면 초당 3회 제한 → 병렬 8개가 �
 ## 확인
 
 ```
-/plugin              # evidence-card 가 목록에 보이는지
+/plugin              # pubmed-evidence 가 목록에 보이는지
 ```
 
 서브에이전트가 등록됐는지는 세션에서 직접 호출해 확인한다.

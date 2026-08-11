@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-verify_evidence.py — evidence-card P6 게이트
+verify_evidence.py — pubmed-evidence P6 게이트
 
 abstract-miner가 반환한 슬롯을 PubMed 초록과 대조해 검증한다.
 LLM 판단은 이 단계에 개입하지 않는다.
@@ -248,7 +248,7 @@ def fetch_record(pmid: str, api_key: str | None = None, retries: int = 2) -> dic
     for attempt in range(retries + 1):
         try:
             req = urllib.request.Request(
-                url, headers={"User-Agent": "evidence-card/0.1 (pharmacy content tool)"}
+                url, headers={"User-Agent": "pubmed-evidence/0.1 (pharmacy content tool)"}
             )
             with urllib.request.urlopen(req, timeout=30) as resp:
                 xml = resp.read()

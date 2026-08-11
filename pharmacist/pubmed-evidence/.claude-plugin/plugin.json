@@ -1,0 +1,16 @@
+{
+  "name": "pubmed-evidence",
+  "version": "0.1.0",
+  "description": "성분×효능 조합의 PubMed 근거를 수집하고 초록 원문과 스크립트로 대조 검증해 evidence-pack.json을 만든다. 초록에 실재하지 않는 숫자를 게이트로 차단한다. 카피·카드 제작은 하지 않는다.",
+  "author": {
+    "name": "Jay",
+    "email": "jay@pharma-bros.com"
+  },
+  "keywords": [
+    "pharmacy",
+    "pubmed",
+    "evidence",
+    "content",
+    "healthcare"
+  ]
+}

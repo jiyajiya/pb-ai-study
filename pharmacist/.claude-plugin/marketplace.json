@@ -7,9 +7,9 @@
   "description": "약사 콘텐츠 제작 파이프라인 플러그인 모음 (교육용 예제)",
   "plugins": [
     {
-      "name": "evidence-card",
-      "source": "./evidence-card",
-      "description": "성분×효능 조합의 PubMed 근거를 수집·검증해 카드뉴스용 evidence-pack을 생성한다. 숫자 환각을 스크립트 게이트로 차단한다."
+      "name": "pubmed-evidence",
+      "source": "./pubmed-evidence",
+      "description": "성분×효능 조합의 PubMed 근거를 수집하고 초록 원문과 스크립트로 대조 검증해 evidence-pack.json을 만든다. 초록에 실재하지 않는 숫자를 게이트로 차단한다. 카피·카드 제작은 하지 않는다."
     },
     {
       "name": "kr-claims",

@@ -1,6 +1,6 @@
 ---
 name: evidence-scout
-description: PubMed에서 특정 성분×효능 조합의 근거 지형을 스캔해 톤(T1/T2/T3)을 판정하고 추출 대상 PMID를 선별한다. evidence-card 스킬의 P2 단계에서만 호출된다.
+description: PubMed에서 특정 성분×효능 조합의 근거 지형을 스캔해 톤(T1/T2/T3)을 판정하고 추출 대상 PMID를 선별한다. pubmed-evidence 스킬의 P2 단계에서만 호출된다.
 tools: Bash
 model: sonnet
 ---
