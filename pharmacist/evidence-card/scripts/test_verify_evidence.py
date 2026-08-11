@@ -10,6 +10,8 @@ from xml.etree import ElementTree as ET
 sys.path.insert(0, str(pathlib.Path(__file__).parent))
 from verify_evidence import (verify_slot, verify_quote_slot, normalize, REJECT_REASONS,
                             parse_record, design_check)
+import contextlib, io, json, os, tempfile
+import verify_evidence
 
 ABS = normalize(
     "Triglycerides decreased by -0.34 mmol/L compared with placebo (P = 0.02). "
@@ -272,5 +274,179 @@ assert verify_quote_slot("conclusion", {"quote": ""}, ABS)["reason"] == "missing
 # value/unit이 붙어 와도 C2~C4를 적용하지 않는다 — 결론 슬롯에는 검사할 숫자가 없다
 assert verify_quote_slot("conclusion", {"quote": CONC_Q, "value": "17.36", "unit": "hours"},
                          ABS)["verified"]
+
+
+# ══════════════════════════════════════════════════════════════════
+# main() 통합 테스트 — tests/fixtures.md "판정 기준 > 필수 통과"에서 가져온
+# main()에 해당하는 항목들.
+#
+# 모킹 대상: verify_evidence.fetch_record (fetch_abstract가 아니다 — 그런
+# 이름의 함수는 모듈에 없다. 실제 시그니처는
+# fetch_record(pmid: str, api_key: str | None = None, retries: int = 2)이고,
+# main()은 이걸 fetch_record(pmid, api_key)로 호출한다. 철회 판정도
+# parse_record가 만들어 fetch_record가 돌려주는 record["integrity"]에서
+# 나오므로, 이 함수 하나만 갈아끼우면 네트워크 조회 경로 전체가 막힌다.
+# ══════════════════════════════════════════════════════════════════
+
+
+def make_record(abstract, retracted=False, retraction_pmids=None,
+                 year="2024", journal="J Test", pub_types=None):
+    """fetch_record가 정상 조회 시 돌려주는 것과 같은 모양의 딕셔너리."""
+    return {
+        "abstract": abstract,
+        "abstract_sha256": "0" * 64,
+        "year": year,
+        "journal": journal,
+        "pub_types": pub_types or [],
+        "integrity": {
+            "retracted": retracted,
+            "retraction_pmids": retraction_pmids or [],
+            "has_erratum": False,
+            "erratum_pmids": [],
+            "expression_of_concern": False,
+            "coi_statement": None,
+            "coi_available": False,
+        },
+    }
+
+
+def effect_slots(value, quote, **kw):
+    return {"effect": dict(value=value, quote=quote, **kw)}
+
+
+def run_main(records, fake_fetch, meta=None):
+    """main()을 임시 디렉터리에서 실행하고 (종료코드, 팩, stderr)를 돌려준다.
+
+    tempfile.TemporaryDirectory로 입출력을 격리해 레포에 파일을 남기지 않는다
+    (with 블록을 벗어나면 자동 삭제된다). fetch_record를 몫킹해 네트워크를
+    완전히 차단한다 — 이 스크립트는 기내모드에서 돌아야 하는 계약이 파일
+    상단 docstring에 있다.
+    """
+    with tempfile.TemporaryDirectory() as td:
+        input_path = os.path.join(td, "raw_slots.json")
+        output_path = os.path.join(td, "evidence-pack.json")
+        with open(input_path, "w", encoding="utf-8") as f:
+            json.dump(records, f)
+
+        argv = ["verify_evidence.py", "--input", input_path, "--output", output_path]
+        if meta is not None:
+            meta_path = os.path.join(td, "meta.json")
+            with open(meta_path, "w", encoding="utf-8") as f:
+                json.dump(meta, f)
+            argv += ["--meta", meta_path]
+
+        old_argv, old_fetch = sys.argv, verify_evidence.fetch_record
+        sys.argv = argv
+        verify_evidence.fetch_record = fake_fetch
+        try:
+            err_buf = io.StringIO()
+            with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(err_buf):
+                code = verify_evidence.main()
+        finally:
+            sys.argv = old_argv
+            verify_evidence.fetch_record = old_fetch
+
+        pack = None
+        if os.path.exists(output_path):
+            with open(output_path, encoding="utf-8") as f:
+                pack = json.load(f)
+        return code, pack, err_buf.getvalue()
+
+
+EFFECT_ABS = "Triglycerides decreased by -0.34 mmol/L compared with placebo (P = 0.02)."
+DOSE_ABS = "Subjects received 500 mg magnesium daily for 8 weeks."
+PCT_ABS = "Risk was reduced by 23% versus placebo (P = 0.01)."
+KG_ABS = "Weight decreased by 2.1 kg from baseline."
+RETRACTED_ABS = "Onset latency decreased by 17.36 min."
+
+# fixtures.md: "입력 레코드가 0건이면 종료 코드 2를 내고 팩 파일을 만들지 않는다"
+code, pack, err = run_main([], fake_fetch=lambda pmid, api_key=None, retries=2: {})
+assert code == 2, (code, err)
+assert pack is None, "0건 입력인데 팩 파일이 생성됐다"
+
+
+def fetch_boundary_1(pmid, api_key=None, retries=2):
+    if pmid == "OK1":
+        return make_record(EFFECT_ABS)
+    raise RuntimeError("simulated fetch failure")
+
+
+# fixtures.md: "제외 편수(조회 실패+초록 없음+철회)가 수록 편수 이상이면
+# 종료 코드 2" — 경계값. 성공1 + 제외1 → 1 >= 1 → 2
+code, pack, err = run_main(
+    [{"pmid": "OK1", "slots": effect_slots("-0.34", EFFECT_ABS, unit="mmol/L")},
+     {"pmid": "FAIL1", "slots": {}}],
+    fake_fetch=fetch_boundary_1,
+)
+assert code == 2, (code, pack, err)
+assert pack is not None, "종료코드 2여도 main()은 팩을 쓴 뒤 반환한다"
+assert len(pack["papers"]) == 1, pack
+assert pack["verification"]["fetch_failed_pmids"] == ["FAIL1"], pack["verification"]
+
+
+def fetch_boundary_2(pmid, api_key=None, retries=2):
+    if pmid == "FAIL1":
+        raise RuntimeError("simulated fetch failure")
+    return make_record(EFFECT_ABS if pmid == "OK1" else DOSE_ABS)
+
+
+# 같은 경계의 반대쪽. 성공2 + 제외1 → 1 >= 2 → False → 0
+# fixtures.md: "정상 케이스는 종료 코드 0, 팩 파일 생성"도 이 케이스가 증명한다.
+code, pack, err = run_main(
+    [{"pmid": "OK1", "slots": effect_slots("-0.34", EFFECT_ABS, unit="mmol/L")},
+     {"pmid": "OK2", "slots": {"dose": {"value": "500 mg", "quote": DOSE_ABS, "unit": "mg"}}},
+     {"pmid": "FAIL1", "slots": {}}],
+    fake_fetch=fetch_boundary_2,
+)
+assert code == 0, (code, pack, err)
+assert pack["schema"] == "evidence-pack/0.2", pack
+assert len(pack["papers"]) == 2, pack
+assert {p["pmid"] for p in pack["papers"]} == {"OK1", "OK2"}, pack
+assert pack["verification"]["slots_verified"] >= 1, pack["verification"]
+
+
+def fetch_with_retraction(pmid, api_key=None, retries=2):
+    if pmid == "9500320":
+        return make_record(RETRACTED_ABS, retracted=True, retraction_pmids=["20137807"])
+    return make_record(EFFECT_ABS if pmid == "OK1" else DOSE_ABS)
+
+
+# fixtures.md: "철회 논문이 입력에 있으면 슬롯이 전부 유효해도 papers에 들어가지
+# 않고 verification.retracted_pmids와 경고 첫 줄에 오른다"
+# (회귀 확인용 PMID: 9500320 — fixtures.md가 지정한 값. 슬롯은 전부 유효한
+# 형태로 채워서 "슬롯 검증을 통과해도"라는 조건을 실제로 만족시킨다)
+code, pack, err = run_main(
+    [{"pmid": "OK1", "slots": effect_slots("-0.34", EFFECT_ABS, unit="mmol/L")},
+     {"pmid": "OK2", "slots": {"dose": {"value": "500 mg", "quote": DOSE_ABS, "unit": "mg"}}},
+     {"pmid": "9500320", "slots": {"effect": {"value": "17.36", "quote": RETRACTED_ABS, "unit": "min"}}}],
+    fake_fetch=fetch_with_retraction,
+)
+assert code == 0, (code, pack, err)
+assert "9500320" not in {p["pmid"] for p in pack["papers"]}, "철회 논문이 papers에 들어갔다"
+assert pack["verification"]["retracted_pmids"] == ["9500320"], pack["verification"]
+assert pack["warnings"][0].startswith("철회된 논문"), pack["warnings"]
+assert "9500320" in pack["warnings"][0], pack["warnings"][0]
+
+
+def fetch_warnings(pmid, api_key=None, retries=2):
+    return make_record(PCT_ABS if pmid == "PCT" else KG_ABS)
+
+
+# fixtures.md 판정 기준 + main()의 warnings 조립 로직: unit_type이 혼재하거나
+# comparator가 null인 effect가 있으면 경고가 실제로 붙는지. 이 로직은
+# verify_slot이 아니라 main()의 후처리(여러 논문의 effect를 모아 비교)에
+# 있으므로 단위 테스트로는 못 잡고 main()으로 확인해야 한다.
+# PCT: value에 "%"가 있어 unit_type=percent, comparator="placebo"(유효값)
+# KG: unit="kg"뿐이라 unit_type=absolute, comparator 미제공 → null
+code, pack, err = run_main(
+    [{"pmid": "PCT", "slots": effect_slots("23%", PCT_ABS, comparator="placebo")},
+     {"pmid": "KG", "slots": effect_slots("2.1", KG_ABS, unit="kg")}],
+    fake_fetch=fetch_warnings,
+)
+assert code == 0, (code, pack, err)
+assert any("단위 기준" in w for w in pack["warnings"]), \
+    ("unit_type 혼재(percent/absolute) 경고가 없다", pack["warnings"])
+assert any("comparator가 null" in w for w in pack["warnings"]), \
+    ("comparator null 경고가 없다", pack["warnings"])
 
 print("ok")
