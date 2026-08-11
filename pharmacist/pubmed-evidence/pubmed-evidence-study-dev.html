@@ -257,9 +257,9 @@
 
     <div class="case">
       <div class="case-label"><span class="dot"></span>산출물 스펙</div>
-      <p>입력 <code class="inl">"마그네슘 수면"</code> 한 줄 → 출력 <code class="inl">evidence-pack.json</code>. 논문별로 <b>4개 슬롯</b>이 채워지거나 <code class="inl">null</code>이 됩니다.</p>
+      <p>입력 <code class="inl">"마그네슘 수면"</code> 한 줄 → 출력 <code class="inl">evidence-pack.json</code>. 논문별로 <b>5개 슬롯</b>이 채워지거나 <code class="inl">null</code>이 됩니다.</p>
 <pre><code>{
-  <span class="k">"schema"</span>: <span class="s">"evidence-pack/0.1"</span>,
+  <span class="k">"schema"</span>: <span class="s">"evidence-pack/0.2"</span>,
   <span class="k">"topic"</span>: <span class="s">"마그네슘 × 수면"</span>,
   <span class="k">"tone"</span>: <span class="s">"T2"</span>,                     <span class="c">// T1 강함 / T2 조건부 / T3 약함·부정</span>
   <span class="k">"papers"</span>: [{
@@ -268,7 +268,8 @@
       <span class="k">"effect"</span>:     {<span class="k">"value"</span>: <span class="s">"17.36"</span>, <span class="k">"unit"</span>: <span class="s">"min"</span>, <span class="k">"verified"</span>: <span class="b">true</span>, <span class="k">"quote"</span>: <span class="s">"..."</span>},
       <span class="k">"dose"</span>:       {<span class="k">"value"</span>: <span class="s">"500"</span>,   <span class="k">"unit"</span>: <span class="s">"mg"</span>,  <span class="k">"verified"</span>: <span class="b">true</span>,  ...},
       <span class="k">"population"</span>: {...},
-      <span class="k">"form"</span>:       {<span class="k">"value"</span>: <span class="b">null</span>, <span class="k">"verified"</span>: <span class="b">false</span>, <span class="k">"reason"</span>: <span class="s">"not_extracted"</span>}
+      <span class="k">"form"</span>:       {<span class="k">"value"</span>: <span class="b">null</span>, <span class="k">"verified"</span>: <span class="b">false</span>, <span class="k">"reason"</span>: <span class="s">"not_extracted"</span>},
+      <span class="k">"conclusion"</span>: {<span class="k">"quote"</span>: <span class="s">"..."</span>, <span class="k">"verified"</span>: <span class="b">true</span>}
     }
   }],
   <span class="k">"verification"</span>: {<span class="k">"slots_total"</span>: 32, <span class="k">"slots_verified"</span>: 21, <span class="k">"slots_rejected"</span>: 4, ...},
@@ -295,7 +296,7 @@
 
 <pre><code><span class="c">--- agents/abstract-miner.md ---</span>
 <span class="k">name</span>: abstract-miner
-<span class="k">description</span>: PMID 하나의 초록에서 4슬롯을 원문 인용과 함께 추출한다...
+<span class="k">description</span>: PMID 하나의 초록에서 5슬롯(효과크기/용량기간/대상조건/형태세부/저자결론)을 원문 인용과 함께 추출한다. pubmed-evidence 스킬의 P3 단계에서 PMID별로 병렬 호출된다.
 <span class="k">tools</span>: Bash              <span class="c">← curl만 쓰면 됨. Write/Edit는 안 줬다 — 파일 산출을 기대하지 않는다는 신호이지, 강제는 아니다</span>
 <span class="k">model</span>: sonnet            <span class="c">← 판단이 아니라 추출 작업. 상위 모델 불필요</span>
 <span class="c">--------------------------------</span>
@@ -306,7 +307,7 @@
       <div class="warn"><b>흔한 과장:</b> "서브에이전트를 쓰면 원문이 메인에 안 들어온다." 사실이 아닙니다. miner가 돌려주는 <code class="inl">quote</code>는 <b>글자 하나 안 바꾼 원문 문장</b>이고 그대로 메인에 올라옵니다. <b>그리고 그건 요구사항입니다</b> — 게이트가 대조할 대상이 없으면 검증이 성립하지 않습니다.</div>
       <table class="ttable">
         <tr><th></th><th>단일 컨텍스트</th><th>이 구조</th></tr>
-        <tr><td>메인에 유입되는 원문</td><td>초록 30편 전문 (수만 토큰)</td><td><b>논문당 ≤4문장</b></td></tr>
+        <tr><td>메인에 유입되는 원문</td><td>초록 30편 전문 (수만 토큰)</td><td><b>논문당 ≤5문장</b></td></tr>
         <tr><td>출처 귀속</td><td>없음 — 어느 값이 어느 논문 것인지 모델만 앎</td><td><b>(pmid, slot) 쌍에 구조적으로 묶임</b></td></tr>
         <tr class="hi"><td>검증 가능성</td><td>불가 — 무엇을 무엇과 대조할지 정의 불가</td><td><b>가능 — quote 단위 substring 검사</b></td></tr>
         <tr><td>교차오염</td><td>논문 A의 dose + 논문 B의 effect 합성 가능</td><td><b>miner는 다른 논문을 본 적이 없음</b></td></tr>
@@ -340,8 +341,8 @@
       <div class="cell m"><span class="lbl">P2 · delegate</span><span class="desc">정규화 JSON을 프롬프트에 통째로 실어 보냄 (부모 컨텍스트가 안 넘어가므로).<span class="ret">◀ tone · evidence_map · pmids[]</span></span></div>
       <div class="cell"><span class="lbl">evidence-scout ×1</span><span class="desc">esearch 4회 + efetch. 근거 지형 스캔 → <b>tone(T1/T2/T3)</b> 판정, 채굴 대상 <b>≤8 PMID</b> 선별.<br>출력 계약: <b>JSON only, 인용문·수치 금지.</b></span></div>
 
-      <div class="cell m"><span class="lbl">P3 · fan-out</span><span class="desc"><code class="inl">off_target: false</code>인 PMID만 골라 <b>동시</b> 호출. 순차 금지.<span class="ret">◀ slots{effect,dose,population,form}</span></span></div>
-      <div class="cell"><span class="lbl">abstract-miner ×N</span><span class="desc">각자 efetch 1회. 4슬롯을 <code class="inl">{value, unit, quote}</code> 형태로 추출.<br>실패 시 <code class="inl">{"pmid","error":"fetch_failed"}</code> 반환.</span></div>
+      <div class="cell m"><span class="lbl">P3 · fan-out</span><span class="desc"><code class="inl">off_target: false</code>인 PMID만 골라 <b>동시</b> 호출. 순차 금지.<span class="ret">◀ slots{effect,dose,population,form,conclusion}</span></span></div>
+      <div class="cell"><span class="lbl">abstract-miner ×N</span><span class="desc">각자 efetch 1회. 5슬롯 추출 — 4종은 <code class="inl">{value, unit, quote}</code>, <code class="inl">conclusion</code>은 <code class="inl">quote</code> 하나만(값 검증 없음, C5).<br>실패 시 <code class="inl">{"pmid","error":"fetch_failed"}</code> 반환.</span></div>
 
       <div class="cell m"><span class="lbl">P3-1 · persist</span><span class="desc"><b>반환값을 가공 없이</b> <code class="inl">raw_slots.json</code>에 배열로 덤프. <code class="inl">meta.json</code>엔 지정된 5개 키만.<br>error 레코드도 그대로 넣는다 (스크립트가 집계).</span></div>
       <div class="cell empty">— 인라인 —</div>
@@ -402,10 +403,12 @@
 <span class="c"># 넘기는 경로는 .claude-plugin/marketplace.json 이 있는 디렉토리.</span>
 <span class="c"># 모노레포에서 레포 루트를 넘기면 못 찾는다.</span>
 
-claude plugin validate /abs/path/pharmacist/pubmed-evidence    <span class="c"># 설치 전 매니페스트 검증</span>
+claude plugin validate /abs/path/pharmacist/pubmed-evidence    <span class="c"># 설치 전 매니페스트 검증. 대상은 플러그인 루트</span>
 
-claude plugin marketplace add /abs/path/pharmacist/pubmed-evidence
-claude plugin install pubmed-evidence@pubmed-evidence
+<span class="c"># 마켓플레이스 등록은 pharmacist/ 기준(상위)이 기본이다. pubmed-evidence/ 단독 등록과</span>
+<span class="c"># 둘 다 하면 같은 플러그인이 두 마켓플레이스에 잡혀 어느 쪽 사본이 설치됐는지 추적하기 어려워진다.</span>
+claude plugin marketplace add /abs/path/pharmacist
+claude plugin install pubmed-evidence@pharma-bros
 <span class="k">export</span> NCBI_API_KEY=<span class="s">"..."</span>    <span class="c"># 없으면 3 req/s 제한 → 병렬 8개가 즉시 429</span></code></pre>
       <div class="warn"><code class="inl">export</code>는 <b>그 터미널 세션에서만</b> 유효합니다. <b>같은 셸에서 <code class="inl">claude</code>를 실행</b>해야 키가 전달됩니다 — 다른 창에서 켠 세션은 키 없이 돌다가 병렬 8개에서 429가 나고, 그 실패는 "조회 실패"로 조용히 팩 경고에 묻힙니다. 영구 등록하려면 <code class="inl">~/.zshrc</code>에 추가하세요.</div>
     </div>
@@ -573,14 +576,16 @@ claude plugin install pubmed-evidence@pubmed-evidence
     <p class="s-intro">표준 라이브러리만. 입력은 파일 2개, 출력은 팩 1개 + 종료 코드. <b>LLM 호출 0회.</b></p>
 
     <div class="case">
-      <div class="case-label star"><span class="dot"></span>검증 계약 C1–C4</div>
+      <div class="case-label star"><span class="dot"></span>검증 계약 C1–C5</div>
       <div class="steps">
-        <div class="steprow"><span class="n">C1</span><span class="t"><code class="inl">quote ⊂ abstract</code> — 초록을 <b>스크립트가 독립적으로 재조회</b>. 에이전트 출력을 소스로 쓰지 않는다</span></div>
-        <div class="steprow"><span class="n">C2</span><span class="t"><code class="inl">value ⊂ quote</code></span></div>
+        <div class="steprow"><span class="n">C1</span><span class="t"><code class="inl">quote ⊂ abstract</code>이고 <b>단일 문장</b> — 초록을 <b>스크립트가 독립적으로 재조회</b>. 에이전트 출력을 소스로 쓰지 않는다</span></div>
+        <div class="steprow"><span class="n">C2</span><span class="t"><code class="inl">value ⊂ quote</code> — 부호 소실·자릿수 변경·반올림·% 절단을 수 경계 검사로 차단</span></div>
         <div class="steprow"><span class="n">C3</span><span class="t">(effect 한정) value가 <b>효과 크기의 형태</b>인가 — C1·C2를 통과하는 의미론적 오답 차단</span></div>
         <div class="steprow"><span class="n">C4</span><span class="t"><code class="inl">unit ⊂ quote</code> — <b>낱말 경계</b>로</span></div>
+        <div class="steprow"><span class="n">C5</span><span class="t">(conclusion 한정) <code class="inl">quote ⊂ abstract</code>만 검사. value·unit이 없는 슬롯이라 C2–C4는 적용되지 않는다</span></div>
       </div>
       <div class="anal">C1이 재조회를 하는 이유: 에이전트가 넘긴 초록으로 대조하면 <b>같은 출처를 두 번 믿는 것</b>이라 검증이 아닙니다. 소스는 반드시 파이프라인 밖에서 다시 가져와야 합니다.</div>
+      <div class="anal"><b>"단일 문장" 조건은 이번에 추가됐다.</b> 없으면 두 문장을 이어붙인 quote 하나로 뒤의 검사가 전부 무력화된다 — <code class="inl">"Subjects received 500 mg magnesium daily. Sleep onset latency decreased by 17.36 min."</code>을 통째로 quote에 넣으면 <code class="inl">value: "17.36"</code>과 <code class="inl">unit: "mg"</code>이 <b>둘 다 quote 안에 있다는 이유만으로 C2·C4를 통과</b>한다. 실제로는 17.36은 두 번째 문장의 값이고 mg은 첫 번째 문장의 단위라 서로 무관하다. 문장을 하나로 제한하면 이 조합 자체가 생기지 않는다.</div>
     </div>
 
     <div class="case">
@@ -631,7 +636,7 @@ claude plugin install pubmed-evidence@pubmed-evidence
         <tr><th>상황</th><th>reason</th><th>처리</th><th>폐기 집계</th></tr>
         <tr><td>슬롯 자체가 없음</td><td><code>not_extracted</code></td><td>value null</td><td><b>아니오</b> — 추출 안 된 건 정보지 실패가 아님</td></tr>
         <tr><td>value/quote 누락</td><td><code>missing_value_or_quote</code></td><td>value null</td><td>아니오</td></tr>
-        <tr class="hi"><td>C1–C4 위반</td><td><code>quote_not_in_abstract</code> 외 5종</td><td><b>value null + rejected_* 보존</b></td><td><b>예</b> (<code>slots_rejected</code>)</td></tr>
+        <tr class="hi"><td>C1–C5 위반</td><td><code>quote_not_in_abstract</code> 외 5종</td><td><b>value null + rejected_* 보존</b></td><td><b>예</b> (<code>slots_rejected</code>)</td></tr>
         <tr><td><code>significance</code>가 quote 밖</td><td>—</td><td><b>필드만 폐기</b>, <code>dropped_significance</code>에 보존</td><td>아니오</td></tr>
         <tr><td><code>comparator</code> enum 밖</td><td>—</td><td><b>null로 강등</b></td><td>아니오</td></tr>
       </table>
@@ -645,7 +650,7 @@ claude plugin install pubmed-evidence@pubmed-evidence
 <span class="k">if</span> <span class="k">not</span> abstract.strip():
     no_abstract.append(pmid); <span class="k">continue</span>
 
-unverifiable = len(fetch_failed) + len(no_abstract)
+unverifiable = len(fetch_failed) + len(no_abstract) + len(retracted)
 ...
 <span class="k">if</span> unverifiable &gt;= len(results):
     <span class="k">return</span> <span class="b">2</span>   <span class="c"># 팩이 근거 지형을 대표하지 못한다</span>
@@ -755,7 +760,7 @@ unverifiable = len(fetch_failed) + len(no_abstract)
       <div><b>②</b> <b>초록만 본다.</b> 본문에만 있는 수치는 구조적으로 못 뽑는다 — null이 되고, 그게 의도된 동작이다</div>
       <div><b>③</b> <b><code>comparator</code>는 검증 불가.</b> 문장이 아니라 판정이라 substring 검사가 성립하지 않는다. enum 밖이면 null로 떨어뜨리는 게 최선</div>
       <div><b>④</b> <b>tone 판정은 확률적이다.</b> 검색 시점 논문 수에 따라 경계에서 흔들린다. 흔들림 허용 범위를 문서에 명시하고 F4만 불허로 고정</div>
-      <div><b>⑤</b> <b>게이트는 "원문에 있음"만 보장한다.</b> 그 값이 해당 슬롯에 적절한지(dose 칸에 age를 넣었는지)는 C1–C4로 안 잡힌다</div>
+      <div><b>⑤</b> <b>게이트는 "원문에 있음"만 보장한다.</b> 그 값이 해당 슬롯에 적절한지(dose 칸에 age를 넣었는지)는 C1–C5로 안 잡힌다</div>
       <div><b>⑥</b> <b>P8(광고법 검사) 미구현.</b> 출력물을 그대로 발행하면 안 된다 — 팩의 <code>warnings</code>에 항상 이 문장이 박힌다</div>
     </div>
 

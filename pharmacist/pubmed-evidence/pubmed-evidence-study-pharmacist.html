@@ -253,14 +253,14 @@
     <div class="steps">
       <div class="steprow"><span class="n">①</span><span class="t"><b>서브에이전트가 왜 필요한가</b>를 "역할 분담"이 아니라 <b>"메인 책상에 올라오는 원문을 검증 가능한 최소 단위로 줄이는 것"</b>으로 설명할 수 있다</span></div>
       <div class="steprow"><span class="n">②</span><span class="t">pubmed-evidence의 <b>P1 → P2 → P3 → P3-1 → P6 흐름</b>과 각 단계의 담당자를 그릴 수 있다</span></div>
-      <div class="steprow"><span class="n">③</span><span class="t">"이 숫자는 왜 믿을 수 있나?"에 <b>C1·C2·C3·C4 검증 계약</b>으로 답할 수 있다</span></div>
+      <div class="steprow"><span class="n">③</span><span class="t">"이 숫자는 왜 믿을 수 있나?"에 <b>C1·C2·C3·C4·C5 검증 계약</b>으로 답할 수 있다</span></div>
     </div>
 
     <table class="ttable">
       <tr><th>이 도구가 하는 것</th><th>이 도구가 하지 않는 것</th></tr>
       <tr><td>검색어 정규화(한글 → 학술 영문)</td><td>카드뉴스 <b>카피 작성</b> (P7)</td></tr>
       <tr><td>PubMed 근거 지형 스캔 + 톤 판정</td><td><b>광고법 검사</b> (P8)</td></tr>
-      <tr><td>초록에서 숫자 4종 추출</td><td>반론 논문 수집 (P4)</td></tr>
+      <tr><td>초록에서 숫자 4종 + 저자결론 1종 추출</td><td>반론 논문 수집 (P4)</td></tr>
       <tr class="hi"><td><b>추출한 숫자를 원문과 기계 대조</b></td><td>안전성 정보 추출 (P5)</td></tr>
     </table>
 
@@ -311,7 +311,7 @@
       <p>바뀌는 것은 <b>차단이냐 아니냐</b>가 아니라 <b>양과 형태</b>입니다.</p>
       <table class="ttable">
         <tr><th></th><th>서브에이전트 없이 (한 책상)</th><th>이 구조 (책상 9개)</th></tr>
-        <tr><td>메인에 들어오는 원문</td><td>초록 30편 전문</td><td><b>논문당 최대 4문장</b></td></tr>
+        <tr><td>메인에 들어오는 원문</td><td>초록 30편 전문</td><td><b>논문당 최대 5문장</b></td></tr>
         <tr><td>그 문장의 출처</td><td>섞여 있음</td><td><b>슬롯·PMID에 묶여 있음</b></td></tr>
         <tr class="hi"><td>검증 가능성</td><td>불가 — 무엇을 무엇과 대조할지 모름</td><td><b>가능 — quote 단위로 대조</b></td></tr>
       </table>
@@ -372,8 +372,8 @@
       <div class="cell m"><span class="lbl">P2 · 위임</span><span class="desc">검색 조건 JSON을 넘기고 기다립니다.<span class="ret">◀ 받는 것: tone · pmids · evidence_map</span></span></div>
       <div class="cell"><span class="lbl">evidence-scout ×1</span><span class="desc">PubMed를 <b>4번 나눠</b> 검색. 초록 결론부를 읽고 <b>톤(T1/T2/T3)</b> 판정, 채굴할 <b>PMID 최대 8개</b> 선별.<br><b>초록 원문·인용문은 반환 금지.</b> 전부 여기서 소멸.</span></div>
 
-      <div class="cell m"><span class="lbl">P3 · 병렬 위임</span><span class="desc">PMID 8개에 조수 8명을 <b>동시에</b> 붙입니다.<span class="ret">◀ 받는 것: 슬롯 4종 + 원문 인용</span></span></div>
-      <div class="cell"><span class="lbl">abstract-miner ×8</span><span class="desc">각자 <b>논문 1편만</b> 담당. 효과크기·용량기간·대상조건·형태 4칸을 <b>원문 인용과 함께</b> 뽑습니다. 서로 격리 → 교차오염 0.</span></div>
+      <div class="cell m"><span class="lbl">P3 · 병렬 위임</span><span class="desc">PMID 8개에 조수 8명을 <b>동시에</b> 붙입니다.<span class="ret">◀ 받는 것: 슬롯 5종 + 원문 인용</span></span></div>
+      <div class="cell"><span class="lbl">abstract-miner ×8</span><span class="desc">각자 <b>논문 1편만</b> 담당. 효과크기·용량기간·대상조건·형태·저자결론 5칸을 <b>원문 인용과 함께</b> 뽑습니다. 서로 격리 → 교차오염 0.</span></div>
 
       <div class="cell m"><span class="lbl">P3-1 · 파일 저장</span><span class="desc">조수들이 준 것을 <b>손대지 않고</b> <code class="inl">raw_slots.json</code>으로, P1·P2 결과를 <code class="inl">meta.json</code>으로 저장.<br><b>보기 좋게 다듬으면 그 순간 검증이 무의미해집니다.</b></span></div>
       <div class="cell empty">— 직접 수행 —</div>
@@ -382,7 +382,7 @@
       <div class="cell"><span class="lbl">verify_evidence.py</span><span class="desc"><b>AI가 아닙니다.</b> PubMed에서 초록을 <b>다시 직접 받아와</b> 글자 단위로 대조. 안 맞으면 그 숫자를 <b>지워버립니다.</b></span></div>
     </div>
 
-    <div class="anal">주목할 점 — <b>메인 책상에 올라오는 원문은 논문당 최대 4문장, 그것도 "어느 PMID의 어느 슬롯"에 묶인 채로</b>입니다. 그래야 마지막에 한 문장씩 대조할 수 있습니다.</div>
+    <div class="anal">주목할 점 — <b>메인 책상에 올라오는 원문은 논문당 최대 5문장, 그것도 "어느 PMID의 어느 슬롯"에 묶인 채로</b>입니다. 그래야 마지막에 한 문장씩 대조할 수 있습니다.</div>
 
     <div class="case">
       <div class="case-label"><span class="dot"></span>왜 P3-1(파일 저장)이 따로 있나</div>
@@ -603,16 +603,17 @@
   <section class="session" id="s7">
     <div class="s-head"><span class="step">조각 3</span><span class="sec">agents/abstract-miner.md</span></div>
     <h2 class="s-title">조수 2 — <span class="hl">해석하지 않고, 그대로 오려낸다</span></h2>
-    <p class="s-intro">"초록 1편에서 정해진 4개 항목만 뽑아내는 추출기." 8명이 <b>동시에</b> 돌아갑니다. 서로의 논문을 모릅니다.</p>
+    <p class="s-intro">"초록 1편에서 정해진 5개 항목만 뽑아내는 추출기." 8명이 <b>동시에</b> 돌아갑니다. 서로의 논문을 모릅니다.</p>
 
     <div class="case">
-      <div class="case-label"><span class="dot"></span>4개 슬롯</div>
+      <div class="case-label"><span class="dot"></span>5개 슬롯</div>
       <table class="ttable">
         <tr><th>슬롯</th><th>뽑을 것</th><th>예</th></tr>
         <tr class="hi"><td><b>effect</b></td><td>효과 크기 (제일 많이 틀리는 칸)</td><td>value <code>-0.87</code> + unit <code>mmol/L</code></td></tr>
         <tr><td>dose</td><td>1일 투여량과 기간</td><td>value <code>500</code> + unit <code>mg</code></td></tr>
         <tr><td>population</td><td>대상자 조건 (연령·기저상태·표본수)</td><td>value <code>46</code>, 문장에 "elderly subjects"</td></tr>
         <tr><td>form</td><td>제형·염 형태·균주·이성질체</td><td>value <code>magnesium oxide</code></td></tr>
+        <tr class="hi"><td><b>conclusion</b></td><td>저자의 결론 문장 1개 — 카피에 실제로 인용할 문장 (숫자 없음)</td><td>quote만: "Supplementation of magnesium appears to improve..."</td></tr>
       </table>
     </div>
 
@@ -702,26 +703,29 @@
     <p class="s-intro">지금까지는 전부 "이렇게 해줘"였습니다. 여기서부터는 <b>"이렇게 된다"</b>입니다. 파이썬 코드는 기분도 없고 아부도 안 합니다.</p>
 
     <div class="case">
-      <div class="case-label star"><span class="dot"></span>검증 계약 4개 — 전부 통과해야 <code class="inl">verified: true</code></div>
+      <div class="case-label star"><span class="dot"></span>검증 계약 5개 — 전부 통과해야 <code class="inl">verified: true</code></div>
       <div class="steps">
-        <div class="steprow"><span class="n">C1</span><span class="t"><b>quote가 PubMed 초록 원문 안에 실제로 있는가</b> — 스크립트가 초록을 <b>직접 다시 받아와서</b> 대조. 조수가 인용문을 지어내면 통과 불가</span></div>
+        <div class="steprow"><span class="n">C1</span><span class="t"><b>quote가 PubMed 초록 원문 안에 실제로 있고, 문장이 하나뿐인가</b> — 스크립트가 초록을 <b>직접 다시 받아와서</b> 대조. 조수가 인용문을 지어내면 통과 불가</span></div>
         <div class="steprow"><span class="n">C2</span><span class="t"><b>value가 그 quote 안에 있는가</b> — 인용문은 진짜인데 숫자만 바꿔치기한 경우를 잡음</span></div>
         <div class="steprow"><span class="n">C3</span><span class="t"><b>(effect 한정) 그 값이 효과 크기의 형태인가</b> — 원문에 실재하지만 효과 크기가 아닌 것(<code class="inl">p &lt; 0.05</code>)을 걸러냄</span></div>
         <div class="steprow"><span class="n">C4</span><span class="t"><b>unit이 그 quote 안에 있는가</b> — <code class="inl">17.36</code> + <code class="inl">hours</code>처럼 <b>단위만 바꾼 60배 뻥튀기</b>를 잡음</span></div>
+        <div class="steprow"><span class="n">C5</span><span class="t"><b>(conclusion 한정) quote만 검사</b> — 이 슬롯엔 value·unit이 없어서 C2~C4가 아예 적용되지 않습니다</span></div>
       </div>
+      <div class="anal"><b>C1의 "문장이 하나뿐인가"는 이번에 새로 추가된 조건입니다.</b> 없으면 두 문장을 이어붙인 인용문 하나로 뒤의 검사를 속일 수 있습니다 — <code class="inl">"Subjects received 500 mg magnesium daily. Sleep onset latency decreased by 17.36 min."</code>을 통째로 quote로 삼으면, <code class="inl">value: "17.36"</code>과 <code class="inl">unit: "mg"</code>이 <b>둘 다 이 긴 인용문 안에 있다는 이유만으로 C2·C4를 통과</b>했을 겁니다. 실제로는 17.36은 수면 문장의 값이고 mg은 용량 문장의 단위라 서로 아무 관계가 없습니다. 문장을 하나로 제한하면 이런 조합 자체가 만들어지지 않습니다.</div>
       <div class="anal">C3가 왜 따로 필요한가 — <code class="inl">"p &lt; 0.05"</code>는 <b>초록에 진짜로 있는 문자열</b>이라 C1·C2를 멀쩡히 통과합니다. <b>프롬프트 규칙만으로는 새어 나오기 때문에</b> 정규식으로 한 겹 더 막습니다. 규칙은 간단합니다 — <b>숫자 칸(value)에는 숫자만 들어갑니다. 단위·지표명·p값은 각자 칸이 따로 있습니다.</b> 그 칸에 숫자 하나가 아닌 게 들어오면 그 자리에서 폐기됩니다.</div>
       <div class="anal">C4가 왜 따로 필요한가 — 값과 단위를 <b>따로 받는 구조</b>라서 그렇습니다. 값만 검사하면 단위 칸은 무방비입니다. 그리고 카드에 찍히는 건 둘의 <b>합</b>입니다.</div>
     </div>
 
     <div class="case">
-      <div class="case-label"><span class="dot"></span>실제 코드 — 통과 못 하면 값을 <b>지웁니다</b></div>
-<pre><code><span class="c"># C1: 인용문이 초록에 실재하는가</span>
-<span class="k">if</span> quote_norm <span class="k">not in</span> abstract_norm:
+      <div class="case-label"><span class="dot"></span>핵심 로직(단순화) — 통과 못 하면 값을 <b>지웁니다</b></div>
+<pre><code><span class="c"># C1: 인용문이 초록에 실재하고, 문장이 하나뿐인가</span>
+<span class="k">if</span> quote_norm <span class="k">not in</span> abstract_norm <span class="k">or not</span> is_single_sentence(quote_norm):
     <span class="k">return</span> {<span class="s">"value"</span>: <span class="b">None</span>, <span class="s">"verified"</span>: <span class="b">False</span>,
             <span class="s">"reason"</span>: <span class="s">"quote_not_in_abstract"</span>}
 
-<span class="c"># C2: 값이 인용문 안에 실재하는가</span>
-<span class="k">if</span> value_norm <span class="k">not in</span> quote_norm:
+<span class="c"># C2: 값이 인용문 안에 "숫자로서" 실재하는가 — 단순 부분문자열 검사가 아니다.</span>
+<span class="c"># 실제 코드는 value_in_quote(value, quote)로 수 경계까지 본다.</span>
+<span class="k">if not</span> value_in_quote(value_norm, quote_norm):
     <span class="k">return</span> {<span class="s">"value"</span>: <span class="b">None</span>, <span class="s">"verified"</span>: <span class="b">False</span>,
             <span class="s">"reason"</span>: <span class="s">"value_not_in_quote"</span>}
 
@@ -731,11 +735,13 @@
     <span class="k">if</span> reason:
         <span class="k">return</span> {<span class="s">"value"</span>: <span class="b">None</span>, <span class="s">"verified"</span>: <span class="b">False</span>, <span class="s">"reason"</span>: reason}
 
-<span class="c"># C4: 단위도 인용문 안에 실재하는가 (낱말 경계로)</span>
-<span class="k">if</span> unit <span class="k">and not</span> re.search(<span class="s">rf"(?&lt;![a-z]){unit}(?![a-z])"</span>, quote_norm):
+<span class="c"># C4: 단위도 인용문 안에 "낱말로" 실재하는가</span>
+<span class="c"># 실제 코드는 re.escape(normalize(unit))로 이스케이프한 뒤 낱말 경계를 검사한다.</span>
+<span class="k">if</span> unit <span class="k">and not</span> re.search(<span class="s">rf"(?&lt;![a-z]){re.escape(normalize(unit))}(?![a-z])"</span>, quote_norm):
     <span class="k">return</span> {<span class="s">"value"</span>: <span class="b">None</span>, <span class="s">"verified"</span>: <span class="b">False</span>,
             <span class="s">"reason"</span>: <span class="s">"unit_not_in_quote"</span>}</code></pre>
       <p><b>핵심은 <code class="inl">"value": None</code></b>입니다. "의심스러움" 표시를 다는 게 아니라 <b>값을 실제로 지워버립니다.</b> 팩에 남아 있으면 누군가는 결국 씁니다.</p>
+      <div class="anal"><b>C2가 막는 건 "숫자 바꿔치기"입니다.</b> 초록이 <code class="inl">"-0.34 mmol/L"</code>이라고 썼는데 조수가 부호를 빼고 <code class="inl">value: "0.34"</code>로 냈다고 합시다. "0.34"라는 글자 자체는 quote 안에 있으니 단순 부분문자열 검사로는 통과해버립니다. <b>수 경계 검사</b>는 앞뒤로 숫자·부호·소수점이 더 이어지지 않는지까지 봐서 이걸 잡습니다. 같은 원리로 <code class="inl">17.36</code>을 <code class="inl">17</code>로 반올림하거나, 천단위 쉼표를 붙이거나 빼거나, <code class="inl">%</code>를 잘라내도 통과하지 못합니다 — 전부 일부러 추가한 방어입니다.</div>
       <div class="warn"><b>C4에서 "그냥 들어 있는지"가 아니라 "낱말로 들어 있는지"를 봅니다.</b> 그러지 않으면 <code class="inl">magnesium</code>의 <code class="inl">g</code> 한 글자에 단위 <code class="inl">g</code>가 걸려서, <b>500 mg가 500 g(1000배)으로 통과</b>합니다. C4가 막으려던 바로 그 사고가 C4를 뚫는 셈입니다.</div>
     </div>
 
@@ -778,7 +784,7 @@
     <div class="note">
       <div class="lab">발표자 노트</div>
       <p>여기가 <b>클라이맥스</b>입니다. 섹션 2에서 던진 "구조로 막는다"의 답이 여기서 나옵니다.</p>
-      <p class="say">C1·C2·C3·C4, 어렵게 보이지만 결국 <b>Ctrl+F 세 번 + 형태 검사 한 번</b>이에요. 초록에서 문장 찾고, 문장에서 숫자 찾고, 문장에서 단위 찾고, 그 숫자가 p값은 아닌지 보고. 우리가 손으로 하던 걸 코드가 대신 하는 겁니다.</p>
+      <p class="say">C1·C2·C3·C4·C5, 어렵게 보이지만 결국 <b>Ctrl+F 세 번 + 형태 검사 한 번</b>이에요. 초록에서 문장 찾고, 문장에서 숫자 찾고, 문장에서 단위 찾고, 그 숫자가 p값은 아닌지 보고. 우리가 손으로 하던 걸 코드가 대신 하는 겁니다.</p>
       <ul>
         <li>"근데 AI가 검사하면 안 되나요?" 질문 대비 → <b>같은 실수를 한 AI가 자기 실수를 검사하면 통과시킨다.</b> 검사관은 다른 종류여야 합니다.</li>
         <li><code>"value": None</code> 부분을 손으로 짚으세요. "지운다"가 이 도구의 성격입니다.</li>
@@ -795,25 +801,42 @@
     <p class="s-intro">잘 되는 걸 확인하는 실습이 아닙니다. <b>안 되는 게 제대로 안 되는지</b>를 확인하는 실습입니다.</p>
 
     <div class="case">
+      <div class="case-label star"><span class="dot"></span>사전 준비 — 터미널이 처음이어도 여기부터 따라오면 됩니다</div>
+      <div class="def">
+        <div class="one">이 실습에는 세 가지가 필요합니다: <b>Claude Code</b> · <b>git</b> · <b>python3</b></div>
+        <div class="desc">전부 무료이고 한 번만 설치하면 됩니다. 아래에서 있는지 먼저 확인하고, 없으면 설치합니다.</div>
+      </div>
+      <table class="ttable">
+        <tr><th>필요한 것</th><th>있는지 확인</th><th>없으면 이렇게</th></tr>
+        <tr><td><b>Claude Code</b></td><td><code class="inl">claude --version</code></td><td>맥·리눅스: <code class="inl">curl -fsSL https://claude.ai/install.sh | bash</code><br>(Anthropic 공식 설치 스크립트)</td></tr>
+        <tr><td><b>git</b></td><td><code class="inl">git --version</code></td><td>맥: <code class="inl">brew install git</code> · 그 외: <a href="https://git-scm.com" target="_blank" rel="noopener">git-scm.com</a>에서 설치 파일 다운로드</td></tr>
+        <tr class="hi"><td><b>python3</b></td><td><code class="inl">python3 --version</code></td><td><a href="https://python.org" target="_blank" rel="noopener">python.org</a>에서 다운로드, 맥은 <code class="inl">brew install python3</code>도 가능</td></tr>
+      </table>
+      <div class="fix"><span class="tag">대안</span>git이 낯설면 레포 페이지(GitHub)에서 초록색 <b>Code</b> 버튼 → <b>Download ZIP</b>으로 받아 압축을 풀어도 됩니다. 이 경우 아래 0)의 <code class="inl">git clone</code> 줄은 건너뛰고, <code class="inl">cd</code>만 압축 푼 폴더 안의 <code class="inl">pharmacist</code> 경로로 바꿔 실행하세요.</div>
+    </div>
+
+    <div class="case">
       <div class="case-label"><span class="dot"></span>0) 레포 받기 &amp; 위치 확인 — 터미널에서</div>
-<pre><code><span class="c"># 아직 로컬에 파일이 없다면 먼저 받는다</span>
-git clone git@github.com:jiyajiya/pb-ai-study.git
-cd pb-ai-study/pharmacist/pubmed-evidence
+<pre><code><span class="c"># 아직 로컬에 파일이 없다면 먼저 받는다 (git이 없다면 위 "대안" 참고)</span>
+git clone https://github.com/jiyajiya/pb-ai-study.git
+cd pb-ai-study/pharmacist
 pwd   <span class="c"># 여기 출력되는 절대경로를 아래 1)·2) 단계에서 그대로 쓴다</span></code></pre>
-      <div class="warn">python3가 있어야 합니다 — <code class="inl">python3 --version</code>으로 먼저 확인하세요.</div>
+      <div class="warn">python3가 있어야 합니다 — <code class="inl">python3 --version</code>으로 먼저 확인하세요. 없으면 위 "사전 준비" 표를 참고해 설치하세요.</div>
     </div>
 
     <div class="case">
       <div class="case-label"><span class="dot"></span>1) 매니페스트 검증 — 등록 전에, 터미널에서</div>
-<pre><code><span class="c"># 0)에서 cd한 디렉터리 그대로 실행. 절대경로로 검증한다</span>
-claude plugin validate <span class="s">"$(pwd)"</span>   <span class="c"># 매니페스트가 유효한가</span></code></pre>
+<pre><code><span class="c"># 0)에서 cd한 pharmacist/ 안의 pubmed-evidence 플러그인을 검증한다</span>
+claude plugin validate <span class="s">"$(pwd)/pubmed-evidence"</span>   <span class="c"># 매니페스트가 유효한가</span></code></pre>
     </div>
 
     <div class="case">
       <div class="case-label"><span class="dot"></span>2) 플러그인 설치 — 로컬 경로를 바로 넘길 수 없다. 먼저 마켓플레이스로 등록</div>
-<pre><code>claude plugin marketplace add <span class="s">"$(pwd)"</span>
-claude plugin install pubmed-evidence@pubmed-evidence
-<span class="c">#    경로는 .claude-plugin/marketplace.json 이 있는 폴더. 레포 루트가 아니다</span></code></pre>
+<pre><code><span class="c"># 상위 pharmacist/ 를 마켓플레이스로 등록한다 (pubmed-evidence/ 단독 등록과 병행 금지 —</span>
+<span class="c"># 같은 플러그인이 두 마켓플레이스에 잡히면 어느 쪽 사본이 설치됐는지 추적하기 어려워진다)</span>
+claude plugin marketplace add <span class="s">"$(pwd)"</span>
+claude plugin install pubmed-evidence@pharma-bros
+<span class="c">#    경로는 .claude-plugin/marketplace.json 이 있는 폴더(pharmacist/). 레포 루트가 아니다</span></code></pre>
     </div>
 
     <div class="case">
@@ -896,9 +919,9 @@ claude plugin install pubmed-evidence@pubmed-evidence
       <div><b>①</b> <b>컨텍스트</b> = AI가 지금 보고 있는 것 전부를 올려둔 책상. 한번 올라온 건 잘 안 내려간다</div>
       <div><b>②</b> <b>서브에이전트</b> = 별도 책상에서 일하고 <b>정해진 형식의 결과 한 장만</b> 건네고 책상을 버리는 조수</div>
       <div><b>③</b> 서브에이전트를 쓰는 이유는 역할 분담이 아니라 <b>메인이 보는 원문을 검증 가능한 최소 단위로 줄이는 것</b></div>
-      <div><b>④</b> <b>P1 정규화 → P2 스캔 → P3 채굴 → P3-1 파일 저장 → P6 검증.</b> 메인에 올라오는 원문은 논문당 4문장, 전부 출처에 묶여 있다</div>
+      <div><b>④</b> <b>P1 정규화 → P2 스캔 → P3 채굴 → P3-1 파일 저장 → P6 검증.</b> 메인에 올라오는 원문은 논문당 5문장, 전부 출처에 묶여 있다</div>
       <div><b>⑤</b> AI 지시문은 "해줘"보다 <b>"하지 마"가 절반</b>. 금지 사항이 품질을 만든다</div>
-      <div><b>⑥</b> 판정은 AI가 아니라 <b>스크립트</b>가 한다 — C1(인용문 실재) · C2(값 실재) · C3(효과 크기 형태) · C4(단위 실재)</div>
+      <div><b>⑥</b> 판정은 AI가 아니라 <b>스크립트</b>가 한다 — C1(인용문 실재·단일 문장) · C2(값 실재) · C3(효과 크기 형태) · C4(단위 실재) · C5(conclusion은 quote만)</div>
       <div><b>⑦</b> <b>빈칸은 실패가 아니라 정보다.</b> 없는 숫자를 만드는 것만이 이 도구의 유일한 실패</div>
     </div>
 
