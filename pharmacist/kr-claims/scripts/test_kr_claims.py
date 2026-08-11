@@ -524,6 +524,92 @@ assert any("개별인정형" in r for r in rep["verdict_reasons"]), rep["verdict
 
 
 # ══════════════════════════════════════════════════════════════════════
+# R3b: 원료명 출처 — 팩의 topic은 PubMed 검색어이지 고시 등재명이 아니다.
+# 이 구분이 없을 때 '유산균'(등재명 '프로바이오틱스')이 미등재로 나왔고,
+# 그 실패가 "개별인정형이라 없다"와 같은 문장으로 보고돼 조용히 묻혔다.
+# ══════════════════════════════════════════════════════════════════════
+
+_PROB = {"code": "2-51", "ingredient_ko": "프로바이오틱스", "category": "기능성원료",
+         "recognition_type": "고시형", "functional_claims_raw": None,
+         "rows": [{"functional_claim": "장 건강에 도움을 줄 수 있음",
+                   "daily_intake": {"raw": "1 ~ 10 g", "basis": None, "min": 1.0,
+                                    "max": 10.0, "unit": "g", "bound": "range",
+                                    "parsed": True}}],
+         "cautions": []}
+_write_claims(_claims, [_PROB])
+
+
+def _write_pack_meta(path: str, topic: str, **extra) -> None:
+    """topic과 (선택적으로) kr_notice_name을 가진 팩을 쓴다."""
+    doc = {"schema": "evidence-pack/0.3", "topic": topic, "papers": [
+        {"pmid": "1", "slots": {"dose": {"verified": True, "value": "5", "unit": "g"}}}]}
+    doc.update(extra)
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(doc, f, ensure_ascii=False)
+
+
+# kr_notice_name이 있으면 그것으로 조회한다 — topic("유산균")이 아니라.
+_write_pack_meta(_pack, "유산균 × 과민성대장증후군", kr_notice_name="프로바이오틱스")
+rc, _ = _run_main(["check_kr_claims.py", "--claims", _claims, "--pack", _pack,
+                   "--output", _out])
+rep = json.load(open(_out, encoding="utf-8"))
+assert rep["found"] is True, rep
+assert rep["ingredient_query"] == "프로바이오틱스", rep["ingredient_query"]
+assert rep["ingredient_source"] == "pack_notice_name", rep
+assert rc == 0, (rc, rep["verdict_reasons"])
+
+# 키가 없으면 topic으로 되돌아가고, 못 찾으면 **매핑 누락**이라고 말해야 한다.
+# "개별인정형 확인 필요"만 내면 파이프라인 결손이 정상 결과로 읽힌다.
+_write_pack_meta(_pack, "유산균 × 과민성대장증후군")
+rc, _ = _run_main(["check_kr_claims.py", "--claims", _claims, "--pack", _pack,
+                   "--output", _out])
+assert rc == 2, rc
+rep = json.load(open(_out, encoding="utf-8"))
+assert rep["found"] is False and rep["ingredient_source"] == "pack_topic", rep
+assert any("매핑" in r for r in rep["verdict_reasons"]), rep["verdict_reasons"]
+assert any("프로바이오틱스" in w for w in rep["warnings"]), rep["warnings"]
+
+# 등재명으로 물었는데 없으면 매핑 오류 쪽을 먼저 의심하라고 말한다.
+_write_pack_meta(_pack, "유산균 × 과민성대장증후군", kr_notice_name="없는등재명")
+rc, _ = _run_main(["check_kr_claims.py", "--claims", _claims, "--pack", _pack,
+                   "--output", _out])
+assert rc == 2, rc
+rep = json.load(open(_out, encoding="utf-8"))
+assert rep["ingredient_source"] == "pack_notice_name", rep
+assert any("등재명 자체가 틀렸을" in w for w in rep["warnings"]), rep["warnings"]
+
+# 공란은 "고시형 미등재를 확인했다"는 뜻이다 — topic으로 되돌아가면
+# 확인된 사실이 조회 실패로 뒤바뀐다. 조회하지 않고 그 사실을 그대로 낸다.
+_write_pack_meta(_pack, "콜라겐 × 피부탄력", kr_notice_name="")
+rc, _ = _run_main(["check_kr_claims.py", "--claims", _claims, "--pack", _pack,
+                   "--output", _out])
+assert rc == 2, rc
+rep = json.load(open(_out, encoding="utf-8"))
+assert rep["ingredient_source"] == "pack_notice_name_empty", rep
+assert rep["ingredient_query"] is None and rep["found"] is False, rep
+assert any("개별인정형" in w for w in rep["warnings"]), rep["warnings"]
+
+# --ingredient는 팩보다 우선한다 (호출자가 명시한 것을 덮지 않는다)
+_write_pack_meta(_pack, "유산균 × 과민성대장증후군", kr_notice_name="없는등재명")
+rc, _ = _run_main(["check_kr_claims.py", "--claims", _claims, "--pack", _pack,
+                   "--ingredient", "프로바이오틱스", "--output", _out])
+assert rc == 0, rc
+rep = json.load(open(_out, encoding="utf-8"))
+assert rep["ingredient_source"] == "argument" and rep["found"] is True, rep
+
+# 원료명을 어디서도 못 정하면 리포트를 **오류 상태로 덮어쓴다.**
+# 안 쓰고 나가면 --output에 직전 실행의 통과 리포트가 그대로 남는다.
+json.dump({"verdict": "pass", "found": True}, open(_out, "w", encoding="utf-8"))
+with open(_pack, "w", encoding="utf-8") as f:
+    json.dump({"schema": "evidence-pack/0.3", "papers": []}, f)
+rc, _ = _run_main(["check_kr_claims.py", "--claims", _claims, "--pack", _pack,
+                   "--output", _out])
+assert rc == 2, rc
+rep = json.load(open(_out, encoding="utf-8"))
+assert rep["verdict"] == "block", "직전 통과 리포트가 그대로 남아 있다"
+
+
+# ══════════════════════════════════════════════════════════════════════
 # R4: build_kr_claims.py 코드 연속성 — 블록으로 잡히지도 못한 원료는
 # 어느 커버리지 필드에도 안 남아 "처음부터 없었던 것"처럼 보였다.
 # ══════════════════════════════════════════════════════════════════════

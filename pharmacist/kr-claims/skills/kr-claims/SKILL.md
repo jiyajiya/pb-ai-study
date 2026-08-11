@@ -50,8 +50,28 @@ python3 "${CLAUDE_PLUGIN_ROOT}/scripts/check_kr_claims.py" \
   --output kr-report.json
 ```
 
-`--ingredient`를 생략하면 팩의 `topic`("마그네슘 × 수면")에서 앞부분을 쓴다.
-원료명이 팩과 다르게 등재돼 있으면(예: "EPA 및 DHA 함유 유지") 직접 지정한다.
+### 원료명이 정해지는 순서
+
+`--ingredient`를 생략하면 아래 순서로 정해진다.
+
+| 순위 | 출처 | `ingredient_source` |
+|---|---|---|
+| 1 | 팩의 `kr_notice_name` — pubmed-evidence가 실어 보낸 **고시 등재명** | `pack_notice_name` |
+| 2 | 그것이 공란(`""`)이면 **조회하지 않는다** — "고시형 미등재를 확인했다"는 뜻 | `pack_notice_name_empty` |
+| 3 | 키가 없으면 팩의 `topic` 앞부분 | `pack_topic` |
+
+**3번은 PubMed 검색어이지 등재명이 아니다.** "유산균"의 등재명은
+"프로바이오틱스", "오메가3"는 "EPA 및 DHA 함유 유지"다 — 그대로 조회하면
+**고시에 실재하는 원료가 미등재로 나온다.**
+
+그래서 못 찾았을 때 리포트가 두 가지를 구분해 말한다.
+
+| `ingredient_source` | 미등재의 뜻 | 다음 조치 |
+|---|---|---|
+| `pack_notice_name` · `argument` | 등재명으로 물었는데 없다 | **등재명이 틀렸을 가능성을 먼저** 본 뒤 개별인정형 확인 |
+| `pack_topic` | 애초에 등재명으로 묻지 않았다 | 등재명 매핑부터 채운다 (파이프라인 결손) |
+
+이 구분이 없으면 매핑 누락이 "개별인정형이라 없다"로 읽혀 조용히 묻힌다.
 
 ### 결과는 종료 코드가 아니라 `verdict`로 읽는다
 
