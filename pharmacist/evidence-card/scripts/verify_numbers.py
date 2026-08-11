@@ -10,6 +10,8 @@ LLM 판단은 이 단계에 개입하지 않는다.
   C2. value 가 quote 에 부분문자열로 존재한다
   C3. (effect 슬롯 한정) value 가 효과 크기의 형태다
       — p값 단독·신뢰구간 단독·서술어는 효과 크기가 아니므로 폐기
+  C4. unit 이 quote 에 부분문자열로 존재한다
+      — value만 검사하면 "17.36 min"을 "17.36 hours"로 바꿔 적어도 통과한다
 
 C1은 초록을 스크립트가 독립적으로 재조회해 확인하므로,
 에이전트가 quote를 지어내면 통과할 수 없다.
@@ -23,9 +25,8 @@ C3은 C1/C2를 통과하는 "원문에 실재하지만 효과 크기가 아닌" 
   python3 verify_numbers.py --input raw_slots.json --meta meta.json --output pack.json
 
 종료 코드:
-  0  전 슬롯 통과
-  1  일부 슬롯 폐기 (정상 동작. 결과는 생성됨)
-  2  초록 조회 실패 등 검증 불가
+  0  팩 생성 완료 (슬롯 폐기는 정상 흐름이므로 0이다. 개수는 stdout·팩에 있다)
+  2  팩을 신뢰할 수 없음 — 입력이 비었거나, 검증 불가 논문이 성공한 논문 이상
 """
 
 import argparse
@@ -41,13 +42,14 @@ from xml.etree import ElementTree as ET
 
 EUTILS = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils"
 SLOTS = ("effect", "dose", "population", "form")
+COMPARATORS = frozenset({"placebo", "active", "baseline"})
 
 # 값이 실재하지 않거나 효과 크기가 아니어서 버린 경우. 추출 자체가 없었던
 # not_extracted / missing_value_or_quote 는 폐기가 아니라 정보다.
 REJECT_REASONS = frozenset({
     "quote_not_in_abstract", "value_not_in_quote",
     "p_value_not_effect_size", "ci_only_not_effect_size",
-    "significance_word_not_effect_size", "no_numeric_effect",
+    "no_numeric_effect", "unit_not_in_quote",
 })
 
 # 대조 전 정규화 대상: 유니코드 대시/공백/따옴표류
@@ -56,14 +58,18 @@ QUOTES = dict.fromkeys(map(ord, "\u2018\u2019\u201b\u2032"), "'")
 DQUOTES = dict.fromkeys(map(ord, "\u201c\u201d\u201f\u2033"), '"')
 
 
-# C3: effect 슬롯이 효과 크기가 아닌 것을 담는 흔한 형태.
-# normalize() 통과 후(소문자·공백 정규화) 문자열에 적용한다.
-P_VALUE_ONLY = re.compile(r"^\(?\s*p\s*[-=<>≤≥]{1,2}\s*\.?\d[\d.eE+-]*\s*\)?$")
-CI_ONLY = re.compile(r"^\(?\s*\d{2}\s*%?\s*ci\b")
-SIGNIF_WORD_ONLY = re.compile(
-    r"^(statistically |clinically |highly |not |no )*(non-?)?significant(ly)?"
-    r"( (difference|improvement|reduction|increase|decrease|effect|change"
-    r"|reduced|increased|decreased|improved|lower|higher|greater))*\.?$"
+# C3: effect 값에서 "효과 크기가 아닌 것"을 걷어낸 뒤 숫자가 남는지 본다.
+# 앵커(^...$) 매칭은 접두·접미어 한 글자에 무력화된다 —
+# "significant at p<0.001"은 p값 패턴에도, 서술어 패턴에도 걸리지 않는다.
+# 차감식은 걷어낸 뒤 남는 것을 보므로 붙어 있는 말에 영향을 받지 않는다.
+CI_TOKEN = re.compile(
+    r"\(?\s*(?:\d{2}\s*%?\s*)?(?:ci|confidence interval)\b"
+    r"[\s:=]*[-\d.,\s]*(?:to\s*[-\d.]+)?\s*\)?"
+)
+# (?<![a-z]) 없이는 "sbp -5.2", "sleep -1.2"의 끝 p가 p값으로 오인되어
+# 정상 효과 크기가 조용히 폐기된다. 문자클래스의 하이픈이 음수 부호를 먹는다.
+P_TOKEN = re.compile(
+    r"\(?\s*(?<![a-z])p[\s-]*(?:value|val)?\s*[-=<>\u2264\u2265]{1,2}\s*[.\d][\d.eE+-]*\s*\)?"
 )
 HAS_DIGIT = re.compile(r"\d")
 
@@ -73,16 +79,17 @@ def effect_shape_reason(value_norm: str) -> str | None:
 
     효과 크기 = 변화율 / 변화량(단위 포함) / 군간 차이 / 위험도 비.
     p값은 "우연이 아니다"라는 판정이지 크기가 아니므로 카드에 쓸 수 없다.
+    신뢰구간도 점추정치 없이 구간만 있으면 카드에 쓸 숫자가 없는 것이다.
     """
-    if SIGNIF_WORD_ONLY.match(value_norm):
-        return "significance_word_not_effect_size"
-    if P_VALUE_ONLY.match(value_norm):
+    remainder = P_TOKEN.sub(" ", CI_TOKEN.sub(" ", value_norm))
+    if HAS_DIGIT.search(remainder):
+        return None
+    # 남은 숫자가 없다 = 이 값은 p값/신뢰구간/서술어뿐이다. 무엇이었는지만 구분한다.
+    if P_TOKEN.search(value_norm):
         return "p_value_not_effect_size"
-    if CI_ONLY.match(value_norm):
+    if CI_TOKEN.search(value_norm):
         return "ci_only_not_effect_size"
-    if not HAS_DIGIT.search(value_norm):
-        return "no_numeric_effect"
-    return None
+    return "no_numeric_effect"
 
 
 def normalize(text: str) -> str:
@@ -119,6 +126,8 @@ def fetch_abstract(pmid: str, api_key: str | None = None, retries: int = 2) -> s
                 label = node.get("Label")
                 text = "".join(node.itertext())
                 parts.append(f"{label}: {text}" if label else text)
+            if not parts:
+                return ""  # 초록이 없는 레코드. 제목만으로 대조하면 전부 환각으로 오분류된다
             for node in root.iter("ArticleTitle"):
                 parts.append("".join(node.itertext()))
             return " ".join(parts)
@@ -165,17 +174,45 @@ def verify_slot(slot_name: str, slot: dict | None, abstract_norm: str) -> dict:
                     "reason": reason,
                     "rejected_value": value, "rejected_quote": quote}
 
+    # C4: unit ⊂ quote — value만 검사하면 무방비인 구멍.
+    # 스키마가 value와 unit을 분리해 두었으므로 "17.36" + "hours"로
+    # min을 시간으로 바꿔 적어도 C2는 통과한다. 카드에 찍히는 것은 둘의 합이다.
+    # 부분문자열이 아니라 낱말 경계로 본다 — "magnesium"의 g에 unit="g"가 걸리면
+    # 500 mg가 500 g(1000배)로 통과한다. C4가 막으려던 바로 그 유형이다.
+    unit = slot.get("unit")
+    if unit and not re.search(rf"(?<![a-z]){re.escape(normalize(unit))}(?![a-z])", quote_norm):
+        return {"slot": slot_name, "value": None, "verified": False,
+                "reason": "unit_not_in_quote",
+                "rejected_value": value, "rejected_unit": unit,
+                "rejected_quote": quote}
+
     out = {
         "slot": slot_name,
         "value": value,
-        "unit": slot.get("unit"),
+        "unit": unit,
         "quote": quote,
         "verified": True,
     }
     if slot_name == "effect":
-        out["unit_type"] = slot.get("unit_type")
-        out["comparator"] = slot.get("comparator")
-        out["significance"] = slot.get("significance")
+        # unit_type은 에이전트 판정을 받지 않고 값에서 파생시킨다.
+        # 신뢰할 필요가 없는 것은 신뢰 표면에서 뺀다.
+        out["unit_type"] = "percent" if "%" in f"{value}{unit or ''}" else "absolute"
+
+        # comparator는 초록 문장이 아니라 판정이므로 부분문자열 검사가 불가능하다.
+        # 열거값 밖이면 null — 위약 대비인지 복용 전후인지 단정하지 않는 쪽이 안전하다.
+        comparator = slot.get("comparator")
+        out["comparator"] = comparator if comparator in COMPARATORS else None
+
+        # significance는 헤드라인 숫자가 아니라 부가 정보다.
+        # quote 밖이면 슬롯을 죽이지 않고 이 필드만 버린다 —
+        # p값이 효과 문장과 다른 문장에 있는 정상 케이스에서 멀쩡한 슬롯이 죽는다.
+        significance = slot.get("significance")
+        if significance and normalize(significance) in quote_norm:
+            out["significance"] = significance
+        else:
+            out["significance"] = None
+            if significance:
+                out["dropped_significance"] = significance
     return out
 
 
@@ -194,6 +231,11 @@ def main() -> int:
     if isinstance(records, dict):
         records = [records]
 
+    if not records:
+        print("입력에 레코드가 없다. 검증할 것이 없으므로 팩을 만들지 않는다.",
+              file=sys.stderr)
+        return 2
+
     meta = {}
     if args.meta:
         with open(args.meta, encoding="utf-8") as f:
@@ -202,8 +244,13 @@ def main() -> int:
     results = []
     rejected_count = 0
     fetch_failed = []
+    no_abstract = []
 
-    for rec in records:
+    for i, rec in enumerate(records):
+        # 성공 경로에만 두면 조회가 연속 실패할 때 재시도 폭주가 된다.
+        # E-utilities는 이럴 때 IP를 막는다.
+        if i:
+            time.sleep(0.35 if api_key else 0.4)
         pmid = rec.get("pmid")
         if not pmid or rec.get("error"):
             fetch_failed.append(pmid)
@@ -214,6 +261,12 @@ def main() -> int:
         except RuntimeError as e:
             print(f"[FETCH FAIL] {e}", file=sys.stderr)
             fetch_failed.append(pmid)
+            continue
+
+        if not abstract.strip():
+            print(f"[NO ABSTRACT] pmid={pmid} 초록이 없는 레코드다. 검증 불가로 제외.",
+                  file=sys.stderr)
+            no_abstract.append(pmid)
             continue
 
         abstract_norm = normalize(abstract)
@@ -239,8 +292,8 @@ def main() -> int:
             "url": f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/",
             "slots": verified_slots,
         })
-        time.sleep(0.35 if api_key else 0.4)  # E-utilities rate limit
 
+    unverifiable = len(fetch_failed) + len(no_abstract)
     total = sum(1 for r in results for s in r["slots"].values())
     passed = sum(1 for r in results for s in r["slots"].values() if s["verified"])
 
@@ -248,6 +301,10 @@ def main() -> int:
         "이 팩은 근거 수집 결과일 뿐이며 광고법 검토를 거치지 않았다. "
         "성분 설명과 제품 효능 표방의 경계를 확인하기 전에 발행하지 말 것.",
         "verified=false 슬롯의 값은 의도적으로 제거되었다. 복원하지 말 것.",
+        "이 게이트는 '이 값이 그 초록에 실재한다'만 보증한다. "
+        "'이 값이 그 슬롯의 올바른 값이다'는 보증하지 않는다 — "
+        "같은 문장의 용량 숫자가 효과 크기 자리에 들어가도 통과한다. "
+        "조작(변환·반올림·창작)은 막지만 오배치는 사람이 봐야 한다.",
     ]
 
     # 효과 크기를 한 표에 나란히 놓으려면 축이 같아야 한다.
@@ -266,18 +323,27 @@ def main() -> int:
             "초록에 없다는 뜻이므로, 카피에서 비교 대상을 단정하지 말 것."
         )
 
+    if unverifiable:
+        warnings.append(
+            f"{unverifiable}편이 검증되지 않았다 "
+            f"(조회 실패 {len(fetch_failed)}, 초록 없음 {len(no_abstract)}). "
+            "이 팩은 검색된 근거 전체가 아니라 검증에 성공한 일부다."
+        )
+
     pack = {
         "schema": "evidence-pack/0.1",
         "topic": meta.get("topic"),
         "tone": meta.get("tone"),
         "tone_reason": meta.get("tone_reason"),
         "evidence_map": meta.get("evidence_map"),
+        "guideline_hit": meta.get("guideline_hit"),
         "papers": results,
         "verification": {
             "slots_total": total,
             "slots_verified": passed,
             "slots_rejected": rejected_count,
             "fetch_failed_pmids": fetch_failed,
+            "no_abstract_pmids": no_abstract,
         },
         "warnings": warnings,
         "generated_at": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
@@ -286,11 +352,17 @@ def main() -> int:
     with open(args.output, "w", encoding="utf-8") as f:
         json.dump(pack, f, ensure_ascii=False, indent=2)
 
-    print(f"검증 완료: {passed}/{total} 통과, {rejected_count} 폐기 → {args.output}")
+    print(f"검증 완료: {passed}/{total} 통과, {rejected_count} 폐기, "
+          f"{unverifiable}편 검증불가 → {args.output}")
 
-    if fetch_failed and not results:
+    # 검증에 실패한 논문이 통과한 논문보다 많으면 이 팩은 지형을 대표하지 못한다.
+    # 8편 중 7편이 조회되지 않았는데 0을 반환하면 호출자는 정상으로 읽는다.
+    # 반씩 갈린 경우(4/4)도 대표성이 없으므로 >= 로 둔다.
+    if unverifiable >= len(results):
+        print(f"검증 불가 {unverifiable}편 ≥ 검증 성공 {len(results)}편. 팩을 신뢰하지 말 것.",
+              file=sys.stderr)
         return 2
-    return 1 if rejected_count else 0
+    return 0
 
 
 if __name__ == "__main__":

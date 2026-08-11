@@ -1,7 +1,7 @@
 ---
 name: evidence-scout
 description: PubMed에서 특정 성분×효능 조합의 근거 지형을 스캔해 톤(T1/T2/T3)을 판정하고 추출 대상 PMID를 선별한다. evidence-card 스킬의 P2 단계에서만 호출된다.
-tools: Bash, WebFetch
+tools: Bash
 model: sonnet
 ---
 
@@ -15,10 +15,15 @@ model: sonnet
   "ingredient_en": "...",
   "outcome_en": "...",
   "mesh_terms": ["...", "..."],
+  "synonyms": ["...", "..."],
   "exclude_terms": ["...", "..."],
   "decompose_default": false
 }
 ```
+
+`synonyms`는 **같은 물질의 다른 이름**이다 (`icosapent ethyl` = EPA).
+2-1 성분 일치 검사에서 이 이름으로 등장한 논문을 다른 물질로 오인해
+버리지 않도록 쓴다. 검색어를 넓히는 데는 쓰지 않는다.
 
 ## 절차
 
@@ -33,16 +38,22 @@ BASE="https://eutils.ncbi.nlm.nih.gov/entrez/eutils"
 curl -s "$BASE/esearch.fcgi?db=pubmed&retmode=json&retmax=40&sort=relevance&term=<TERM>"
 ```
 
-검색어는 3회 나눠 던진다. 각각 목적이 다르다.
+검색어는 4회 나눠 던진다. 각각 목적이 다르다.
 
 | 회차 | 필터 | 목적 |
 |---|---|---|
 | 1 | `AND (meta-analysis[pt] OR systematic review[pt])` | 상위 근거 존재 여부 = T1 판정의 핵심 |
 | 2 | `AND randomized controlled trial[pt] AND humans[mh]` | 숫자 채굴 대상 확보 |
 | 3 | 필터 없음 (`humans[mh]`만) | 인체 연구가 아예 없는지 확인 = T3 신호 |
+| 4 | `AND (guideline[pt] OR practice guideline[pt] OR consensus development conference[pt])` | 가이드라인 존재 여부 = `guideline_hit` |
 
 1차가 0건이면 T1은 불가능하다. 2차가 0건이고 3차 결과가
 동물·시험관 연구뿐이면 T3다.
+
+**4차 결과가 1건 이상이면 `guideline_hit: true`, 0건이면 `false`다.**
+이 값 없이는 R1이 성립할 수 없으므로 4차를 건너뛰지 마라 — 건너뛰면
+근거가 아무리 강해도 판정이 T2에 갇힌다. 4차에서 나온 PMID는
+채굴 대상이 아니다 (가이드라인 문서에는 원 시험의 효과 크기가 없다).
 
 ### 2. 판정 재료 수집
 
@@ -51,6 +62,9 @@ curl -s "$BASE/esearch.fcgi?db=pubmed&retmode=json&retmax=40&sort=relevance&term
 ```bash
 curl -s "$BASE/efetch.fcgi?db=pubmed&id=<PMIDS>&retmode=xml&rettype=abstract"
 ```
+
+`<PMIDS>`는 **각 값이 `^[0-9]+$`인지 확인한 뒤** 쉼표로 이어 붙인다. esearch 응답에서
+온 값이라 실제 위험은 낮지만, 외부 응답을 셸 문자열에 그대로 넣는 습관은 두지 않는다.
 
 각 논문에 대해 다음만 기록한다. **초록 원문은 절대 출력에 포함하지 않는다.**
 
@@ -69,6 +83,7 @@ EPA+DHA 혼합제, ALA 비교 시험이 함께 나온다. **서로 다른 물질
 각 논문의 개입 성분이 다음 중 하나라도 해당하면 `off_target: true`:
 
 - 요청 성분과 **다른 물질** (EPA 요청 → 크릴오일 / ALA / DHA 단독)
+  단, 입력 `synonyms`에 있는 이름은 같은 물질이므로 해당 없음
 - 요청 성분이 **혼합물의 일부로만** 들어감 (EPA 요청 → EPA+DHA 복합제)
   단, `ingredient_en` 자체가 혼합물이면(`omega-3 fatty acids`) 해당 없음
 - 입력 `exclude_terms` 중 하나가 **intervention 위치**에 등장
@@ -168,7 +183,7 @@ R5. 위 어디에도 해당 없음
      "off_target": true, "intervention": "krill oil", "off_target_reason": "다른 물질"}
   ],
   "guideline_hit": false,
-  "search_terms_used": ["...", "...", "..."]
+  "search_terms_used": ["...", "...", "...", "..."]
 }
 ```
 

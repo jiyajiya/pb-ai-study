@@ -15,8 +15,10 @@ description: 성분명과 증상을 입력하면 PubMed 근거를 수집·검증
 1. **검증되지 않은 숫자는 출력하지 않는다.** `verified: false`인 슬롯은
    `null`로 표시하고 사유를 남긴다. 그럴듯한 숫자를 만들어내는 것은
    이 도구의 유일한 치명적 실패다.
-2. **오케스트레이터는 초록 원문을 컨텍스트에 담지 않는다.**
-   원문은 서브에이전트 안에서만 살아 있다가 폐기된다.
+2. **오케스트레이터가 보는 원문은 검증 가능한 최소 단위로 제한한다.**
+   초록 전문은 서브에이전트 안에서만 살아 있다 폐기되고, 메인에는
+   슬롯에 묶인 `quote` 문장만 올라온다. 이건 오염 "차단"이 아니라
+   **표면 축소**다 — quote는 원문 그대로이고, 그래야 P6이 대조할 수 있다.
 3. **숫자 검증은 LLM이 하지 않는다.** `scripts/verify_numbers.py`만이 판정한다.
 
 ## 실행 절차
@@ -37,6 +39,7 @@ description: 성분명과 증상을 입력하면 PubMed 근거를 수집·검증
   "outcome_ko": "수면",
   "outcome_en": "sleep quality",
   "mesh_terms": ["Magnesium", "Sleep Quality", "Sleep Initiation and Maintenance Disorders"],
+  "synonyms": ["Mg supplementation", "magnesium oxide", "magnesium citrate"],
   "exclude_terms": ["magnesium sulfate (정맥/산과)"],
   "decompose_default": false,
   "inferred": false
@@ -69,6 +72,38 @@ description: 성분명과 증상을 입력하면 PubMed 근거를 수집·검증
 - 최대 8개. 그 이상이면 scout이 매긴 순위 상위 8개만.
 - 순차 실행 금지 — 앞 논문의 숫자가 뒤 논문 추출에 오염을 일으킨다.
 
+### P3-1. 중간 산출물 저장 (P6의 입력)
+
+P6 스크립트는 컨텍스트가 아니라 **파일**을 읽는다. 두 파일을 작업
+디렉토리에 저장한 뒤 P6으로 넘어간다. 저장하지 않으면 P6은 실행되지 않는다.
+
+**`raw_slots.json`** — miner 반환값을 **손대지 않고** 배열로 모은 것.
+
+```json
+[ { "pmid": "...", "design": "...", "direction": "...",
+    "subgroup_only": false, "slots": { ... } }, ... ]
+```
+
+miner가 `{"pmid": "...", "error": "fetch_failed"}`를 반환한 것도 그대로
+배열에 넣는다. 스크립트가 검증 불가로 집계해 팩의 경고에 올린다.
+값을 고치거나 보기 좋게 다듬지 마라 — 그 순간 검증이 무의미해진다.
+
+**`meta.json`** — P1 정규화 결과와 P2 scout 판정에서 **아래 5개 키만** 옮긴다.
+
+```json
+{
+  "topic": "마그네슘 × 수면",
+  "tone": "T2",
+  "tone_reason": "R4: RCT 5편 중 3편 positive이나 모두 결핍군 한정",
+  "evidence_map": { "meta_analysis": 1, "rct": 5, "...": 0 },
+  "guideline_hit": false
+}
+```
+
+`topic`은 P1 입력의 `<성분 한글명> × <증상 한글명>`이다. 나머지 4개는
+scout 반환값에서 그대로 복사한다. **지어내지 마라** — scout이 주지 않은
+키는 넣지 않는다. 스크립트는 없는 키를 `null`로 채우고 진행한다.
+
 ### P6. 검증 (스크립트)
 
 ```bash
@@ -76,12 +111,18 @@ python3 "${CLAUDE_PLUGIN_ROOT}/scripts/verify_numbers.py" \
   --input raw_slots.json --meta meta.json --output evidence-pack.json
 ```
 
+입력은 P3-1에서 저장한 두 파일이다.
+
 경로는 반드시 `${CLAUDE_PLUGIN_ROOT}` 기준으로 쓴다.
 상대경로는 사용자의 작업 디렉토리에 따라 깨진다.
 
 - 스크립트가 PubMed에서 초록을 **독립적으로 재조회**해 대조한다.
 - LLM이 판단에 개입하지 않는다.
-- 종료 코드 0: 전부 통과 / 1: 일부 폐기 / 2: 조회 실패
+- 종료 코드 **0**: 팩 생성 완료 (슬롯 폐기는 정상 흐름이라 0이다).
+  **2**: 팩을 신뢰할 수 없음 — 입력이 비었거나, 검증 불가 논문이
+  검증 성공 논문보다 많다. 이때는 팩을 사용자에게 제시하지 말고
+  무엇이 조회되지 않았는지 먼저 보고한다.
+- 폐기 개수는 종료 코드가 아니라 stdout과 팩의 `verification`에 있다.
 
 ### 출력
 
