@@ -589,6 +589,18 @@ assert rep["ingredient_source"] == "pack_notice_name_empty", rep
 assert rep["ingredient_query"] is None and rep["found"] is False, rep
 assert any("개별인정형" in w for w in rep["warnings"]), rep["warnings"]
 
+# 공백만 있는 문자열은 공란이 **아니다.** 확인의 결과가 아니라 데이터
+# 오류이므로, "고시형 미등재를 확인했다"는 없는 사실을 주장하지 않는다.
+_write_pack_meta(_pack, "유산균 × 과민성대장증후군", kr_notice_name="   ")
+rc, _ = _run_main(["check_kr_claims.py", "--claims", _claims, "--pack", _pack,
+                   "--output", _out])
+assert rc == 2, rc
+rep = json.load(open(_out, encoding="utf-8"))
+assert rep["ingredient_source"] == "pack_topic", rep
+assert rep["ingredient_query"] == "유산균", rep["ingredient_query"]
+assert any("공백만" in w for w in rep["warnings"]), rep["warnings"]
+assert not any("고시형 미등재로 표시했다" in w for w in rep["warnings"]), rep["warnings"]
+
 # --ingredient는 팩보다 우선한다 (호출자가 명시한 것을 덮지 않는다)
 _write_pack_meta(_pack, "유산균 × 과민성대장증후군", kr_notice_name="없는등재명")
 rc, _ = _run_main(["check_kr_claims.py", "--claims", _claims, "--pack", _pack,
@@ -607,6 +619,9 @@ rc, _ = _run_main(["check_kr_claims.py", "--claims", _claims, "--pack", _pack,
 assert rc == 2, rc
 rep = json.load(open(_out, encoding="utf-8"))
 assert rep["verdict"] == "block", "직전 통과 리포트가 그대로 남아 있다"
+# 어느 경로로 물었는지는 오류 리포트에도 남는다. null이면 이 실패가
+# "등재명이 틀렸다"인지 "등재명으로 묻지 않았다"인지 구별되지 않는다.
+assert rep["ingredient_source"] == "pack_topic", rep
 
 
 # ══════════════════════════════════════════════════════════════════════

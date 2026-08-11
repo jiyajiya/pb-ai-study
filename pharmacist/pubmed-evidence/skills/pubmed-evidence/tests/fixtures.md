@@ -100,10 +100,15 @@
       이 실패는 "개별인정형이라 없다"와 겉모습이 같아서 조용히 묻힌다
 - [ ] **F1(오메가3)도 마찬가지다.** 등재명은 `EPA 및 DHA 함유 유지`다
 - [ ] **F4(콜라겐)의 미등재는 정상이다.** 저분자콜라겐펩타이드는 개별인정형이라
-      고시형 데이터에 없다. `kr_notice_name`이 공란이면 kr-claims를 **부르지
-      않고** 그 사실을 그대로 보고해야 한다
+      고시형 데이터에 없다. `kr_notice_name`이 공란이면 kr-claims는 조회하지
+      않고 `verdict: block` · `ingredient_source: pack_notice_name_empty`로
+      답한다 — **정상 결과이되 개별인정형 확인이 사람에게 남았다는 뜻이다.**
+      여기서 `pass`가 나오면 남은 조치가 통과로 읽힌 것이다
 - [ ] 리포트의 `ingredient_source`가 `pack_notice_name`이다.
-      `pack_topic`이면 브리지가 끊겨 되돌아간 것이다
+      `pack_topic`이면 브리지가 끊겨 되돌아간 것이고, `argument`면 메인이
+      원료명을 손으로 다시 넘긴 것이다 — 팩 경로만 넘겨야 한다
+      (`python3 pubmed-evidence/scripts/test_verify_evidence.py`가 상류
+      meta.json → 팩 구간을, kr-claims의 R3b가 하류 구간을 고정한다)
 - [ ] **두 verdict가 합쳐진다.** `pack=review` + `kr=block`이면 최종은
       `block`이고, `verdict_reasons`는 두 배열이 출처와 함께 나란히 나온다
 - [ ] kr-claims 미설치 시 건너뛰되, **국내 기준 대조를 하지 않았다는 사실을

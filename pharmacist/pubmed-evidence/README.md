@@ -106,8 +106,20 @@ pubmed-evidence/                          ← 플러그인 루트
 │   └── abstract-miner.md               ← 서브에이전트 (격리 컨텍스트, 병렬)
 ├── scripts/
 │   ├── verify_evidence.py              ← 결정론적 검증 게이트 (LLM 아님)
-│   └── test_verify_evidence.py         ← 네트워크 없이 도는 계약 검사
-└── pubmed-evidence-study.html          ← 스터디 자료 (약사·개발자 통합본)
+│   ├── test_verify_evidence.py         ← 네트워크 없이 도는 계약 검사
+│   └── sync_workshop.py                ← 워크숍 HTML의 파일 사본 갱신·검사
+├── pubmed-evidence-study.html          ← 스터디 자료 (약사·개발자 통합본)
+└── pubmed-evidence-workshop.html       ← 실습본 (위 파일들의 사본을 품고 있다)
+```
+
+`pubmed-evidence-workshop.html`은 실습에서 참가자가 붙여넣을 파일을 **세 군데**
+들고 있다 — `#src-*` 스냅샷, 카드의 줄 수 라벨, 다운로드용 starter zip. 손으로
+옮기면 어긋나고, 어긋난 실습본은 원본이 고친 버그를 그대로 재현한다. 원본
+파일을 고쳤으면 반드시 돌린다.
+
+```bash
+python3 scripts/sync_workshop.py           # 원본에서 다시 채운다
+python3 scripts/sync_workshop.py --check   # 어긋나 있으면 종료 코드 1
 ```
 
 HTML은 플러그인 동작과 무관한 스터디 자료지만, 플러그인 루트에 있으므로

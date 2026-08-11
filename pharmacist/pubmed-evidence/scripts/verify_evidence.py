@@ -799,6 +799,17 @@ def main() -> int:
             f"design 판정이 NLM PublicationType과 어긋나는 논문이 있다 "
             f"(PMID {', '.join(mismatched)}). 톤 판정이 design 위에 서 있으므로 확인할 것."
         )
+    # 고시 등재명이 null이면 하류 kr-claims가 topic 앞부분으로 되돌아간다.
+    # topic이 우연히 등재명과 같은 원료(마그네슘)도 있어서 결과만 보면
+    # 되돌아간 것이 티가 나지 않는다. "확인하지 않았다"는 사실을 여기 남긴다.
+    # ""(공란)은 확인한 결과이므로 경고하지 않는다.
+    if meta.get("kr_notice_name") is None:
+        warnings.append(
+            "식약처 고시 등재명(kr_notice_name)이 확인되지 않았다. P6-1이 팩의 "
+            "topic(= PubMed 검색어)으로 되돌아가므로, 고시에 실재하는 기준을 "
+            "미등재로 보고할 수 있다. references/normalize.md의 「고시 등재명」 "
+            "표를 확인할 것."
+        )
     warnings.append(
         f"철회·정오표·이해충돌 정보는 {generated_at} 시점의 PubMed 스냅샷이다. "
         "철회는 나중에 일어나므로, 오래된 팩을 재사용할 때는 다시 조회할 것 "

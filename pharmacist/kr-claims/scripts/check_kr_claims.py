@@ -273,13 +273,15 @@ def main() -> int:
         return 2
 
 
-def _error_report(args, detail: str) -> dict:
+def _error_report(args, detail: str, source: str = None) -> dict:
     return {
         "schema": "kr-claims-report/0.2",
         "verdict": "block",
         "verdict_reasons": [f"스크립트가 정상 종료하지 못했다 ({detail})"],
         "ingredient_query": args.ingredient,
-        "ingredient_source": "argument" if args.ingredient else None,
+        # source는 원료명 결정 이후의 호출자만 넘긴다. 그 앞(팩·claims 로드
+        # 실패)에서는 아직 경로가 정해지지 않아 인자 유무가 아는 전부다.
+        "ingredient_source": source or ("argument" if args.ingredient else None),
         "found": None,
         "matches": [], "dose_checks": [],
         "warnings": ["이 리포트는 실행 실패로 생성된 오류 리포트다. "
@@ -320,15 +322,21 @@ def run(args) -> int:
     # 원료(유산균 → 등재명 '프로바이오틱스')를 미등재로 읽게 된다.
     query = args.ingredient
     query_source = "argument"
+    blank_notice = None
     if not query:
         notice_name = pack.get("kr_notice_name")
         if isinstance(notice_name, str) and notice_name.strip():
             query, query_source = notice_name.strip(), "pack_notice_name"
-        elif isinstance(notice_name, str):
+        elif notice_name == "":
             # 공란은 "고시형에 없음을 확인했다"(개별인정형)는 뜻이다. topic으로
             # 되돌아가면 확인된 사실이 조회 실패로 뒤바뀐다.
             query_source = "pack_notice_name_empty"
         else:
+            # 공백만 있는 문자열("   ")은 확인의 결과가 아니라 데이터 오류다.
+            # 공란과 같이 묶으면 "고시형 미등재를 확인했다"는 없는 사실을
+            # 주장하게 되므로, 미확인(null)과 같은 길로 보내고 흔적만 남긴다.
+            if isinstance(notice_name, str):
+                blank_notice = notice_name
             query = re.split(r"[×xX]", pack.get("topic") or "")[0].strip()
             query_source = "pack_topic"
 
@@ -351,7 +359,7 @@ def run(args) -> int:
         # 리포트를 안 쓰고 나가면 --output에 직전 실행의 통과 리포트가 그대로
         # 남는다. 다음 단계가 그걸 이번 결과로 읽는다 (main()의 예외 경로와 같은 이유).
         detail = "원료명을 정할 수 없다 — --ingredient로 지정할 것"
-        _emit(_error_report(args, detail), args.output)
+        _emit(_error_report(args, detail, source=query_source), args.output)
         print(detail, file=sys.stderr)
         return 2
 
@@ -363,6 +371,13 @@ def run(args) -> int:
         "이 리포트는 인정 문구를 꺼내 놓을 뿐 카피 표현의 적법성을 판정하지 않는다. "
         "표방 문구는 고시 문구와 사람이 직접 대조할 것.",
     ]
+
+    if blank_notice is not None:
+        warnings.insert(0,
+            f"팩의 kr_notice_name이 공백만 있는 문자열({blank_notice!r})이다 — "
+            "'고시형에 없음을 확인했다'(공란)로 읽지 않고 미확인으로 처리해 "
+            "topic으로 조회했다. 팩을 만든 쪽의 데이터 오류일 가능성이 높으니 "
+            "등재명을 채우거나 빈 문자열로 정확히 비울 것.")
 
     # S10: source가 통째로 없으면 어느 고시 기준인지 알 길이 없다.
     if not claims.get("source"):
