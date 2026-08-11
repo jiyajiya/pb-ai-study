@@ -7,11 +7,19 @@ LLM 판단은 이 단계에 개입하지 않는다.
 
 검증 계약 (전부 통과해야 verified=true):
   C1. quote 가 PubMed 초록 원문에 부분문자열로 존재한다
-  C2. value 가 quote 에 부분문자열로 존재한다
+  C2. value 가 quote 에 존재한다 — 숫자를 포함하면 수 경계까지 일치해야 한다
+      — 부분문자열 검사는 "-0.34"를 "0.34"(부호 소실)·"34"(100배)로 통과시킨다
   C3. (effect 슬롯 한정) value 가 효과 크기의 형태다
       — p값 단독·신뢰구간 단독·서술어는 효과 크기가 아니므로 폐기
   C4. unit 이 quote 에 부분문자열로 존재한다
       — value만 검사하면 "17.36 min"을 "17.36 hours"로 바꿔 적어도 통과한다
+  C5. (conclusion 슬롯 한정) quote 만 검사한다
+      — value·unit이 없는 슬롯이다. 저자 결론 문장 자체가 산출물이다
+
+무결성 정보(철회·정오표·이해충돌·연도·저널·PublicationType)는 검증이 아니라
+같은 efetch 응답에서 기계적으로 읽어 옮긴 것이다. 추가 조회는 하지 않는다.
+철회 논문은 슬롯이 전부 통과하더라도 팩에서 제외한다 — 검증은 "그 초록에
+그 값이 있다"만 보증하므로 철회를 걸러내지 못한다.
 
 C1은 초록을 스크립트가 독립적으로 재조회해 확인하므로,
 에이전트가 quote를 지어내면 통과할 수 없다.
@@ -30,6 +38,7 @@ C3은 C1/C2를 통과하는 "원문에 실재하지만 효과 크기가 아닌" 
 """
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -42,10 +51,26 @@ from xml.etree import ElementTree as ET
 
 EUTILS = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils"
 SLOTS = ("effect", "dose", "population", "form")
+# value가 없고 quote만 있는 슬롯. 검증 계약이 C1 하나뿐이라 따로 돈다.
+QUOTE_SLOTS = ("conclusion",)
 COMPARATORS = frozenset({"placebo", "active", "baseline"})
 
+# NLM 색인자가 붙인 PublicationType은 miner의 design 판정과 독립적으로 만들어진다.
+# 그래서 대조할 수 있다. 단 태그가 없는 레코드가 흔하므로(2013년 RCT가
+# 'Journal Article'만 달고 있는 식) 부재를 불일치로 읽으면 안 된다.
+PT_DESIGN = {
+    "meta-analysis": "meta-analysis",
+    "systematic review": "systematic-review",
+    "randomized controlled trial": "rct",
+    "observational study": "observational",
+    "review": "review",
+}
+# 'Review'는 서술형 리뷰와 체계적 문헌고찰을 구분하지 못하므로 단독으로는
+# 판정 근거가 약하다. 나머지만 설계를 특정한다.
+STRONG_DESIGNS = frozenset({"meta-analysis", "systematic-review", "rct", "observational"})
+
 # 값이 실재하지 않거나 효과 크기가 아니어서 버린 경우. 추출 자체가 없었던
-# not_extracted / missing_value_or_quote 는 폐기가 아니라 정보다.
+# not_extracted / missing_value_or_quote / missing_quote 는 폐기가 아니라 정보다.
 REJECT_REASONS = frozenset({
     "quote_not_in_abstract", "value_not_in_quote",
     "p_value_not_effect_size", "ci_only_not_effect_size",
@@ -72,6 +97,21 @@ P_TOKEN = re.compile(
     r"\(?\s*(?<![a-z])p[\s-]*(?:value|val)?\s*[-=<>\u2264\u2265]{1,2}\s*[.\d][\d.eE+-]*\s*\)?"
 )
 HAS_DIGIT = re.compile(r"\d")
+
+# C2: 숫자가 든 값은 "다른 수의 일부"로 매칭되면 안 된다.
+# 부분문자열 검사는 "-0.34"의 부호를 지운 "0.34", 자릿수를 자른 "34"·"17",
+# 반올림한 "17"을 전부 통과시킨다 — C4가 unit 쪽에서 막은 것과 같은 유형의
+# 구멍이 value 쪽에 남아 있었다. 부호 반전과 자릿수 변경은 카드에 실리는
+# 순간 그대로 오정보가 되므로 수 경계로 본다.
+NUM_EDGE_L = r"(?<![0-9.,\-])"
+NUM_EDGE_R = r"(?![0-9]|[.,][0-9])"
+
+
+def value_in_quote(value_norm: str, quote_norm: str) -> bool:
+    """값이 quote 안에 있는가. 숫자를 포함하면 수 경계까지 맞아야 한다."""
+    if not HAS_DIGIT.search(value_norm):
+        return value_norm in quote_norm
+    return re.search(NUM_EDGE_L + re.escape(value_norm) + NUM_EDGE_R, quote_norm) is not None
 
 
 def effect_shape_reason(value_norm: str) -> str | None:
@@ -105,8 +145,85 @@ def normalize(text: str) -> str:
     return t.strip().lower()
 
 
-def fetch_abstract(pmid: str, api_key: str | None = None, retries: int = 2) -> str:
-    """PubMed에서 초록을 독립 조회한다. 에이전트 출력을 신뢰하지 않는다."""
+def parse_record(root: ET.Element) -> dict:
+    """efetch 응답에서 초록과 무결성 정보를 읽는다. 판단은 하지 않는다.
+
+    전부 한 응답 안에 있으므로 추가 조회 비용이 없다. 여기서 읽지 않으면
+    같은 정보를 사람이 PubMed에서 눈으로 다시 확인해야 한다.
+    """
+    parts = []
+    for node in root.iter("AbstractText"):
+        label = node.get("Label")
+        text = "".join(node.itertext())
+        parts.append(f"{label}: {text}" if label else text)
+    if parts:
+        # 초록이 있을 때만 제목을 붙인다. 제목만으로 대조하면 전부 환각으로 오분류된다
+        for node in root.iter("ArticleTitle"):
+            parts.append("".join(node.itertext()))
+    abstract = " ".join(parts)
+
+    pub_types = [t for t in ((e.text or "").strip() for e in root.iter("PublicationType")) if t]
+
+    refs: dict[str, list[str]] = {}
+    for node in root.iter("CommentsCorrections"):
+        pmid = (node.findtext("PMID") or "").strip()
+        if pmid:
+            refs.setdefault(node.get("RefType") or "", []).append(pmid)
+
+    # CoiStatement는 요소가 있어도 내용이 빈 레코드가 흔하다. 빈 값을
+    # "이해충돌 없음"으로 읽으면 안 되므로 원문과 존재 여부를 따로 둔다.
+    coi = " ".join((root.findtext(".//CoiStatement") or "").split())
+
+    year = None
+    pubdate = root.find(".//Article/Journal/JournalIssue/PubDate")
+    if pubdate is not None:
+        year = (pubdate.findtext("Year") or "").strip() or None
+        if not year:
+            m = re.search(r"\d{4}", pubdate.findtext("MedlineDate") or "")
+            year = m.group() if m else None
+
+    journal = (root.findtext(".//Article/Journal/ISOAbbreviation")
+               or root.findtext(".//Article/Journal/Title") or "").strip()
+
+    return {
+        "abstract": abstract,
+        # 초록 전문은 저장하지 않는다. 해시만 남기면 재검증 때 "그때 그 초록인가"를
+        # 1회 조회로 판정할 수 있다. 조립 방식이 바뀌면 값도 바뀐다.
+        "abstract_sha256": hashlib.sha256(abstract.encode("utf-8")).hexdigest() if abstract else None,
+        "year": year,
+        "journal": journal or None,
+        "pub_types": pub_types,
+        "integrity": {
+            "retracted": "Retracted Publication" in pub_types or bool(refs.get("RetractionIn")),
+            "retraction_pmids": refs.get("RetractionIn", []),
+            "has_erratum": bool(refs.get("ErratumIn")),
+            "erratum_pmids": refs.get("ErratumIn", []),
+            "expression_of_concern": bool(refs.get("ExpressionOfConcernIn")),
+            "coi_statement": coi or None,
+            "coi_available": bool(coi),
+        },
+    }
+
+
+def design_check(design: str | None, pub_types: list[str]) -> dict:
+    """miner의 design 판정을 NLM PublicationType과 대조한다.
+
+    태그가 없으면 `agrees: null`이다. 부재는 불일치가 아니다.
+    """
+    implied = {PT_DESIGN[t] for t in (p.lower() for p in pub_types) if t in PT_DESIGN}
+    claimed = (design or "").strip().lower()
+    if not implied:
+        agrees = None
+    elif implied & STRONG_DESIGNS:
+        agrees = claimed in implied
+    else:
+        # 'Review' 태그뿐인 레코드. 원 시험 설계를 주장할 때만 불일치로 본다.
+        agrees = claimed in {"review", "meta-analysis", "systematic-review"}
+    return {"pub_types": pub_types, "implied": sorted(implied), "agrees": agrees}
+
+
+def fetch_record(pmid: str, api_key: str | None = None, retries: int = 2) -> dict:
+    """PubMed 레코드를 독립 조회한다. 에이전트 출력을 신뢰하지 않는다."""
     params = {"db": "pubmed", "id": pmid, "retmode": "xml", "rettype": "abstract"}
     if api_key:
         params["api_key"] = api_key
@@ -120,22 +237,12 @@ def fetch_abstract(pmid: str, api_key: str | None = None, retries: int = 2) -> s
             )
             with urllib.request.urlopen(req, timeout=30) as resp:
                 xml = resp.read()
-            root = ET.fromstring(xml)
-            parts = []
-            for node in root.iter("AbstractText"):
-                label = node.get("Label")
-                text = "".join(node.itertext())
-                parts.append(f"{label}: {text}" if label else text)
-            if not parts:
-                return ""  # 초록이 없는 레코드. 제목만으로 대조하면 전부 환각으로 오분류된다
-            for node in root.iter("ArticleTitle"):
-                parts.append("".join(node.itertext()))
-            return " ".join(parts)
+            return parse_record(ET.fromstring(xml))
         except Exception as e:  # noqa: BLE001
             last_err = e
             if attempt < retries:
                 time.sleep(1.5 * (attempt + 1))
-    raise RuntimeError(f"PMID {pmid} 초록 조회 실패: {last_err}")
+    raise RuntimeError(f"PMID {pmid} 레코드 조회 실패: {last_err}")
 
 
 def verify_slot(slot_name: str, slot: dict | None, abstract_norm: str) -> dict:
@@ -160,8 +267,8 @@ def verify_slot(slot_name: str, slot: dict | None, abstract_norm: str) -> dict:
                 "reason": "quote_not_in_abstract",
                 "rejected_value": value, "rejected_quote": quote}
 
-    # C2: value ⊂ quote
-    if value_norm not in quote_norm:
+    # C2: value ⊂ quote (숫자는 수 경계까지)
+    if not value_in_quote(value_norm, quote_norm):
         return {"slot": slot_name, "value": None, "verified": False,
                 "reason": "value_not_in_quote",
                 "rejected_value": value, "rejected_quote": quote}
@@ -207,13 +314,42 @@ def verify_slot(slot_name: str, slot: dict | None, abstract_norm: str) -> dict:
         # quote 밖이면 슬롯을 죽이지 않고 이 필드만 버린다 —
         # p값이 효과 문장과 다른 문장에 있는 정상 케이스에서 멀쩡한 슬롯이 죽는다.
         significance = slot.get("significance")
-        if significance and normalize(significance) in quote_norm:
+        if significance and value_in_quote(normalize(significance), quote_norm):
             out["significance"] = significance
         else:
             out["significance"] = None
             if significance:
                 out["dropped_significance"] = significance
     return out
+
+
+def verify_quote_slot(slot_name: str, slot: dict | None, abstract_norm: str) -> dict:
+    """value 없는 슬롯(conclusion) 검증. C1만 적용한다.
+
+    저자 결론 문장은 숫자가 아니라 문장 자체가 산출물이므로 C2~C4가 없다.
+    이 슬롯이 통과해야 `direction` 판정에 대조 가능한 근거가 생긴다 —
+    지금까지 direction은 miner의 판정만 있고 원문이 남지 않았다.
+    """
+    if slot is None:
+        return {"slot": slot_name, "quote": None, "verified": False,
+                "reason": "not_extracted"}
+    # 문장 하나짜리 슬롯이라 에이전트가 dict 대신 문자열을 낼 수 있다.
+    if isinstance(slot, str):
+        slot = {"quote": slot}
+    if not isinstance(slot, dict):
+        return {"slot": slot_name, "quote": None, "verified": False,
+                "reason": "missing_quote"}
+
+    quote = slot.get("quote")
+    if not quote:
+        return {"slot": slot_name, "quote": None, "verified": False,
+                "reason": "missing_quote"}
+
+    if normalize(quote) not in abstract_norm:
+        return {"slot": slot_name, "quote": None, "verified": False,
+                "reason": "quote_not_in_abstract", "rejected_quote": quote}
+
+    return {"slot": slot_name, "quote": quote, "verified": True}
 
 
 def main() -> int:
@@ -242,9 +378,11 @@ def main() -> int:
             meta = json.load(f)
 
     results = []
+    excluded = []  # 팩에서 빠진 논문. 무엇이 빠졌는지가 남아야 팩을 읽을 수 있다
     rejected_count = 0
     fetch_failed = []
     no_abstract = []
+    retracted = []
 
     for i, rec in enumerate(records):
         # 성공 경로에만 두면 조회가 연속 실패할 때 재시도 폭주가 된다.
@@ -254,22 +392,40 @@ def main() -> int:
         pmid = rec.get("pmid")
         if not pmid or rec.get("error"):
             fetch_failed.append(pmid)
+            excluded.append({"pmid": pmid, "reason": rec.get("error") or "no_pmid"})
             continue
 
         try:
-            abstract = fetch_abstract(pmid, api_key)
+            record = fetch_record(pmid, api_key)
         except RuntimeError as e:
             print(f"[FETCH FAIL] {e}", file=sys.stderr)
             fetch_failed.append(pmid)
+            excluded.append({"pmid": pmid, "reason": "fetch_failed"})
             continue
 
-        if not abstract.strip():
+        integrity = record["integrity"]
+        url = f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/"
+
+        # 철회 논문은 슬롯이 전부 검증을 통과해도 카드에 쓸 수 없다.
+        # C1~C4는 "그 초록에 그 값이 있다"만 보므로 철회를 걸러내지 못한다.
+        # 초록 유무보다 먼저 본다 — 철회 사실이 더 중요한 정보다.
+        if integrity["retracted"]:
+            print(f"[RETRACTED] pmid={pmid} 철회된 논문이다. 슬롯 전체를 버린다.",
+                  file=sys.stderr)
+            retracted.append(pmid)
+            excluded.append({"pmid": pmid, "reason": "retracted",
+                             "retraction_pmids": integrity["retraction_pmids"],
+                             "url": url})
+            continue
+
+        if not record["abstract"].strip():
             print(f"[NO ABSTRACT] pmid={pmid} 초록이 없는 레코드다. 검증 불가로 제외.",
                   file=sys.stderr)
             no_abstract.append(pmid)
+            excluded.append({"pmid": pmid, "reason": "no_abstract", "url": url})
             continue
 
-        abstract_norm = normalize(abstract)
+        abstract_norm = normalize(record["abstract"])
         slots_in = rec.get("slots", {})
 
         verified_slots = {}
@@ -283,19 +439,33 @@ def main() -> int:
                     file=sys.stderr,
                 )
             verified_slots[name] = outcome
+        for name in QUOTE_SLOTS:
+            outcome = verify_quote_slot(name, slots_in.get(name), abstract_norm)
+            if not outcome["verified"] and outcome["reason"] in REJECT_REASONS:
+                rejected_count += 1
+                print(f"[REJECT] pmid={pmid} slot={name} reason={outcome['reason']}",
+                      file=sys.stderr)
+            verified_slots[name] = outcome
 
         results.append({
             "pmid": pmid,
             "design": rec.get("design"),
             "direction": rec.get("direction"),
             "subgroup_only": rec.get("subgroup_only"),
-            "url": f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/",
+            "year": record["year"],
+            "journal": record["journal"],
+            "integrity": integrity,
+            "design_check": design_check(rec.get("design"), record["pub_types"]),
+            "abstract_sha256": record["abstract_sha256"],
+            "url": url,
             "slots": verified_slots,
         })
 
-    unverifiable = len(fetch_failed) + len(no_abstract)
+    excluded_count = len(fetch_failed) + len(no_abstract) + len(retracted)
     total = sum(1 for r in results for s in r["slots"].values())
     passed = sum(1 for r in results for s in r["slots"].values() if s["verified"])
+
+    generated_at = time.strftime("%Y-%m-%dT%H:%M:%S%z")
 
     warnings = [
         "이 팩은 근거 수집 결과일 뿐이며 광고법 검토를 거치지 않았다. "
@@ -323,15 +493,54 @@ def main() -> int:
             "초록에 없다는 뜻이므로, 카피에서 비교 대상을 단정하지 말 것."
         )
 
-    if unverifiable:
+    if excluded_count:
         warnings.append(
-            f"{unverifiable}편이 검증되지 않았다 "
-            f"(조회 실패 {len(fetch_failed)}, 초록 없음 {len(no_abstract)}). "
+            f"{excluded_count}편이 팩에서 제외되었다 "
+            f"(조회 실패 {len(fetch_failed)}, 초록 없음 {len(no_abstract)}, "
+            f"철회 {len(retracted)}). "
             "이 팩은 검색된 근거 전체가 아니라 검증에 성공한 일부다."
         )
 
+    # ── 무결성: 판정하지 않고 사실만 올린다 ──
+    if retracted:
+        warnings.insert(0, (
+            f"철회된 논문 {len(retracted)}편을 제외했다 (PMID {', '.join(retracted)}). "
+            "이 PMID는 인용하지 말고, 이미 발행한 콘텐츠에 쓰이지 않았는지 확인할 것."
+        ))
+    eoc = [r["pmid"] for r in results if r["integrity"]["expression_of_concern"]]
+    if eoc:
+        warnings.append(
+            f"우려 표명(Expression of Concern)이 붙은 논문이 있다 (PMID {', '.join(eoc)}). "
+            "철회는 아니지만 인용 전 사유를 확인할 것."
+        )
+    errata = [r["pmid"] for r in results if r["integrity"]["has_erratum"]]
+    if errata:
+        warnings.append(
+            f"정오표(erratum)가 있는 논문이 있다 (PMID {', '.join(errata)}). "
+            "초록의 수치가 정정 대상인지 원문에서 확인할 것."
+        )
+    coi_yes = sum(1 for r in results if r["integrity"]["coi_available"])
+    if results:
+        warnings.append(
+            f"이해충돌 진술: 있음 {coi_yes}편, 없음 {len(results) - coi_yes}편. "
+            "진술 원문(coi_statement)을 읽고 제조사 관련 여부는 사람이 판단할 것 — "
+            "이 팩은 판단하지 않는다. 미공개는 '이해충돌 없음'이 아니라 "
+            "PubMed가 받지 못했다는 뜻이다."
+        )
+    mismatched = [r["pmid"] for r in results if r["design_check"]["agrees"] is False]
+    if mismatched:
+        warnings.append(
+            f"design 판정이 NLM PublicationType과 어긋나는 논문이 있다 "
+            f"(PMID {', '.join(mismatched)}). 톤 판정이 design 위에 서 있으므로 확인할 것."
+        )
+    warnings.append(
+        f"철회·정오표·이해충돌 정보는 {generated_at} 시점의 PubMed 스냅샷이다. "
+        "철회는 나중에 일어나므로, 오래된 팩을 재사용할 때는 다시 조회할 것 "
+        "(abstract_sha256으로 초록 변경 여부를 대조할 수 있다)."
+    )
+
     pack = {
-        "schema": "evidence-pack/0.1",
+        "schema": "evidence-pack/0.2",
         "topic": meta.get("topic"),
         "tone": meta.get("tone"),
         "tone_reason": meta.get("tone_reason"),
@@ -344,22 +553,24 @@ def main() -> int:
             "slots_rejected": rejected_count,
             "fetch_failed_pmids": fetch_failed,
             "no_abstract_pmids": no_abstract,
+            "retracted_pmids": retracted,
+            "excluded": excluded,
         },
         "warnings": warnings,
-        "generated_at": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+        "generated_at": generated_at,
     }
 
     with open(args.output, "w", encoding="utf-8") as f:
         json.dump(pack, f, ensure_ascii=False, indent=2)
 
     print(f"검증 완료: {passed}/{total} 통과, {rejected_count} 폐기, "
-          f"{unverifiable}편 검증불가 → {args.output}")
+          f"{excluded_count}편 제외(철회 {len(retracted)}) → {args.output}")
 
-    # 검증에 실패한 논문이 통과한 논문보다 많으면 이 팩은 지형을 대표하지 못한다.
+    # 팩에 들어가지 못한 논문이 들어간 논문보다 많으면 이 팩은 지형을 대표하지 못한다.
     # 8편 중 7편이 조회되지 않았는데 0을 반환하면 호출자는 정상으로 읽는다.
     # 반씩 갈린 경우(4/4)도 대표성이 없으므로 >= 로 둔다.
-    if unverifiable >= len(results):
-        print(f"검증 불가 {unverifiable}편 ≥ 검증 성공 {len(results)}편. 팩을 신뢰하지 말 것.",
+    if excluded_count >= len(results):
+        print(f"제외 {excluded_count}편 ≥ 수록 {len(results)}편. 팩을 신뢰하지 말 것.",
               file=sys.stderr)
         return 2
     return 0
