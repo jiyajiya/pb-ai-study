@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""verify_slot 계약 검사. 네트워크 없이 돈다. `python3 scripts/test_verify_numbers.py`
+"""verify_slot 계약 검사. 네트워크 없이 돈다. `python3 scripts/test_verify_evidence.py`
 
 케이스는 구현이 아니라 **문서에서** 가져온다.
 abstract-miner.md "effect에 넣으면 안 되는 것" 목록과
@@ -8,7 +8,7 @@ tests/fixtures.md의 릴리스 불가 조건이 여기 그대로 들어와야 �
 import sys, pathlib
 from xml.etree import ElementTree as ET
 sys.path.insert(0, str(pathlib.Path(__file__).parent))
-from verify_numbers import (verify_slot, verify_quote_slot, normalize,
+from verify_evidence import (verify_slot, verify_quote_slot, normalize, REJECT_REASONS,
                             parse_record, design_check)
 
 ABS = normalize(
@@ -59,16 +59,59 @@ for value, quote, why in [
     assert not r["verified"] and r["reason"] == why, (value, r)
     assert r["value"] is None, r
 
-# 점추정치가 있으면 p값·CI가 붙어 있어도 통과한다 (차감식이 과잉 폐기하지 않는지)
+# value에 단위·비교대상·p값을 통째로 넣는 것도 폐기다.
+# 스키마가 unit·comparator·significance를 따로 두는 이유가 이것이다.
 r = verify_slot("effect", slot("-0.34 mmol/L compared with placebo (P = 0.02)", EFFECT_Q), ABS)
-assert r["verified"], r
+assert not r["verified"] and r["reason"] == "effect_value_not_numeric", r
 
-# 차감식은 p로 끝나는 단어 뒤의 음수를 p값으로 오인하기 쉽다.
-# P_TOKEN에서 (?<![a-z])를 빼면 아래 둘이 p_value_not_effect_size로 폐기된다.
-# SBP는 마그네슘×혈압, sleep은 F2(마그네슘×수면)의 주 지표다 — 조용히 죽으면 톤이 T3로 기운다.
-for v_ in ["SBP -5.2 mmHg", "sleep -1.2 points"]:
-    r = verify_slot("effect", slot(v_, SBP_Q), ABS)
+# 위와 같은 내용을 스키마대로 나눠 담으면 통과한다
+r = verify_slot("effect", slot("-0.34", EFFECT_Q, unit="mmol/L",
+                               comparator="placebo", significance="P = 0.02"), ABS)
+assert r["verified"] and r["significance"] == "P = 0.02", r
+
+# 지표명은 measure로 뺀다. "RR 0.78"을 value에 통째로 넣으면 폐기다 —
+# 프로즈를 허용하는 순간 "p for trend = 0.03"도 같이 들어온다.
+RR_Q = "The pooled estimate was RR 0.78 in the treatment arm."
+RR_ABS = normalize(RR_Q)
+assert verify_slot("effect", slot("RR 0.78", RR_Q), RR_ABS)["reason"] == "effect_value_not_numeric"
+r = verify_slot("effect", slot("0.78", RR_Q, measure="RR"), RR_ABS)
+assert r["verified"] and r["measure"] == "rr", r
+
+# measure는 열거 검증만 한다. 열거값 밖이면 슬롯을 죽이지 않고 필드만 null
+r = verify_slot("effect", slot("0.78", RR_Q, measure="pooled estimate"), RR_ABS)
+assert r["verified"] and r["measure"] is None, r
+
+# 이전 차감식은 p로 끝나는 단어 뒤의 음수를 p값으로 오인해 정상 효과를 죽였다
+# (SBP는 마그네슘×혈압, sleep은 F2의 주 지표다). 화이트리스트는 판정이
+# 마커 패턴에 의존하지 않으므로 이 회귀 자체가 성립하지 않는다.
+for v_, u_ in [("-5.2", "mmHg"), ("-1.2", "points")]:
+    r = verify_slot("effect", slot(v_, SBP_Q, unit=u_), ABS)
     assert r["verified"], (v_, r)
+
+# ── C3가 차감식이던 시절 새어 나가던 표현들 ──
+# 전부 초록에 실재하고(C1) 글자 그대로 옮겨졌지만(C2) 효과 크기가 아니다.
+# 마커를 열거하는 방식으로는 이런 변형이 나올 때마다 구멍이 생겼다.
+LEAK_Q = ("Analyses showed P for trend = 0.03, p-trend 0.02, P value of 0.03, "
+          "and p values ranged from 0.01 to 0.04, "
+          "with 95% confidence interval of 0.12 to 0.48 in the pooled model.")
+LEAK_ABS = normalize(LEAK_Q)
+for value in [
+    "P for trend = 0.03",      # P_TOKEN이 "for trend"를 몰라 통과하던 것
+    "p-trend 0.02",
+    "P value of 0.03",         # 연산자 대신 "of"가 오면 통과하던 것
+    "p values ranged from 0.01 to 0.04",
+    "95% confidence interval of 0.12 to 0.48",   # CI_TOKEN이 "of"를 몰랐다
+    "0.12 to 0.48",            # CI 표기 없는 맨 구간
+]:
+    r = verify_slot("effect", slot(value, LEAK_Q), LEAK_ABS)
+    assert not r["verified"], (value, r)
+    assert r["reason"] in REJECT_REASONS and r["value"] is None, (value, r)
+
+# 반대로 숫자 하나는 형태만 맞으면 전부 통과한다 (화이트리스트가 좁으면 안 된다)
+NUM_Q = "Values were 0.78, -0.34, 23.4%, 1,200 and 17.36 across the cohorts."
+NUM_ABS = normalize(NUM_Q)
+for value in ["0.78", "-0.34", "23.4%", "1,200", "17.36"]:
+    assert verify_slot("effect", slot(value, NUM_Q), NUM_ABS)["verified"], value
 
 # 점추정치가 앞에 있으면 CI를 걷어내도 숫자가 남는다 — 살아야 한다
 r = verify_slot("effect", slot("confidence interval 0.12 to 0.48 in the pooled analysis",

@@ -19,7 +19,7 @@ description: 성분명과 증상을 입력하면 PubMed 근거를 수집·검증
    초록 전문은 서브에이전트 안에서만 살아 있다 폐기되고, 메인에는
    슬롯에 묶인 `quote` 문장만 올라온다. 이건 오염 "차단"이 아니라
    **표면 축소**다 — quote는 원문 그대로이고, 그래야 P6이 대조할 수 있다.
-3. **숫자 검증은 LLM이 하지 않는다.** `scripts/verify_numbers.py`만이 판정한다.
+3. **숫자 검증은 LLM이 하지 않는다.** `scripts/verify_evidence.py`만이 판정한다.
 
 ## 실행 절차
 
@@ -59,7 +59,10 @@ description: 성분명과 증상을 입력하면 PubMed 근거를 수집·검증
 
 - `evidence-scout` 서브에이전트에 위임한다 (Task 도구).
 - P1 산출 JSON을 그대로 입력으로 넘긴다.
-- 반환값에서 `tone`, `pmids`, `needs_decomposition`만 사용한다.
+- 반환값 중 **분기에 쓰는 것**은 `tone`, `pmids`, `needs_decomposition` 셋뿐이다.
+  나머지(`tone_reason`, `evidence_map`, `guideline_hit`)는 판단에 쓰지 말고
+  **P3-1의 `meta.json`으로 그대로 넘긴다.** 여기서 버리면 팩의 해당 필드가
+  전부 `null`이 되고, R1 발화 근거인 `guideline_hit`도 같이 사라진다.
 - `off_target: true`인 PMID는 다른 물질의 논문이다. 표에도 넣지 않는다.
 - **`needs_decomposition: true`이면 여기서 멈추고** 사용자에게
   하위 분해 항목(균주명·제형 등)을 제시한 뒤 재실행 여부를 묻는다.
@@ -107,7 +110,7 @@ scout 반환값에서 그대로 복사한다. **지어내지 마라** — scout�
 ### P6. 검증 (스크립트)
 
 ```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/verify_numbers.py" \
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/verify_evidence.py" \
   --input raw_slots.json --meta meta.json --output evidence-pack.json
 ```
 
@@ -156,6 +159,10 @@ python3 "${CLAUDE_PLUGIN_ROOT}/scripts/verify_numbers.py" \
 - **미공개는 "이해충돌 없음"이 아니다.** PubMed가 받지 못했다는 뜻이다.
 - 철회 논문이 있으면 표가 아니라 **맨 위 경고**로 올린다. 제외된 PMID와
   철회 공지 PMID를 함께 적고, 이미 발행한 콘텐츠에 쓰이지 않았는지 묻는다.
+
+효과 크기의 `value`는 **숫자 하나뿐**이다. 표에 적을 때 `measure`(RR·OR·HR
+·SMD·MD)와 `unit`을 다시 붙여 `RR 0.78`, `-0.34 mmol/L`처럼 복원한다.
+`measure`가 null이면 붙이지 마라 — 그냥 변화량이라는 뜻이다.
 
 효과 크기는 값 옆에 **비교 대상**(위약/실약/복용전후)을 함께 적는다.
 `comparator`가 null이면 "비교 대상 미상"으로 적는다 — 위약 대비라고

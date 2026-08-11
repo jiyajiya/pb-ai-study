@@ -33,7 +33,7 @@
       비교 논문이 채굴 대상에 들어가지 않는다 (`off_target: true`로 걸린다).
 - [ ] **`p < 0.05`가 effect로 통과하지 않는다.** p값·신뢰구간 단독·서술어는
       효과 크기가 아니다. 스크립트 게이트가 폐기해야 한다
-      (`python3 scripts/test_verify_numbers.py`로 상시 확인).
+      (`python3 scripts/test_verify_evidence.py`로 상시 확인).
 - [ ] **접두·접미어가 붙은 p값도 통과하지 않는다.** `significant at p<0.001`,
       `p value < 0.05`, `P-value = 0.03`, `(95% CI 0.12 to 0.48)`.
       `abstract-miner.md`의 "effect에 넣으면 안 되는 것" 목록에 있는 문자열은

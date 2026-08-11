@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-verify_numbers.py — evidence-card P6 게이트
+verify_evidence.py — evidence-card P6 게이트
 
 abstract-miner가 반환한 슬롯을 PubMed 초록과 대조해 검증한다.
 LLM 판단은 이 단계에 개입하지 않는다.
@@ -9,8 +9,10 @@ LLM 판단은 이 단계에 개입하지 않는다.
   C1. quote 가 PubMed 초록 원문에 부분문자열로 존재한다
   C2. value 가 quote 에 존재한다 — 숫자를 포함하면 수 경계까지 일치해야 한다
       — 부분문자열 검사는 "-0.34"를 "0.34"(부호 소실)·"34"(100배)로 통과시킨다
-  C3. (effect 슬롯 한정) value 가 효과 크기의 형태다
-      — p값 단독·신뢰구간 단독·서술어는 효과 크기가 아니므로 폐기
+  C3. (effect 슬롯 한정) value 가 숫자 하나다 — 부호·소수점·% 까지만 허용
+      — 단위는 unit, 지표명은 measure, p값은 significance 로 간다.
+        "무엇이 효과 크기가 아닌가"를 열거하면 표현이 새 나올 때마다 구멍이
+        생긴다. "무엇이 효과 크기인가"는 닫힌 형태라 열거가 끝난다
   C4. unit 이 quote 에 부분문자열로 존재한다
       — value만 검사하면 "17.36 min"을 "17.36 hours"로 바꿔 적어도 통과한다
   C5. (conclusion 슬롯 한정) quote 만 검사한다
@@ -29,8 +31,8 @@ C3은 C1/C2를 통과하는 "원문에 실재하지만 효과 크기가 아닌" 
 의존성: 표준 라이브러리만 사용.
 
 사용:
-  python3 verify_numbers.py --input raw_slots.json --output evidence-pack.json
-  python3 verify_numbers.py --input raw_slots.json --meta meta.json --output pack.json
+  python3 verify_evidence.py --input raw_slots.json --output evidence-pack.json
+  python3 verify_evidence.py --input raw_slots.json --meta meta.json --output pack.json
 
 종료 코드:
   0  팩 생성 완료 (슬롯 폐기는 정상 흐름이므로 0이다. 개수는 stdout·팩에 있다)
@@ -54,6 +56,10 @@ SLOTS = ("effect", "dose", "population", "form")
 # value가 없고 quote만 있는 슬롯. 검증 계약이 C1 하나뿐이라 따로 돈다.
 QUOTE_SLOTS = ("conclusion",)
 COMPARATORS = frozenset({"placebo", "active", "baseline"})
+# 지표명. value에서 분리해 두어야 value가 "숫자 하나"라는 닫힌 형태를 유지한다.
+# "RR 0.78"을 통째로 value에 넣으면 C3가 프로즈를 허용해야 하고,
+# 그 순간 "p for trend = 0.03"도 같이 들어온다.
+MEASURES = frozenset({"rr", "or", "hr", "smd", "md"})
 
 # NLM 색인자가 붙인 PublicationType은 miner의 design 판정과 독립적으로 만들어진다.
 # 그래서 대조할 수 있다. 단 태그가 없는 레코드가 흔하므로(2013년 RCT가
@@ -74,7 +80,7 @@ STRONG_DESIGNS = frozenset({"meta-analysis", "systematic-review", "rct", "observ
 REJECT_REASONS = frozenset({
     "quote_not_in_abstract", "value_not_in_quote",
     "p_value_not_effect_size", "ci_only_not_effect_size",
-    "no_numeric_effect", "unit_not_in_quote",
+    "no_numeric_effect", "effect_value_not_numeric", "unit_not_in_quote",
 })
 
 # 대조 전 정규화 대상: 유니코드 대시/공백/따옴표류
@@ -83,10 +89,15 @@ QUOTES = dict.fromkeys(map(ord, "\u2018\u2019\u201b\u2032"), "'")
 DQUOTES = dict.fromkeys(map(ord, "\u201c\u201d\u201f\u2033"), '"')
 
 
-# C3: effect 값에서 "효과 크기가 아닌 것"을 걷어낸 뒤 숫자가 남는지 본다.
-# 앵커(^...$) 매칭은 접두·접미어 한 글자에 무력화된다 —
-# "significant at p<0.001"은 p값 패턴에도, 서술어 패턴에도 걸리지 않는다.
-# 차감식은 걷어낸 뒤 남는 것을 보므로 붙어 있는 말에 영향을 받지 않는다.
+# C3의 판정. effect의 value는 숫자 하나여야 한다 — 부호·소수점·천단위·% 까지.
+# 이전에는 "효과 크기가 아닌 것"(p값·신뢰구간·서술어)을 걷어낸 뒤 숫자가
+# 남는지 보는 차감식이었다. 그 방식은 걷어낼 표현을 열거해야 하는데
+# 자연어 표현은 열려 있어서 "p for trend", "p values ranged from" 처럼
+# 새 표현이 나올 때마다 구멍이 생겼다. 반대로 "숫자 하나"는 닫힌 형태다.
+EFFECT_VALUE = re.compile(r"^-?\d+(?:,\d{3})*(?:\.\d+)?%?$")
+
+# 아래 둘은 이제 판정에 쓰이지 않는다. 폐기 사유를 사람이 읽을 수 있게
+# 라벨을 붙이는 용도다 — 못 맞혀도 폐기 결정은 이미 EFFECT_VALUE가 내렸다.
 CI_TOKEN = re.compile(
     r"\(?\s*(?:\d{2}\s*%?\s*)?(?:ci|confidence interval)\b"
     r"[\s:=]*[-\d.,\s]*(?:to\s*[-\d.]+)?\s*\)?"
@@ -115,21 +126,25 @@ def value_in_quote(value_norm: str, quote_norm: str) -> bool:
 
 
 def effect_shape_reason(value_norm: str) -> str | None:
-    """effect 슬롯 값이 효과 크기가 아니면 사유를, 맞으면 None을 반환한다.
+    """effect 값이 숫자 하나가 아니면 폐기 사유를, 맞으면 None을 반환한다.
 
-    효과 크기 = 변화율 / 변화량(단위 포함) / 군간 차이 / 위험도 비.
     p값은 "우연이 아니다"라는 판정이지 크기가 아니므로 카드에 쓸 수 없다.
     신뢰구간도 점추정치 없이 구간만 있으면 카드에 쓸 숫자가 없는 것이다.
+    단위는 unit, 지표명(RR·OR·HR·SMD·MD)은 measure, p값은 significance로
+    간다 — 그래서 value에 남는 것은 숫자뿐이다.
     """
-    remainder = P_TOKEN.sub(" ", CI_TOKEN.sub(" ", value_norm))
-    if HAS_DIGIT.search(remainder):
+    if EFFECT_VALUE.match(value_norm):
         return None
-    # 남은 숫자가 없다 = 이 값은 p값/신뢰구간/서술어뿐이다. 무엇이었는지만 구분한다.
+    # 여기서부터는 폐기가 확정됐다. 아래는 사람이 읽을 라벨을 고르는 것뿐이라
+    # 못 맞혀도 판정은 바뀌지 않는다. p값/CI를 걷어내고도 숫자가 남으면
+    # "숫자는 맞는데 value에 다른 것이 섞였다"는 뜻이다.
+    if not HAS_DIGIT.search(value_norm):
+        return "no_numeric_effect"
+    if HAS_DIGIT.search(P_TOKEN.sub(" ", CI_TOKEN.sub(" ", value_norm))):
+        return "effect_value_not_numeric"
     if P_TOKEN.search(value_norm):
         return "p_value_not_effect_size"
-    if CI_TOKEN.search(value_norm):
-        return "ci_only_not_effect_size"
-    return "no_numeric_effect"
+    return "ci_only_not_effect_size"
 
 
 def normalize(text: str) -> str:
@@ -309,6 +324,13 @@ def verify_slot(slot_name: str, slot: dict | None, abstract_norm: str) -> dict:
         # 열거값 밖이면 null — 위약 대비인지 복용 전후인지 단정하지 않는 쪽이 안전하다.
         comparator = slot.get("comparator")
         out["comparator"] = comparator if comparator in COMPARATORS else None
+
+        # measure도 열거 검증만 한다. quote 대조는 하지 않는다 —
+        # 저자가 "relative risk"로 풀어 쓰면 "rr"은 초록에 없고, 반대로
+        # "or"은 영어 접속사라 아무 문장에나 걸린다. 어느 쪽도 검사가 못 된다.
+        # 숫자가 아니므로 틀려도 자릿수 오류로는 번지지 않는다.
+        measure = normalize(slot.get("measure"))
+        out["measure"] = measure if measure in MEASURES else None
 
         # significance는 헤드라인 숫자가 아니라 부가 정보다.
         # quote 밖이면 슬롯을 죽이지 않고 이 필드만 버린다 —

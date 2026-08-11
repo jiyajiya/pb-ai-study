@@ -43,12 +43,21 @@ curl -s "$BASE/efetch.fcgi?db=pubmed&id=<PMID>&retmode=xml&rettype=abstract"
 
 **effect는 "효과가 얼마나 큰가"다. "우연이 아닌가"가 아니다.**
 
-effect에 넣어도 되는 것:
+**`value`에는 숫자 하나만 넣는다.** 부호·소수점·천단위 쉼표·`%`까지가 전부다.
+단위는 `unit`, 지표명은 `measure`, p값은 `significance`로 간다.
+P6은 `value`가 숫자 형태인지만 보고, 아니면 그 자리에서 슬롯을 폐기한다.
 
-- 변화율 — `23.4%`, `reduced by 15%`
-- 변화량 (단위 포함) — `-0.87 mmol/L`, `17.36 min`, `-2.4 points`
-- 군간 차이 — `mean difference -0.34 mmol/L`, `SMD -0.42`
-- 위험도 비 — `RR 0.78`, `OR 1.34`, `HR 0.62`
+| 초록에 이렇게 적혀 있으면 | value | unit | measure |
+|---|---|---|---|
+| `reduced by 23.4%` | `23.4%` | `null` | `null` |
+| `-0.87 mmol/L` | `-0.87` | `mmol/L` | `null` |
+| `17.36 min` | `17.36` | `min` | `null` |
+| `mean difference -0.34 mmol/L` | `-0.34` | `mmol/L` | `MD` |
+| `SMD -0.42` | `-0.42` | `null` | `SMD` |
+| `RR 0.78` | `0.78` | `null` | `RR` |
+
+`value`에 `"RR 0.78"`이나 `"-0.34 mmol/L compared with placebo"`처럼
+문장을 통째로 넣지 마라. **폐기된다.** 나눠 담을 곳이 이미 있다.
 
 effect에 넣으면 **안 되는** 것 → 이 경우 `effect: null`:
 
@@ -65,12 +74,13 @@ effect에 넣으면 **안 되는** 것 → 이 경우 `effect: null`:
 p값은 버리지 말고 `effect.significance`에 따로 담는다.
 (점추정치가 있을 때만. 없으면 effect 자체가 null이다.)
 
-**effect 슬롯만 필드가 3개 더 있다:**
+**effect 슬롯만 필드가 4개 더 있다:**
 
 ```json
 "effect": {
   "value": "-0.34",
   "unit": "mmol/L",
+  "measure": null,
   "unit_type": "absolute",
   "comparator": "placebo",
   "significance": "P = 0.02",
@@ -80,6 +90,7 @@ p값은 버리지 말고 `effect.significance`에 따로 담는다.
 
 | 필드 | 값 | 판정 기준 | P6이 하는 일 |
 |---|---|---|---|
+| `measure` | `RR` / `OR` / `HR` / `SMD` / `MD` / `null` | 지표명이 붙은 수치인가. 그냥 변화량이면 `null` | 이 5개 밖의 값은 `null`로 바꾼다 |
 | `unit_type` | `percent` / `absolute` | value가 %면 percent, 물리 단위·점수면 absolute | **값에서 다시 파생시킨다.** 네 판정은 쓰이지 않는다 |
 | `comparator` | `placebo` / `active` / `baseline` / `null` | 무엇과 비교한 수치인가. 초록에서 못 정하면 `null` | 이 4개 밖의 값은 `null`로 바꾼다 |
 | `significance` | 원문 p값 문자열 또는 `null` | 있으면 그대로. 없으면 null | `quote` 안에 없으면 버린다 (슬롯은 살린다) |
@@ -181,10 +192,11 @@ p값은 버리지 말고 `effect.significance`에 따로 담는다.
     "effect": {
       "value": "17.36",
       "unit": "min",
+      "measure": null,
       "unit_type": "absolute",
       "comparator": "placebo",
       "significance": "P = 0.002",
-      "quote": "Supplementation of magnesium appears to improve subjective measures of insomnia such as ISI score, sleep efficiency, sleep time and sleep onset latency."
+      "quote": "Sleep onset latency decreased by 17.36 min in the magnesium group compared with placebo (P = 0.002)."
     },
     "dose": {
       "value": "500",
@@ -204,8 +216,9 @@ p값은 버리지 말고 `effect.significance`에 따로 담는다.
 }
 ```
 
-> 위 예시의 `effect`는 형식을 보여주기 위한 것이며, value가 quote 안에
-> 실제로 존재하지 않으면 다음 단계 스크립트가 폐기한다. 그것이 정상 동작이다.
+> 위 예시의 모든 슬롯은 **자기 자신의 `quote` 안에서 검증된다** —
+> `17.36`도 `min`도 `P = 0.002`도 그 문장 안에 있다. 네 출력도 이래야 한다.
+> value가 quote 안에 없으면 다음 단계 스크립트가 폐기한다. 그것이 정상 동작이다.
 > 너는 통과시키려 애쓰지 말고, 원문에 있는 그대로만 넣어라.
 
 ## 자기 점검 (출력 직전 반드시 수행)
