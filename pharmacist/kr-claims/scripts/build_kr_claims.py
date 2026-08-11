@@ -39,16 +39,46 @@ LLM은 이 경로에 개입하지 않는다.
 """
 
 import argparse
+import hashlib
 import json
 import re
 import sys
 import time
+from collections import Counter
+
+# 이 스크립트의 파싱 로직 버전. data/kr_claims.json의 source.builder_version과
+# 대조해 재현 가능성을 확인한다(S9) — raw가 없어 재빌드를 못 할 때도 최소한
+# "어느 버전의 파서가 만들었는지"는 데이터에 남는다.
+BUILDER_VERSION = "build_kr_claims/0.2"
 
 # 원료 블록 머리 — " 2-16" 처럼 번호만 홀로 있는 줄.
 # 제4장 시험법도 같은 번호 체계를 쓰므로 번호만으로는 원료를 특정할 수 없다.
 # 아래 BLOCK_MARK 중 하나를 품은 블록만 원료로 인정한다.
 BLOCK_HEAD = re.compile(r"^[ \t]*(\d{1,2}-\d{1,2})[ \t]*$", re.M)
 BLOCK_MARK = ("제조기준", "최종제품의 요건")
+
+# hwpx 추출에서 아래첨자가 유실돼 비타민 B1/B2/B6/B12가 전부 "비타민 B"
+# 하나로 붕괴하는 문제(S1)의 보정 맵. 근거 없이 매핑을 지어내면 안 되므로
+# 아래 세 근거가 독립적으로 같은 결론을 가리키는 항목만 넣는다:
+#   1. 표 순서가 고시 별표의 표준 영양성분 순서와 정확히 일치한다 —
+#      A(1-1)·베타카로틴(1-2)·D(1-3)·E(1-4)·K(1-5)·B1(1-6)·B2(1-7)·
+#      나이아신(1-8)·판토텐산(1-9)·B6(1-10)·엽산(1-11)·B12(1-12)·비오틴(1-13)·C(1-14)…
+#   2. 각 최소섭취량(daily_intake.min)이 "한국인 영양소 섭취기준" RDA의 30%다.
+#      같은 표의 나이아신(4.5=15×30%)·판토텐산(1.5=5×30%)·비오틴(9=30×30%)과
+#      동일한 규칙으로 계산하면: B1 1.2mg→0.36(1-6과 일치), B2 1.4mg→0.42
+#      (1-7과 일치), B6 1.5mg→0.45(1-10과 일치), B12 2.4μg→0.72(1-12와 일치).
+#   3. 1-6·1-7·1-12의 raw 기능성 문구가 각 비타민의 공인 문구와 일치한다:
+#      "탄수화물과 에너지 대사에 필요"(B1), "체내 에너지 생성에 필요"(B2),
+#      "정상적인 엽산 대사에 필요"(B12 — 엽산·B12 대사 연관은 공인 기능이다).
+#      1-12만 단위가 μg(마이크로그램)라 mg 단위인 B1/B2/B6와도 구분된다.
+#   1-10(B6)은 raw 문구 자체가 유실돼 근거 3은 못 쓰지만, 근거 1·2가 서로
+#   독립적으로 같은 자리를 가리키므로 보정한다.
+NAME_FIX = {
+    "1-6": "비타민 B1",
+    "1-7": "비타민 B2",
+    "1-10": "비타민 B6",
+    "1-12": "비타민 B12",
+}
 
 # 라벨 앞의 `(1)` 번호와 콜론은 추출본에서 빠져 있는 경우가 있다.
 # 프로바이오틱스는 번호가 없고("기능성 내용 :"), 섭취량은 콜론이 없다.
@@ -60,6 +90,14 @@ LABEL_CAUTION = re.compile(r"^[ \t]*(?:\(\d+\)[ \t]*)?섭취[ \t]*시[ \t]*주�
 SUB_ITEM = re.compile(r"^[ \t]*\(([가-힣])\)[ \t]*(.+)$")
 # 다음 라벨 — 하위 항목 수집을 여기서 멈춘다.
 NEXT_LABEL = re.compile(r"^[ \t]*(?:\d+\)|\(\d+\))")
+
+# (S6) 라벨만 있고 실제 문구가 없는 하위 항목. "1). (1). (가) 및 (나)의
+# 경우"처럼 조항 번호만 이어 붙은 문자열이 기능성 문구 자리에 들어가면,
+# 그걸 표에 옮기는 에이전트가 "다듬어" 진짜 문구를 창작할 여지가 생긴다.
+LABEL_ONLY = re.compile(
+    r"^\s*\d+\)\.?\s*(?:\(\d+\)\.?\s*)?"
+    r"(?:\([가-힣]+\)\s*(?:및|,)?\s*)*(?:의\s*)?경우\.?\s*$"
+)
 
 # "EPA와 DHA의 합으로서 0.5 ~ 2 g" → basis / min / max / unit
 # basis는 논문 용량과 비교할 때 결정적이다. EPA 단독 용량을 'EPA와 DHA의 합'
@@ -80,7 +118,48 @@ INTAKE_FORMS = (
 # 괄호 보조 표기는 매칭 전에 걷어낸다.
 #   "210 ~ 1,000 μg RAE (699.93 ~ 3,333 IU)"  괄호 안은 환산값
 #   "100,000,000(1억) ~ 10,000,000,000(100억) CFU"  괄호가 숫자를 끊는다
-PAREN = re.compile(r"\([^)]*\)")
+# 중첩 괄호("3.3 g (베타글루칸(β-glucan)으로서 287.1 ~ 534.6 mg)")는 한 번의
+# 치환으로 못 걷어낸다 — [^)]*가 첫 ')'에서 멈춰 바깥쪽 여는 괄호를 삼키고
+# 그 짝인 닫는 괄호만 밖에 남긴다(S5). 괄호가 없는 가장 안쪽 그룹만 매칭하고
+# 더 지울 게 없을 때까지 반복해야 안쪽부터 바깥으로 걷힌다.
+PAREN = re.compile(r"\([^()]*\)")
+# 파싱이 성공해도 unit에 괄호·구두점이 남아 있으면 괄호 제거가 불완전했다는
+# 신호다. 우연히 숫자 매칭까지 성공했더라도 parsed:false로 되돌린다(S5 위생 검사).
+UNIT_JUNK = re.compile(r"[()（）\[\].,;:]")
+
+
+def strip_parens(text: str) -> str:
+    """괄호를 안쪽부터 바깥쪽으로 반복 제거한다. 중첩 괄호 대응(S5)."""
+    prev = None
+    while prev != text:
+        prev = text
+        text = PAREN.sub(" ", text)
+    return text
+
+
+def missing_sequence_codes(entries: list[dict], dropped: list[str]) -> list[str]:
+    """`군-번호` 코드 수열의 결번을 찾는다.
+
+    이 저장소는 고시 원문(raw/)을 남기지 않는다. 그래서 "무엇을 못 읽었는지가
+    JSON에 남는다"는 것이 이 데이터를 믿을 수 있는 유일한 축인데, 커버리지가
+    보는 것은 **읽어낸 블록의 결손**뿐이었다. 블록으로 잡히지도 못한 원료는
+    missing_functional_claim에도 dropped_non_ingredient_blocks에도 안 나온다 —
+    처음부터 없었던 것처럼 보인다. 실제로 2-7이 그렇게 사라져 있었고,
+    커버리지 어디에도 흔적이 없었다.
+
+    코드가 연속이라는 보장은 고시에 없다(폐지된 원료의 번호는 빈다).
+    그래서 실패로 만들지 않고 사실만 남긴다 — 사람이 원문에서 판단할 몫이다.
+    """
+    seen = {e["code"] for e in entries} | set(dropped)
+    groups: dict[str, list[int]] = {}
+    for code in seen:
+        m = re.fullmatch(r"(\d+)-(\d+)", code)
+        if m:
+            groups.setdefault(m.group(1), []).append(int(m.group(2)))
+    missing = []
+    for g, nums in groups.items():
+        missing += [f"{g}-{n}" for n in range(1, max(nums) + 1) if n not in nums]
+    return sorted(missing, key=lambda c: tuple(int(p) for p in c.split("-")))
 
 
 def split_blocks(text: str) -> list[dict]:
@@ -108,7 +187,7 @@ def parse_intake(raw: str) -> dict:
            "unit": None, "bound": None, "parsed": False}
     if not text:
         return out
-    probe = re.sub(r"\s+", " ", PAREN.sub(" ", text)).strip()
+    probe = re.sub(r"\s+", " ", strip_parens(text)).strip()
 
     for bound, pat in INTAKE_FORMS:
         m = pat.match(probe)
@@ -124,11 +203,14 @@ def parse_intake(raw: str) -> dict:
             n2 = float(m.group("n2").replace(",", "")) if bound == "range" else None
         except ValueError:
             continue
+        unit = m.group("unit").strip()
+        if UNIT_JUNK.search(unit):
+            continue  # 괄호·구두점이 남은 단위 — 괄호 제거가 불완전했다는 신호(S5)
         out["min"] = n1 if bound in ("range", "min", "exact") else None
         out["max"] = n2 if bound == "range" else (n1 if bound in ("max", "exact") else None)
         basis = (m.group("basis") or "").strip(" ,･·").strip()
         out["basis"] = basis or None
-        out["unit"] = m.group("unit").strip()
+        out["unit"] = unit
         out["bound"] = bound
         out["parsed"] = True
         return out
@@ -149,8 +231,12 @@ def collect_sub_items(lines: list[str], start: int) -> list[str]:
     return items
 
 
-def extract(block: dict) -> dict:
-    """블록 하나에서 기능성·섭취량·주의사항을 뽑는다."""
+def extract(block: dict, label_polluted: list[str] | None = None) -> dict:
+    """블록 하나에서 기능성·섭취량·주의사항을 뽑는다.
+
+    label_polluted: 넘기면, 라벨 조각만 남아 functional_claim을 None으로
+    비운 행의 블록 코드를 여기 덧붙인다(S6). 호출자가 커버리지에 보고한다.
+    """
     lines = block["body"].split("\n")
     claim_text = None
     dose_inline = None
@@ -176,7 +262,13 @@ def extract(block: dict) -> dict:
         for item in dose_items:
             parts = re.split(r"[:：]", item, maxsplit=1)
             if len(parts) == 2:
-                rows.append({"functional_claim": parts[0].strip(),
+                claim = parts[0].strip()
+                if LABEL_ONLY.match(claim):
+                    # 라벨 조각만 남은 문구 — 창작 유혹을 남기느니 비워 둔다(S6)
+                    if label_polluted is not None:
+                        label_polluted.append(block["code"])
+                    claim = None
+                rows.append({"functional_claim": claim,
                              "daily_intake": parse_intake(parts[1])})
             else:
                 # 콜론이 없으면 문구와 수치를 가를 수 없다. 통째로 남긴다.
@@ -196,6 +288,21 @@ def extract(block: dict) -> dict:
         "rows": rows,
         "cautions": cautions,
     }
+
+
+def duplicate_names(entries: list[dict]) -> dict[str, list[str]]:
+    """동명 원료 코드 맵(S1b). 조회 부분일치가 어느 쪽에 걸렸는지 못 가르는
+    이름이 2개 이상이면 여기 잡힌다 — check_kr_claims.py가 리포트 warnings로
+    흘려보낸다."""
+    counts = Counter(e["ingredient_ko"] for e in entries)
+    return {name: [e["code"] for e in entries if e["ingredient_ko"] == name]
+            for name, c in counts.items() if c > 1}
+
+
+def is_ingredient_entry(e: dict) -> bool:
+    """rows도 없고 functional_claims_raw도 없으면 원료가 아니라 BLOCK_MARK
+    검사를 우연히 통과한 쓰레기 블록이다(S7 — 13-2 사례)."""
+    return bool(e["rows"] or e["functional_claims_raw"])
 
 
 def main() -> int:
@@ -219,7 +326,19 @@ def main() -> int:
               file=sys.stderr)
         return 2
 
-    entries = [extract(b) for b in blocks]
+    label_polluted: list[str] = []
+    entries = [extract(b, label_polluted) for b in blocks]
+
+    # S1: hwpx 추출에서 아래첨자가 유실돼 붕괴한 이름을 보정한다.
+    for e in entries:
+        fix = NAME_FIX.get(e["code"])
+        if fix:
+            e["ingredient_ko"] = fix
+
+    # S7: 원료가 아닌 블록이 BLOCK_MARK 검사를 통과해 들어온 경우(예: 13-2)
+    # — rows도 functional_claims_raw도 없으면 조회에서 "등재"로 잡히면 안 된다.
+    dropped = [e["code"] for e in entries if not is_ingredient_entry(e)]
+    entries = [e for e in entries if is_ingredient_entry(e)]
 
     # 커버리지 — 무엇을 못 읽었는지가 남아야 이 파일을 믿을 수 있다.
     no_claim = [e["code"] for e in entries if not e["functional_claims_raw"]]
@@ -228,6 +347,11 @@ def main() -> int:
     unparsed = [f'{e["code"]}:{r["daily_intake"]["raw"][:40]}'
                 for e in entries for r in e["rows"]
                 if r["daily_intake"] and not r["daily_intake"]["parsed"]]
+    no_cautions = [e["code"] for e in entries if not e["cautions"]]
+    dup_names = duplicate_names(entries)
+    missing_codes = missing_sequence_codes(entries, dropped)
+
+    input_sha256 = hashlib.sha256(text.encode("utf-8")).hexdigest()
 
     doc = {
         "schema": "kr-claims/0.1",
@@ -239,6 +363,10 @@ def main() -> int:
             "scope": "고시형 원료만. 개별인정형은 이 고시에 없다 — "
                      "표에 없음은 인정되지 않음이 아니다.",
             "checked_at": time.strftime("%Y-%m-%d"),
+            # S9: 재빌드 결과가 같은지, JSON을 사람이 직접 손댔는지 확인할
+            # 유일한 수단. input(고시전문 txt)의 해시와 이 파서의 버전이다.
+            "input_sha256": input_sha256,
+            "builder_version": BUILDER_VERSION,
         },
         "coverage": {
             "blocks": len(entries),
@@ -246,8 +374,17 @@ def main() -> int:
             "missing_functional_claim": no_claim,
             "missing_daily_intake": no_dose,
             "unparsed_intake": unparsed,
+            "missing_cautions": no_cautions,
+            "duplicate_ingredient_names": dup_names,
+            "label_only_claims": sorted(set(label_polluted)),
+            "dropped_non_ingredient_blocks": dropped,
+            # 블록으로 잡히지도 못한 원료는 다른 어떤 필드에도 안 남는다.
+            # 결번이 있다고 반드시 유실인 것은 아니다(폐지 번호일 수 있다).
+            "missing_codes": missing_codes,
             "note": "missing/unparsed 항목은 고시 원문을 보고 사람이 채워야 한다. "
-                    "빈 값을 '해당 없음'으로 읽지 말 것.",
+                    "빈 값을 '해당 없음'으로 읽지 말 것. missing_codes는 코드 수열의 "
+                    "결번이다 — 파서가 놓친 것인지 고시에서 폐지된 번호인지는 "
+                    "원문을 봐야 갈린다.",
         },
         "ingredients": entries,
     }
@@ -257,7 +394,14 @@ def main() -> int:
 
     print(f"원료 {len(entries)}개 / 행 {doc['coverage']['rows']}개 → {args.output}")
     print(f"  기능성 문구 없음 {len(no_claim)} · 섭취량 없음 {len(no_dose)} · "
-          f"수치 파싱 실패 {len(unparsed)}")
+          f"수치 파싱 실패 {len(unparsed)} · 주의사항 없음 {len(no_cautions)}")
+    if dup_names:
+        print(f"  동명 원료 {len(dup_names)}건: {sorted(dup_names)}")
+    if dropped:
+        print(f"  원료 아닌 블록 제외 {len(dropped)}건: {dropped}")
+    if missing_codes:
+        print(f"  ⚠ 코드 결번 {len(missing_codes)}건: {missing_codes} — 파서가 놓친 "
+              f"원료인지 고시에서 폐지된 번호인지 원문에서 확인할 것.", file=sys.stderr)
     return 0
 
 

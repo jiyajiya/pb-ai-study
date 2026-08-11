@@ -12,8 +12,17 @@
 **셋의 배포 방식이 다르다.** `kr-claims`·`pubmed-evidence`는 `pharmacist/.claude-plugin/marketplace.json`에
 등록된 배포 플러그인이라 마켓플레이스로 설치하면 어디서든 쓸 수 있다. `ingredient-analysis`는
 플러그인이 아니라 `ingredient-analysis/.claude/` 아래의 **프로젝트 로컬 설정**이다 — 반드시
-`cd pharmacist/ingredient-analysis` 한 뒤 그 디렉토리를 cwd로 켠 세션에서만 스킬·에이전트가 보인다.
-저장소 루트에서 `claude`를 켜면 이 스킬·에이전트는 아예 나타나지 않는다.
+`cd pharmacist/ingredient-analysis` 한 뒤 그 디렉토리를 cwd로 켠 세션에서 실행한다.
+
+⚠️ **스킬과 서브에이전트의 탐색 규칙이 다르다.** `pharmacist/`를 cwd로 켠 세션에도
+`ingredient-analysis`·`sag` **스킬은 목록에 올라온다**(디렉토리 스코프가 붙은 채로).
+반면 담당 4명(`ingredient-analysis/.claude/agents/`)은 **로드되지 않는다.** 그래서
+그 위치에서 `/ingredient-analysis`를 치면 파이프라인이 에러 없이 돌면서 메인이
+직접 조사하고 직접 문구를 쓴다 — 산출물은 겉보기 정상이고 도구 제약(검수는 쓰기
+권한이 없다 등)만 조용히 사라진다. 이 실습이 가르치려는 것이 통째로 없어진다.
+`pubmed-evidence`가 표까지 만들어 가르치는 "배치가 틀리면 조용히 무시된다"가
+여기서 그대로 재현되는 셈이다. 그래서 SKILL.md 첫머리에 **담당 존재 확인**을 두고,
+넷 중 하나라도 없으면 시작하지 않는다.
 
 세 개가 이렇게 맞물린다.
 
@@ -32,11 +41,17 @@
 ```
 
 `kr-claims`는 두 모드로 양쪽에 붙는다 — 팩의 용량을 고시와 대조하는 **대조 모드**(`--pack`,
-`kr-report.json` 출력)와, 인정 문구·섭취량을 꺼내오는 **조회 모드**다. `ingredient-analysis`는
-`evidence-pack`도 `kr-report.json`도 받지 않는다 — 0라운드에서 쓰는 것은 조회 모드 결과
-(`research/{성분}-고시.json`) 뿐이다. **대조 모드는 실제로 동작하는 기능이지만, 이 저장소의
-세 스킬 중 어느 것도 자동으로 호출하지 않는다** — 필요하면 사람이 직접 `check_kr_claims.py
---pack`을 실행해야 한다. 팩과 카피를 잇는 것은 자동화된 파일 체인이 아니라 사람이다.
+`kr-report.json` 출력)와, 인정 문구·섭취량을 꺼내오는 **조회 모드**다.
+
+**대조 모드는 `pubmed-evidence`가 자동으로 잇는다.** 팩을 만든 뒤 `kr-claims` 스킬을
+호출하고 `evidence-pack.json` 경로를 넘기도록 `pubmed-evidence/skills/.../SKILL.md`에
+적혀 있다(설치돼 있지 않으면 건너뛰고 한 줄 알린다). 위 도식의 `↓ --pack 대조 모드`가
+그 연결이다.
+
+**`ingredient-analysis`로는 이어지지 않는다.** 0라운드에서 쓰는 것은 조회 모드 결과
+(`research/{성분}-고시.json`) 뿐이고, `evidence-pack.json`도 `kr-report.json`도 받지
+않는다. 즉 자동 연결은 `pubmed-evidence → kr-claims`까지이고, **거기서 나온 팩·리포트를
+카피 파이프라인으로 옮기는 것은 사람이다.**
 
 ---
 
@@ -102,7 +117,7 @@ kr-claims/                     ← 플러그인 루트
 │   ├── build_kr_claims.py     raw/고시전문.txt → kr_claims.json (개정 시에만)
 │   ├── check_kr_claims.py     조회 / 대조 (스킬이 실행)
 │   └── test_kr_claims.py      네트워크 없이 도는 계약 검사
-├── data/kr_claims.json        원료 97개 · 행 120개 — 저장소에 남는 유일한 고시 자료
+├── data/kr_claims.json        원료 96개 · 행 120개 — 저장소에 남는 유일한 고시 자료
 └── raw/                       고시 원문. 빌드할 때만 생긴다 (git 미추적)
 ```
 
@@ -159,12 +174,15 @@ miner가 돌려주는 `quote`는 글자 하나 안 바꾼 원문이고, **그건
 
 ### 게이트가 보증하는 것과 못 하는 것
 
-C1~C5는 "그 인용문이 그 PMID 초록에 있고, 그 값이 인용문 안에 있다"만 본다.
+C1~C5는 "그 인용문이 그 PMID 초록의 한 문장이고, 그 값이 인용문 안에 있다"만 본다.
 같은 문장의 용량 숫자가 효과 크기 자리에 들어가도 통과한다. **조작은 막고 오배치는 못 막는다.** 철회 논문은 슬롯이
 전부 통과해도 제외하고, 이해충돌은 진술 원문만 싣고 판정하지 않는다.
-막을 수 있는 것만 기계로 막고 남는 것은 팩의 `warnings`로 사람에게 넘긴다.
+막을 수 있는 것만 기계로 막고, 남는 것은 팩의 `warnings`와 **`verdict` 필드**로
+사람에게 넘긴다 — 산문 경고만으로는 읽는 쪽(LLM)이 흘리기 때문에 분기에 쓸 값을 따로 둔다.
 
 설치 절차, NCBI API 키, 배치 근거는 `pubmed-evidence/README.md`에 있다.
+톤(T1/T2/T3)·단계 번호(P1~P8)·규칙 번호(R·C)처럼 **이 저장소에서만 쓰는 말**의
+뜻도 거기 「이 저장소에서만 쓰는 말」 절에 모아 뒀다 — 표준 용어가 아니다.
 
 ---
 

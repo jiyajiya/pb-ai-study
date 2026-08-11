@@ -9,7 +9,8 @@ import sys, pathlib
 from xml.etree import ElementTree as ET
 sys.path.insert(0, str(pathlib.Path(__file__).parent))
 from verify_evidence import (verify_slot, verify_quote_slot, normalize, REJECT_REASONS,
-                            parse_record, design_check)
+                            parse_record, design_check, has_multiple_sentences,
+                            PubmedCountError, NotFoundError)
 import contextlib, io, json, os, tempfile
 import verify_evidence
 
@@ -185,6 +186,140 @@ assert r["dropped_significance"] == "P = 0.0", r
 assert verify_slot("effect", slot("-0.34 mmol/L", "지어낸 문장이다."), ABS)["reason"] == "quote_not_in_abstract"
 assert verify_slot("effect", slot("-0.99 mmol/L", EFFECT_Q), ABS)["reason"] == "value_not_in_quote"
 assert verify_slot("form", None, ABS)["reason"] == "not_extracted"
+
+
+# ══════════════════════════════════════════════════════════════════
+# S1: quote는 한 문장이어야 한다. C1이 부분문자열만 보고 문장 수를 안 세면
+# 두 문장짜리 quote 하나로 C2/C4가 quote 전체에서 검사하게 되어 unit 검사가
+# 무력화된다. 실증된 재현: quote가 "500 mg magnesium daily. Sleep onset
+# latency decreased by 17.36 min."이면 effect value=17.36, unit=mg가
+# (전혀 다른 문장에서 온 단위인데도) 통과했다.
+# ══════════════════════════════════════════════════════════════════
+
+TWO_SENT_Q = ("Subjects received 500 mg magnesium daily. "
+              "Sleep onset latency decreased by 17.36 min.")
+TWO_SENT_ABS = normalize(TWO_SENT_Q)
+
+# 재현 그대로: 17.36이 mg 단위로 카드에 찍히던 케이스가 이제 폐기된다
+r = verify_slot("effect", slot("17.36", TWO_SENT_Q, unit="mg"), TWO_SENT_ABS)
+assert not r["verified"] and r["reason"] == "quote_multiple_sentences", r
+assert r["value"] is None, r
+
+# 세 문장도 마찬가지
+THREE_SENT_Q = TWO_SENT_Q + " The effect was statistically significant."
+assert has_multiple_sentences(THREE_SENT_Q), THREE_SENT_Q
+
+# C5(conclusion)도 같은 계약을 적용한다
+r = verify_quote_slot("conclusion", {"quote": TWO_SENT_Q}, TWO_SENT_ABS)
+assert not r["verified"] and r["reason"] == "quote_multiple_sentences", r
+assert r["quote"] is None, r
+
+# 정상 케이스: 진짜 단일 문장은 그대로 통과한다
+assert verify_slot("effect", slot("17.36", MIN_Q, unit="min"), ABS)["verified"]
+
+# ── 오탐 방지: 초록에 흔한 약어 뒤의 마침표는 문장 경계가 아니다 ──
+# 약어 뒤에 대문자로 시작하는 단어가 와야만 오탐 후보가 된다는 점에 주의:
+# "e.g. diabetes"처럼 소문자가 이어지면 애초에 SENTENCE_BREAK 자체가
+# 매치하지 않는다. 아래는 일부러 대문자로 이어 붙여 오탐 방지 로직을 시험한다.
+for abbr_quote in [
+    "Patients on statins (e.g. Atorvastatin) had lower LDL levels than controls.",
+    "Serum levels were assessed (i.e. Fasting samples) before treatment.",
+    "Treatment vs. Placebo showed a mean difference of -0.34 mmol/L.",
+    "Results reported by Smith et al. Showed significant improvement overall.",
+    "See protocol No. Three for randomization details in this trial.",
+    "The outcome is summarized in Fig. Two of the supplementary material.",
+    "The study was led by Dr. Kim and colleagues at the center.",
+]:
+    assert not has_multiple_sentences(abbr_quote), abbr_quote
+
+# 약어가 든 단일 문장이 verify_slot을 실제로 통과하는지도 확인 (오탐 없음)
+ABBR_EFFECT_Q = "Statins (e.g. Atorvastatin) reduced LDL by 23.4% compared with placebo."
+r = verify_slot("effect", slot("23.4%", ABBR_EFFECT_Q), normalize(ABBR_EFFECT_Q))
+assert r["verified"], r
+
+# 확인만: 소수점과 섹션 라벨은 원래부터 안 걸린다 (브리프가 명시한 확인 사항)
+assert not has_multiple_sentences("Triglycerides decreased by 0.34 mmol/L in the group.")
+assert not has_multiple_sentences("RESULTS: Triglycerides decreased by 0.34 mmol/L.")
+
+
+# ══════════════════════════════════════════════════════════════════
+# S4: %도 수 경계다. "reduced by 23%"에서 unit 없이 value="23"만 떼어 오면
+# "23% 감소"라는 주장이 사라진다.
+# ══════════════════════════════════════════════════════════════════
+
+PCT_BOUNDARY_Q = "Risk was reduced by 23% versus placebo."
+PCT_BOUNDARY_ABS = normalize(PCT_BOUNDARY_Q)
+r = verify_slot("effect", slot("23", PCT_BOUNDARY_Q), PCT_BOUNDARY_ABS)
+assert not r["verified"] and r["reason"] == "value_not_in_quote", r
+assert r["value"] is None, r
+r = verify_slot("effect", slot("23%", PCT_BOUNDARY_Q), PCT_BOUNDARY_ABS)
+assert r["verified"] and r["unit_type"] == "percent", r
+
+
+# ══════════════════════════════════════════════════════════════════
+# S5: 저비용 4건
+# ══════════════════════════════════════════════════════════════════
+
+# 1) '+' 부호. abstract-miner.md:46은 "부호"라고만 쓰는데 코드는 '-?'만
+#    허용했다 — 정상 양수 효과크기가 false FAIL 나던 것을 고친다.
+PLUS_Q = "HDL cholesterol increased by +2.3 mg/dL after treatment."
+r = verify_slot("effect", slot("+2.3", PLUS_Q, unit="mg/dL"), normalize(PLUS_Q))
+assert r["verified"], r
+# 형태가 아니면 여전히 폐기된다 (부호 확장이 화이트리스트를 헐겁게 하지 않았다)
+r = verify_slot("effect", slot("+-2.3", PLUS_Q), normalize(PLUS_Q))
+assert not r["verified"], r
+
+# 2) unit=""은 부재이지 값이 아니다. None으로 정규화되어야 카드에 빈 문자열이
+#    안 찍힌다.
+DOSE_Q_UNIT = "Subjects received 500 mg magnesium daily for 8 weeks."
+r = verify_slot("dose", slot("500", DOSE_Q_UNIT, unit=""), ABS)
+assert r["verified"] and r["unit"] is None, r
+
+# 3) malformed_slot: 슬롯 자체가 dict가 아니면(문자열·숫자·리스트) 폐기하되
+#    죽지 않는다. verify_quote_slot과의 일관성 결함을 verify_slot에도 채운다.
+for bad_slot in ["not a dict", 42, ["17.36", "min"]]:
+    r = verify_slot("effect", bad_slot, ABS)
+    assert not r["verified"] and r["reason"] == "malformed_slot", (bad_slot, r)
+    assert r["value"] is None, r
+# 정상 케이스: dict면 그대로 통과 경로를 탄다 (회귀 없음)
+assert verify_slot("effect", slot("-0.34", EFFECT_Q, unit="mmol/L"), ABS)["verified"]
+
+# 4) 존재하지 않는 PMID: efetch가 빈 PubmedArticleSet을 반환하면 parse_record가
+#    PubmedCountError(count=0)를 낸다. no_abstract(초록 없는 레코드)와는 다른
+#    사유다 — 논문 자체가 없다는 뜻이므로.
+EMPTY_SET = "<PubmedArticleSet></PubmedArticleSet>"
+try:
+    parse_record(ET.fromstring(EMPTY_SET))
+    assert False, "PubmedArticle이 0개인데 예외가 안 났다"
+except PubmedCountError as e:
+    assert e.count == 0, e.count
+
+# 응답에 PubmedArticle이 2개 이상이면(쉼표 pmid로 두 논문이 합쳐진 경우) 거부한다.
+# main()의 pmid 형식 검사가 대부분 막지만, 응답 형태로도 한 번 더 막는 방어선이다.
+TWO_ARTICLES = (
+    "<PubmedArticleSet>"
+    "<PubmedArticle><MedlineCitation><Article><Journal><Title>A</Title>"
+    "</Journal></Article></MedlineCitation></PubmedArticle>"
+    "<PubmedArticle><MedlineCitation><Article><Journal><Title>B</Title>"
+    "</Journal></Article></MedlineCitation></PubmedArticle>"
+    "</PubmedArticleSet>"
+)
+try:
+    parse_record(ET.fromstring(TWO_ARTICLES))
+    assert False, "PubmedArticle이 2개인데 예외가 안 났다"
+except PubmedCountError as e:
+    assert e.count == 2, e.count
+
+# 정상 케이스: PubmedArticle이 정확히 1개면 그대로 통과한다 (기존 무결성
+# 파싱 테스트가 이미 이 경로를 쓰지만, 개수 확인 자체를 명시적으로 한 번 더 본다)
+ONE_ARTICLE = (
+    "<PubmedArticleSet><PubmedArticle><MedlineCitation><Article>"
+    "<Journal><Title>C</Title></Journal>"
+    "<Abstract><AbstractText>Some abstract text.</AbstractText></Abstract>"
+    "<ArticleTitle>Title C.</ArticleTitle>"
+    "</Article></MedlineCitation></PubmedArticle></PubmedArticleSet>"
+)
+assert parse_record(ET.fromstring(ONE_ARTICLE))["abstract"] == "Some abstract text. Title C."
 
 
 # ── 무결성 파싱 ──
@@ -366,7 +501,7 @@ assert pack is None, "0건 입력인데 팩 파일이 생성됐다"
 
 
 def fetch_boundary_1(pmid, api_key=None, retries=2):
-    if pmid == "OK1":
+    if pmid == "11111":
         return make_record(EFFECT_ABS)
     raise RuntimeError("simulated fetch failure")
 
@@ -374,41 +509,41 @@ def fetch_boundary_1(pmid, api_key=None, retries=2):
 # fixtures.md: "제외 편수(조회 실패+초록 없음+철회)가 수록 편수 이상이면
 # 종료 코드 2" — 경계값. 성공1 + 제외1 → 1 >= 1 → 2
 code, pack, err = run_main(
-    [{"pmid": "OK1", "slots": effect_slots("-0.34", EFFECT_ABS, unit="mmol/L")},
-     {"pmid": "FAIL1", "slots": {}}],
+    [{"pmid": "11111", "slots": effect_slots("-0.34", EFFECT_ABS, unit="mmol/L")},
+     {"pmid": "88888", "slots": {}}],
     fake_fetch=fetch_boundary_1,
 )
 assert code == 2, (code, pack, err)
 assert pack is not None, "종료코드 2여도 main()은 팩을 쓴 뒤 반환한다"
 assert len(pack["papers"]) == 1, pack
-assert pack["verification"]["fetch_failed_pmids"] == ["FAIL1"], pack["verification"]
+assert pack["verification"]["fetch_failed_pmids"] == ["88888"], pack["verification"]
 
 
 def fetch_boundary_2(pmid, api_key=None, retries=2):
-    if pmid == "FAIL1":
+    if pmid == "88888":
         raise RuntimeError("simulated fetch failure")
-    return make_record(EFFECT_ABS if pmid == "OK1" else DOSE_ABS)
+    return make_record(EFFECT_ABS if pmid == "11111" else DOSE_ABS)
 
 
 # 같은 경계의 반대쪽. 성공2 + 제외1 → 1 >= 2 → False → 0
 # fixtures.md: "정상 케이스는 종료 코드 0, 팩 파일 생성"도 이 케이스가 증명한다.
 code, pack, err = run_main(
-    [{"pmid": "OK1", "slots": effect_slots("-0.34", EFFECT_ABS, unit="mmol/L")},
-     {"pmid": "OK2", "slots": {"dose": {"value": "500 mg", "quote": DOSE_ABS, "unit": "mg"}}},
-     {"pmid": "FAIL1", "slots": {}}],
+    [{"pmid": "11111", "slots": effect_slots("-0.34", EFFECT_ABS, unit="mmol/L")},
+     {"pmid": "22222", "slots": {"dose": {"value": "500 mg", "quote": DOSE_ABS, "unit": "mg"}}},
+     {"pmid": "88888", "slots": {}}],
     fake_fetch=fetch_boundary_2,
 )
 assert code == 0, (code, pack, err)
-assert pack["schema"] == "evidence-pack/0.2", pack
+assert pack["schema"] == "evidence-pack/0.3", pack
 assert len(pack["papers"]) == 2, pack
-assert {p["pmid"] for p in pack["papers"]} == {"OK1", "OK2"}, pack
+assert {p["pmid"] for p in pack["papers"]} == {"11111", "22222"}, pack
 assert pack["verification"]["slots_verified"] >= 1, pack["verification"]
 
 
 def fetch_with_retraction(pmid, api_key=None, retries=2):
     if pmid == "9500320":
         return make_record(RETRACTED_ABS, retracted=True, retraction_pmids=["20137807"])
-    return make_record(EFFECT_ABS if pmid == "OK1" else DOSE_ABS)
+    return make_record(EFFECT_ABS if pmid == "11111" else DOSE_ABS)
 
 
 # fixtures.md: "철회 논문이 입력에 있으면 슬롯이 전부 유효해도 papers에 들어가지
@@ -416,8 +551,8 @@ def fetch_with_retraction(pmid, api_key=None, retries=2):
 # (회귀 확인용 PMID: 9500320 — fixtures.md가 지정한 값. 슬롯은 전부 유효한
 # 형태로 채워서 "슬롯 검증을 통과해도"라는 조건을 실제로 만족시킨다)
 code, pack, err = run_main(
-    [{"pmid": "OK1", "slots": effect_slots("-0.34", EFFECT_ABS, unit="mmol/L")},
-     {"pmid": "OK2", "slots": {"dose": {"value": "500 mg", "quote": DOSE_ABS, "unit": "mg"}}},
+    [{"pmid": "11111", "slots": effect_slots("-0.34", EFFECT_ABS, unit="mmol/L")},
+     {"pmid": "22222", "slots": {"dose": {"value": "500 mg", "quote": DOSE_ABS, "unit": "mg"}}},
      {"pmid": "9500320", "slots": {"effect": {"value": "17.36", "quote": RETRACTED_ABS, "unit": "min"}}}],
     fake_fetch=fetch_with_retraction,
 )
@@ -429,7 +564,7 @@ assert "9500320" in pack["warnings"][0], pack["warnings"][0]
 
 
 def fetch_warnings(pmid, api_key=None, retries=2):
-    return make_record(PCT_ABS if pmid == "PCT" else KG_ABS)
+    return make_record(PCT_ABS if pmid == "33001" else KG_ABS)
 
 
 # fixtures.md 판정 기준 + main()의 warnings 조립 로직: unit_type이 혼재하거나
@@ -439,8 +574,8 @@ def fetch_warnings(pmid, api_key=None, retries=2):
 # PCT: value에 "%"가 있어 unit_type=percent, comparator="placebo"(유효값)
 # KG: unit="kg"뿐이라 unit_type=absolute, comparator 미제공 → null
 code, pack, err = run_main(
-    [{"pmid": "PCT", "slots": effect_slots("23%", PCT_ABS, comparator="placebo")},
-     {"pmid": "KG", "slots": effect_slots("2.1", KG_ABS, unit="kg")}],
+    [{"pmid": "33001", "slots": effect_slots("23%", PCT_ABS, comparator="placebo")},
+     {"pmid": "33002", "slots": effect_slots("2.1", KG_ABS, unit="kg")}],
     fake_fetch=fetch_warnings,
 )
 assert code == 0, (code, pack, err)
@@ -448,5 +583,308 @@ assert any("단위 기준" in w for w in pack["warnings"]), \
     ("unit_type 혼재(percent/absolute) 경고가 없다", pack["warnings"])
 assert any("comparator가 null" in w for w in pack["warnings"]), \
     ("comparator null 경고가 없다", pack["warnings"])
+
+
+# ══════════════════════════════════════════════════════════════════
+# S2: pmid 형식 검사. efetch의 id=는 쉼표 목록을 받으므로 pmid에 쉼표가
+# 섞이면 두 논문 초록이 한 응답에 합쳐져서 B논문의 숫자가 A논문 PMID로
+# 검증을 통과할 수 있다(실증됨). fetch_record가 아예 호출되지 않아야 한다 —
+# urlencode로는 못 막으므로 진입부에서 형식을 검사해 막는 것이 유일한 방어다.
+# ══════════════════════════════════════════════════════════════════
+
+def fetch_should_not_be_called(pmid, api_key=None, retries=2):
+    raise AssertionError(f"invalid_pmid인데 fetch_record가 호출됐다: pmid={pmid!r}")
+
+
+code, pack, err = run_main(
+    [{"pmid": "11111,22222", "slots": effect_slots("-0.34", EFFECT_ABS, unit="mmol/L")}],
+    fake_fetch=fetch_should_not_be_called,
+)
+assert code == 2, (code, pack, err)  # 수록 0 + 제외 1 → 2
+assert pack["papers"] == [], pack
+assert pack["verification"]["invalid_pmids"] == ["11111,22222"], pack["verification"]
+
+# 정상 케이스: 숫자만인 pmid는 그대로 조회된다 (위의 fetch_boundary_1/2 등이
+# 이미 이를 증명한다 — "11111" 같은 순수 숫자 pmid로 정상 통과함)
+
+
+# ══════════════════════════════════════════════════════════════════
+# S5-3: 중복 pmid. 걸러내지 않으면 표에서 근거 편수가 부풀려진다.
+# ══════════════════════════════════════════════════════════════════
+
+_dup_calls = []
+
+
+def fetch_dup(pmid, api_key=None, retries=2):
+    _dup_calls.append(pmid)
+    return make_record(EFFECT_ABS)
+
+
+code, pack, err = run_main(
+    [{"pmid": "77001", "slots": effect_slots("-0.34", EFFECT_ABS, unit="mmol/L")},
+     {"pmid": "77001", "slots": effect_slots("-0.34", EFFECT_ABS, unit="mmol/L")}],
+    fake_fetch=fetch_dup,
+)
+assert code == 0, (code, pack, err)
+assert len(pack["papers"]) == 1, "중복 pmid가 두 번 들어갔다"
+assert _dup_calls == ["77001"], "중복 pmid인데 fetch_record가 두 번 불렸다"
+
+# 정상 케이스: 서로 다른 pmid 두 개는 모두 남는다 (위 fetch_boundary_2가 이미 증명)
+
+
+# ══════════════════════════════════════════════════════════════════
+# S5-4: 존재하지 않는 PMID는 not_found로 분류된다 (초록이 비어 있는
+# no_abstract와는 다른 사유 — 논문 자체가 없다는 뜻이다).
+# ══════════════════════════════════════════════════════════════════
+
+def fetch_not_found(pmid, api_key=None, retries=2):
+    if pmid == "99999999":
+        raise NotFoundError(f"PMID {pmid}: 레코드가 존재하지 않는다")
+    return make_record(EFFECT_ABS)
+
+
+code, pack, err = run_main(
+    [{"pmid": "99999999", "slots": {}}],
+    fake_fetch=fetch_not_found,
+)
+assert code == 2, (code, pack, err)  # 수록 0 + 제외 1 → 2
+assert pack["verification"]["not_found_pmids"] == ["99999999"], pack["verification"]
+assert pack["verification"]["fetch_failed_pmids"] == [], \
+    ("not_found가 fetch_failed와 섞였다", pack["verification"])
+
+# 정상 케이스: 존재하는 pmid는 그대로 통과한다 (fetch_boundary류가 이미 증명)
+
+
+# ══════════════════════════════════════════════════════════════════
+# S3: 입력 스키마 가드와 종료 코드 계약(0/2만). 7가지 malformed 입력:
+#   1) 없는 파일  2) 깨진 JSON  3) slots 컨테이너가 list
+#   4) 개별 슬롯이 문자열  5) 개별 슬롯이 숫자  6) 개별 슬롯이 list
+#   7) meta가 list
+# 4)~6)은 verify_slot 단위 테스트(위 malformed_slot 블록)에서 이미 확인했다.
+# 여기서는 main() 통합 레벨에서 크래시 없이 0 또는 2로 끝나는지 본다.
+# ══════════════════════════════════════════════════════════════════
+
+def run_main_bad_path(input_path, meta_path=None):
+    """run_main()과 달리 --input에 임의 경로(없는 파일 등)를 그대로 넘긴다."""
+    with tempfile.TemporaryDirectory() as td:
+        output_path = os.path.join(td, "evidence-pack.json")
+        argv = ["verify_evidence.py", "--input", input_path, "--output", output_path]
+        if meta_path is not None:
+            argv += ["--meta", meta_path]
+        old_argv = sys.argv
+        sys.argv = argv
+        try:
+            err_buf = io.StringIO()
+            with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(err_buf):
+                code = verify_evidence.main()
+        finally:
+            sys.argv = old_argv
+        pack = None
+        if os.path.exists(output_path):
+            with open(output_path, encoding="utf-8") as f:
+                pack = json.load(f)
+        return code, pack, err_buf.getvalue()
+
+
+# 1) 없는 파일
+code, pack, err = run_main_bad_path("/no/such/path/raw_slots.json")
+assert code == 2, (code, err)
+assert pack is None, "없는 파일인데 팩이 생성됐다"
+assert err.strip(), "stderr 메시지가 없다"
+
+# 2) 깨진 JSON
+with tempfile.TemporaryDirectory() as _td:
+    _bad_json_path = os.path.join(_td, "bad.json")
+    with open(_bad_json_path, "w", encoding="utf-8") as f:
+        f.write("{not valid json")
+    code, pack, err = run_main_bad_path(_bad_json_path)
+assert code == 2, (code, err)
+assert pack is None, "깨진 JSON인데 팩이 생성됐다"
+assert err.strip(), "stderr 메시지가 없다"
+
+# 7) meta가 list
+with tempfile.TemporaryDirectory() as _td:
+    _input_path = os.path.join(_td, "raw_slots.json")
+    with open(_input_path, "w", encoding="utf-8") as f:
+        json.dump([{"pmid": "55555",
+                    "slots": effect_slots("-0.34", EFFECT_ABS, unit="mmol/L")}], f)
+    _meta_path = os.path.join(_td, "meta.json")
+    with open(_meta_path, "w", encoding="utf-8") as f:
+        json.dump(["not", "a", "dict"], f)
+    code, pack, err = run_main_bad_path(_input_path, meta_path=_meta_path)
+assert code == 2, (code, err)
+assert pack is None, "meta가 list인데 팩이 생성됐다"
+assert err.strip(), "stderr 메시지가 없다"
+
+# 3) slots 컨테이너가 list — 레코드째 제외되고 (유일한 레코드이므로) 종료 코드 2
+code, pack, err = run_main(
+    [{"pmid": "56001", "slots": ["not", "a", "dict"]}],
+    fake_fetch=lambda pmid, api_key=None, retries=2: make_record(EFFECT_ABS),
+)
+assert code == 2, (code, pack, err)
+assert pack["papers"] == [], pack
+assert pack["verification"]["malformed_slots_pmids"] == ["56001"], pack["verification"]
+
+# 정상 케이스: 개별 슬롯 하나가 malformed여도 나머지 슬롯과 논문 자체는 살아
+# 남는다 (컨테이너 자체는 정상 dict이므로) — 종료 코드는 0이다.
+code, pack, err = run_main(
+    [{"pmid": "56002", "slots": {"effect": "not a dict",
+                                  "dose": {"value": "500 mg", "quote": DOSE_ABS, "unit": "mg"}}}],
+    fake_fetch=lambda pmid, api_key=None, retries=2: make_record(DOSE_ABS),
+)
+assert code == 0, (code, pack, err)
+assert len(pack["papers"]) == 1, pack
+_effect_out = pack["papers"][0]["slots"]["effect"]
+assert not _effect_out["verified"] and _effect_out["reason"] == "malformed_slot", _effect_out
+_dose_out = pack["papers"][0]["slots"]["dose"]
+assert _dose_out["verified"], _dose_out
+
+
+# ══════════════════════════════════════════════════════════════════
+# R1: 둘째 문장이 **숫자로 시작하면** 문장 경계로 잡히지 않았다.
+# SENTENCE_BREAK가 [.!?]\s+[A-Z(] 라서 숫자 시작을 놓쳤고, 하필 그것이
+# S1이 막으려던 바로 그 재현 케이스의 어순만 뒤집은 형태다.
+# ══════════════════════════════════════════════════════════════════
+
+DIGIT_SENT_Q = ("Subjects received 500 mg magnesium daily. "
+                "17.36 min was the mean reduction in sleep onset latency.")
+DIGIT_SENT_ABS = normalize(DIGIT_SENT_Q)
+
+assert has_multiple_sentences(DIGIT_SENT_Q), DIGIT_SENT_Q
+# 초록은 min인데 카드에는 mg으로 찍히던 경로
+r = verify_slot("effect", slot("17.36", DIGIT_SENT_Q, unit="mg"), DIGIT_SENT_ABS)
+assert not r["verified"] and r["reason"] == "quote_multiple_sentences", r
+assert r["value"] is None, r
+
+# 오탐 방지: 약어 뒤에 숫자가 와도 문장 경계가 아니다
+for abbr_digit in [
+    "Results reported by Smith et al. 2020 showed a 23.4% reduction overall.",
+    "See protocol No. 3 for the randomization details used in this trial.",
+    "The outcome is summarized in Fig. 2 of the supplementary material.",
+    "Treatment vs. 500 mg placebo showed a mean difference of -0.34 mmol/L.",
+]:
+    assert not has_multiple_sentences(abbr_digit), abbr_digit
+
+
+# ══════════════════════════════════════════════════════════════════
+# R2 (C1b): quote가 초록 문장의 **앞을 잘라낸 조각**이면 폐기한다.
+# 부분문자열 검사만으로는 부정어를 떼어낸 인용이 그대로 통과한다 —
+# 초록이 부정한 결론이 긍정으로 뒤집혀 팩에 실린다.
+# ══════════════════════════════════════════════════════════════════
+
+NEG_ABS_RAW = ("Magnesium did not improve subjective sleep quality in this cohort. "
+               "Supplementation did not reduce sleep onset latency by 17.36 min.")
+NEG_ABS = normalize(NEG_ABS_RAW)
+
+# conclusion: "did not improve" → "improve" 로 뒤집히던 경로
+r = verify_quote_slot("conclusion",
+                      {"quote": "improve subjective sleep quality in this cohort."},
+                      NEG_ABS)
+assert not r["verified"] and r["reason"] == "quote_not_at_sentence_start", r
+assert r["quote"] is None, r
+
+# effect도 같은 방식으로 뒤집힌다 — 그래서 전 슬롯에 건다
+r = verify_slot("effect",
+                slot("17.36", "reduce sleep onset latency by 17.36 min.", unit="min"),
+                NEG_ABS)
+assert not r["verified"] and r["reason"] == "quote_not_at_sentence_start", r
+assert r["value"] is None and r["rejected_value"] == "17.36", r
+
+# 문장 전체를 그대로 인용하면 통과한다 (부정문이어도 폐기 사유가 아니다 —
+# direction 판정은 miner 몫이고, 게이트는 실재 여부만 본다)
+r = verify_quote_slot("conclusion",
+                      {"quote": "Magnesium did not improve subjective sleep quality in this cohort."},
+                      NEG_ABS)
+assert r["verified"], r
+
+# 구조화 초록: efetch가 "CONCLUSIONS: text"로 이어 붙이므로 라벨을 뺀 quote는
+# ": " 뒤에서 시작한다. 이걸 경계로 안 보면 정상 인용이 전부 폐기된다.
+LABELED_ABS = normalize(
+    "METHODS: Subjects received 500 mg magnesium daily for 8 weeks. "
+    "CONCLUSIONS: Supplementation appears to improve insomnia severity scores."
+)
+r = verify_quote_slot("conclusion",
+                      {"quote": "Supplementation appears to improve insomnia severity scores."},
+                      LABELED_ABS)
+assert r["verified"], r
+r = verify_slot("dose", slot("500", "Subjects received 500 mg magnesium daily for 8 weeks.",
+                             unit="mg"), LABELED_ABS)
+assert r["verified"], r
+
+
+# ══════════════════════════════════════════════════════════════════
+# R3: 종료 코드 계약(0/2). 입력 배열의 원소가 객체가 아니면 rec.get()이
+# AttributeError로 죽어 계약에 없는 1이 나갔다.
+# ══════════════════════════════════════════════════════════════════
+
+# 제외 1편이 수록 2편보다 적어야 block으로 넘어가지 않는다 — 여기서 보려는
+# 것은 "미포착 예외로 죽지 않는가"이므로 제외 경계와 겹치지 않게 둔다.
+code, pack, err = run_main(
+    ["문자열 레코드",
+     {"pmid": "57001", "slots": {"dose": {"value": "500 mg", "quote": DOSE_ABS, "unit": "mg"}}},
+     {"pmid": "57002", "slots": {"dose": {"value": "500 mg", "quote": DOSE_ABS, "unit": "mg"}}}],
+    fake_fetch=lambda pmid, api_key=None, retries=2: make_record(DOSE_ABS),
+)
+assert code == 0, (code, pack, err)
+assert pack["verification"]["malformed_records"] == 1, pack["verification"]
+assert len(pack["papers"]) == 2, pack
+assert any(x["reason"] == "malformed_record" for x in pack["verification"]["excluded"]), pack
+
+# 출력 경로가 쓸 수 없는 곳이어도 1이 아니라 2다
+_old_argv, _old_fetch = sys.argv, verify_evidence.fetch_record
+with tempfile.TemporaryDirectory() as _td:
+    _in = os.path.join(_td, "raw.json")
+    with open(_in, "w", encoding="utf-8") as f:
+        json.dump([{"pmid": "57002",
+                    "slots": {"dose": {"value": "500 mg", "quote": DOSE_ABS, "unit": "mg"}}}], f)
+    sys.argv = ["verify_evidence.py", "--input", _in,
+                "--output", os.path.join(_td, "없는디렉토리", "pack.json")]
+    verify_evidence.fetch_record = lambda pmid, api_key=None, retries=2: make_record(DOSE_ABS)
+    try:
+        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+            _code = verify_evidence.main()
+    finally:
+        sys.argv, verify_evidence.fetch_record = _old_argv, _old_fetch
+assert _code == 2, _code
+
+
+# ══════════════════════════════════════════════════════════════════
+# R4: verdict — 종료 코드 0이 "폐기 없음"과 "절반 폐기"를 같은 값으로
+# 덮던 것을 호출자가 필드로 가를 수 있는가.
+# ══════════════════════════════════════════════════════════════════
+
+# pass: 폐기·제외·무결성 이슈가 하나도 없고 comparator까지 확정된 경우
+code, pack, err = run_main(
+    [{"pmid": "58001", "slots": effect_slots("-0.34", EFFECT_ABS, unit="mmol/L",
+                                             comparator="placebo")}],
+    fake_fetch=lambda pmid, api_key=None, retries=2: make_record(EFFECT_ABS),
+)
+assert code == 0, (code, pack, err)
+assert pack["verdict"] == "pass", (pack["verdict"], pack["verdict_reasons"])
+assert pack["verdict_reasons"] == [], pack["verdict_reasons"]
+
+# review: 슬롯이 폐기됐지만 팩 자체는 성립한다 → 종료 코드는 그대로 0
+code, pack, err = run_main(
+    [{"pmid": "58002", "slots": {"effect": {"value": "99.9", "quote": EFFECT_ABS,
+                                            "unit": "mmol/L", "comparator": "placebo"},
+                                 "dose": {"value": "500 mg", "quote": EFFECT_ABS}}}],
+    fake_fetch=lambda pmid, api_key=None, retries=2: make_record(EFFECT_ABS),
+)
+assert code == 0, (code, pack, err)
+assert pack["verdict"] == "review", (pack["verdict"], pack["verdict_reasons"])
+assert any("폐기" in r for r in pack["verdict_reasons"]), pack["verdict_reasons"]
+# 폐기값은 감사용으로 남고, 경고 문구도 그렇게 말한다 ("제거했다"가 아니다)
+_eff = pack["papers"][0]["slots"]["effect"]
+assert _eff["value"] is None and _eff["rejected_value"] == "99.9", _eff
+assert any("rejected_value" in w for w in pack["warnings"]), pack["warnings"]
+
+# block: 종료 코드 2와 같은 조건 — 제외가 수록 이상
+code, pack, err = run_main(
+    [{"pmid": "11111", "slots": effect_slots("-0.34", EFFECT_ABS, unit="mmol/L")},
+     {"pmid": "88888", "slots": {}}],
+    fake_fetch=fetch_boundary_2,
+)
+assert code == 2, (code, pack, err)
+assert pack["verdict"] == "block", (pack["verdict"], pack["verdict_reasons"])
 
 print("ok")

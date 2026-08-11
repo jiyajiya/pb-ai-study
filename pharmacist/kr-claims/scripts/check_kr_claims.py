@@ -24,7 +24,7 @@
 
 사용:
   python3 check_kr_claims.py --pack evidence-pack.json \
-      --claims data/kr_claims.json --ingredient 오메가3
+      --claims data/kr_claims.json --ingredient "EPA 및 DHA 함유 유지"
 
 종료 코드:
   0  등재 확인 + 용량 비교 성공 + **상한 초과 없음** (문구 대조는 여전히 사람 몫이다)
@@ -40,6 +40,7 @@ import json
 import re
 import sys
 import time
+import unicodedata
 
 # μg 기준 환산. 고시와 논문의 단위가 다른 건 정상이므로 여기서만 변환한다.
 # (miner의 단위 변환 금지는 "원문에서 뽑을 때" 규칙이다. 이미 검증된 두
@@ -84,22 +85,71 @@ def to_microgram(value: float, unit: str | None) -> float | None:
     return value * factor if factor else None
 
 
-def find_ingredient(claims: dict, query: str) -> list[dict]:
-    """원료명으로 조회. 부분 일치를 허용하되 어느 이름에 걸렸는지 남긴다."""
-    q = query.strip().lower().replace(" ", "")
-    hits = []
+def find_ingredient(claims: dict, query: str) -> tuple[list[dict], str]:
+    """원료명으로 조회한다.
+
+    정확일치 > 접두일치 > 부분일치 순으로 랭크해, 가장 높은 등급의 결과만
+    돌려준다(S7). 부분일치만으로 매칭하면 "철"·"마늘" 같은 짧은 이름이
+    아무 질의에나 걸리고, "마그네"처럼 잘린 오타까지 등재로 잡힌다.
+    NFC로 정규화해 비교한다 — NFD로 분리된 질의는 육안상 같아도 바이트가
+    달라 매칭에 실패한다(S3).
+    """
+    q = unicodedata.normalize("NFC", query).strip().lower().replace(" ", "")
+    exact, prefix, partial = [], [], []
     for e in claims.get("ingredients", []):
-        name = (e.get("ingredient_ko") or "").lower().replace(" ", "")
-        if q and (q in name or name in q):
-            hits.append(e)
-    return hits
+        name = unicodedata.normalize("NFC", e.get("ingredient_ko") or "").lower().replace(" ", "")
+        if not q or not name:
+            continue
+        if name == q:
+            exact.append(e)
+        elif name.startswith(q) or q.startswith(name):
+            prefix.append(e)
+        elif q in name or name in q:
+            partial.append(e)
+    if exact:
+        return exact, "exact"
+    if prefix:
+        return prefix, "prefix"
+    if partial:
+        return partial, "partial"
+    return [], "none"
+
+
+UNIT_MODIFIERS = ("α-TE", "RAE", "DFE", "NE", "TE")
+
+
+def split_modifier(unit: str | None) -> tuple[str | None, str | None]:
+    """단위 끝에 붙은 환산 기준 수식어(RAE/DFE/α-TE/NE/TE)를 분리한다.
+
+    RAE·DFE는 단위가 아니라 환산 기준이다 — "μg RAE"와 "μg"은 질량은 같아
+    보여도 재는 대상이 다르다(엽산 DFE는 합성 엽산 대비 1.7배). norm_unit이
+    뒤 토큰을 버리면 이 차이가 조용히 사라진다(S4).
+    """
+    if not unit:
+        return None, None
+    parts = unit.strip().split()
+    if len(parts) >= 2 and parts[-1] in UNIT_MODIFIERS:
+        return " ".join(parts[:-1]), parts[-1]
+    return unit.strip(), None
+
+
+def is_rate_unit(unit: str | None) -> bool:
+    """'mg/kg'(체중당) 같은 비율 표기는 절대 섭취량이 아니다(S10).
+
+    norm_unit은 '/' 뒤를 버려 mg/kg도 mg으로 읽는다. 그래서 무게 환산 이전에
+    따로 걸러낸다. '/day', '/일'은 절대량 표기라 제외한다.
+    """
+    if not unit or "/" not in unit:
+        return False
+    tail = unit.split("/", 1)[1].strip().lower()
+    return not tail.startswith(("day", "일"))
 
 
 def compare_dose(dose_value: str | None, dose_unit: str | None,
                  intake: dict | None) -> dict:
     """논문 용량과 고시 섭취량을 비교한다. 애매하면 물러선다."""
     out = {"status": "incomparable", "reason": None, "basis": None,
-           "range_raw": None}
+           "range_raw": None, "basis_unconfirmed": False}
     if not intake:
         out["reason"] = "고시에 일일섭취량이 없다"
         return out
@@ -119,6 +169,21 @@ def compare_dose(dose_value: str | None, dose_unit: str | None,
         out["reason"] = f"논문 용량을 수치로 열지 못했다: {dose_value!r}"
         return out
 
+    if is_rate_unit(dose_unit) or is_rate_unit(intake.get("unit")):
+        out["reason"] = (f"체중당(비율) 단위는 절대 섭취량과 비교할 수 없다 "
+                          f"(논문 {dose_unit!r} vs 고시 {intake.get('unit')!r})")
+        return out
+
+    _, intake_mod = split_modifier(intake.get("unit"))
+    if intake_mod:
+        # 수식어를 basis로 승격해 "기준 성분 확인" 경고가 뜨게 한다(S4).
+        out["basis"] = f"{out['basis']} ({intake_mod})" if out["basis"] else intake_mod
+        _, dose_mod = split_modifier(dose_unit)
+        if dose_mod != intake_mod:
+            out["reason"] = (f"고시 섭취량이 환산 기준 '{intake_mod}'다. 논문 용량이 같은 "
+                              f"기준인지 확인 없이는 비교할 수 없다 (논문 단위 {dose_unit!r})")
+            return out
+
     lo_u, hi_u = intake.get("min"), intake.get("max")
     d_norm, lo_norm, hi_norm = (to_microgram(val, dose_unit),
                                 to_microgram(lo_u, intake.get("unit")) if lo_u is not None else None,
@@ -131,6 +196,16 @@ def compare_dose(dose_value: str | None, dose_unit: str | None,
         else:
             out["reason"] = f"단위를 환산할 수 없다 (논문 {dose_unit!r} vs 고시 {intake.get('unit')!r})"
             return out
+
+    # 기준 성분(basis)이 붙은 섭취량은 "무엇의 양인가"가 논문과 다를 수 있다.
+    # "EPA와 DHA의 합으로서 0.5~2 g"에 EPA 단독 500 mg을 대면 숫자는 범위
+    # 안이지만 애초에 같은 것을 재고 있지 않다. RAE/DFE 수식어는 위에서
+    # incomparable로 막으면서 이쪽만 within으로 통과시키는 것은 비대칭이었다.
+    #
+    # 그렇다고 basis만으로 incomparable로 돌리지는 않는다 — basis는 흔해서
+    # 그러면 거의 모든 비교가 사라지고 도구가 쓸모없어진다. 비교는 수행하되
+    # "확인되지 않았다"는 사실을 status와 나란히 실어 verdict가 집어 든다.
+    out["basis_unconfirmed"] = bool(out["basis"])
 
     if hi_norm is not None and d_norm > hi_norm:
         out["status"] = "above"
@@ -151,8 +226,60 @@ def main() -> int:
     ap.add_argument("--output", help="리포트 JSON 경로 (선택)")
     args = ap.parse_args()
 
-    pack = json.load(open(args.pack, encoding="utf-8")) if args.pack else {}
-    claims = json.load(open(args.claims, encoding="utf-8"))
+    try:
+        return run(args)
+    except Exception as e:  # noqa: BLE001 — 계약을 지키는 것이 목적이다
+        # 미포착 예외로 죽으면 종료 코드 1이 나가는데 계약은 0/2뿐이고,
+        # 더 나쁜 것은 --output이 갱신되지 않아 **직전 실행의 통과 리포트가
+        # 디스크에 그대로 남는다**는 점이다. 다음 단계가 그걸 이번 결과로
+        # 읽으면 상한 초과 용량이 검증된 것처럼 콘텐츠에 실린다.
+        # 오류 경로에서도 반드시 리포트를 덮어쓴다.
+        _emit(_error_report(args, f"{type(e).__name__}: {e}"), args.output)
+        print(f"실행 중 오류: {type(e).__name__}: {e}", file=sys.stderr)
+        print("리포트를 오류 상태로 덮어썼다. 직전 결과를 이번 결과로 읽지 말 것.",
+              file=sys.stderr)
+        return 2
+
+
+def _error_report(args, detail: str) -> dict:
+    return {
+        "schema": "kr-claims-report/0.2",
+        "verdict": "block",
+        "verdict_reasons": [f"스크립트가 정상 종료하지 못했다 ({detail})"],
+        "ingredient_query": args.ingredient,
+        "found": None,
+        "matches": [], "dose_checks": [],
+        "warnings": ["이 리포트는 실행 실패로 생성된 오류 리포트다. "
+                     "대조 결과가 아니므로 어떤 판단의 근거로도 쓰지 말 것."],
+        "generated_at": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+    }
+
+
+def run(args) -> int:
+    try:
+        pack = json.load(open(args.pack, encoding="utf-8")) if args.pack else {}
+    except (OSError, json.JSONDecodeError) as e:
+        _emit(_error_report(args, f"팩을 읽을 수 없다: {e}"), args.output)
+        print(f"팩을 읽을 수 없다: {args.pack} ({e})", file=sys.stderr)
+        return 2
+    if not isinstance(pack, dict):
+        _emit(_error_report(args, f"팩이 객체가 아니다 (type={type(pack).__name__})"),
+              args.output)
+        print(f"팩이 객체가 아니다 (type={type(pack).__name__}).", file=sys.stderr)
+        return 2
+    try:
+        claims = json.load(open(args.claims, encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as e:
+        _emit(_error_report(args, f"claims 파일을 읽을 수 없다: {e}"), args.output)
+        print(f"claims 파일을 읽을 수 없다: {e}", file=sys.stderr)
+        return 2
+
+    # S3: 데이터 로드 시점에도 NFC로 정규화한다. find_ingredient가 질의를
+    # 정규화해도, 저장된 이름 자체가 NFD로 얼어붙어 있으면 다른 호출자가
+    # 그대로 오탐할 수 있다.
+    for _e in claims.get("ingredients", []):
+        if _e.get("ingredient_ko"):
+            _e["ingredient_ko"] = unicodedata.normalize("NFC", _e["ingredient_ko"])
 
     query = args.ingredient
     if not query:
@@ -162,7 +289,7 @@ def main() -> int:
         print("원료명을 정할 수 없다. --ingredient로 지정할 것.", file=sys.stderr)
         return 2
 
-    hits = find_ingredient(claims, query)
+    hits, match_kind = find_ingredient(claims, query)
     src = claims.get("source", {})
     warnings = [
         f"고시 기준: {src.get('notice')} (시행 {src.get('effective_date')}), "
@@ -170,6 +297,12 @@ def main() -> int:
         "이 리포트는 인정 문구를 꺼내 놓을 뿐 카피 표현의 적법성을 판정하지 않는다. "
         "표방 문구는 고시 문구와 사람이 직접 대조할 것.",
     ]
+
+    # S10: source가 통째로 없으면 어느 고시 기준인지 알 길이 없다.
+    if not claims.get("source"):
+        warnings.insert(0,
+            "이 claims 파일에 출처(source) 정보가 없다 — 어느 고시를 기준으로 "
+            "한 데이터인지 알 수 없다. 결과를 신뢰하지 말고 재빌드된 파일로 교체할 것.")
 
     # 플러그인에 동봉된 데이터는 배포 시점에 얼어붙는다. 고시는 개정되므로
     # 오래된 스냅샷을 현행으로 읽는 것이 이 도구의 조용한 실패 경로다.
@@ -180,11 +313,35 @@ def main() -> int:
             "그 사이 개정됐을 수 있으므로 최신 고시를 확인하고 재빌드할 것 — "
             "특히 일일섭취량은 개정에서 자주 바뀐다.")
 
+    # S1b: 동명 원료면 부분일치가 어느 쪽인지 못 가른다. 코드로 구분하라고 남긴다.
+    dup_map = claims.get("coverage", {}).get("duplicate_ingredient_names") or {}
+    dup_hit_names = sorted({e.get("ingredient_ko") for e in hits
+                            if e.get("ingredient_ko") in dup_map})
+    for name in dup_hit_names:
+        codes = dup_map[name]
+        warnings.append(f"'{name}' 이름으로 고시에 {len(codes)}개 코드가 등재돼 있다 "
+                        f"({', '.join(codes)}) — 동명이인일 수 있으니 코드로 구분해 확인할 것.")
+
+    # S7: 정확일치가 아니면 질의어와 등재명이 다를 수 있다.
+    # 접두일치도 마찬가지다 — "홍삼농축액"으로 물으면 "홍삼"이 접두로 걸려
+    # 다른 원료의 인정 문구·섭취량이 조용히 돌아온다. 부분일치만 경고하고
+    # 접두일치를 통과시키면, 실제로 더 흔한 쪽이 무경고로 새 나간다.
+    if hits and match_kind in ("prefix", "partial"):
+        kind_ko = {"prefix": "접두일치", "partial": "부분일치"}[match_kind]
+        found_names = ", ".join(sorted({e.get("ingredient_ko") or "" for e in hits}))
+        warnings.append(f"질의어 '{query}'가 등재명과 정확히 일치하지 않는다({kind_ko}). "
+                        f"다른 원료의 기준을 보고 있을 수 있으니 등재명을 직접 "
+                        f"확인할 것: {found_names}")
+
     if not hits:
         warnings.insert(0,
             f"'{query}'을(를) 고시에서 찾지 못했다. **인정되지 않았다는 뜻이 아니다** — "
             "이 고시는 고시형 원료만 담으므로 개별인정형 목록을 따로 확인해야 한다.")
-        report = {"schema": "kr-claims-report/0.1", "ingredient_query": query,
+        report = {"schema": "kr-claims-report/0.2",
+                  "verdict": "block",
+                  "verdict_reasons": [f"'{query}'이(가) 고시에 없어 대조하지 못했다 "
+                                      "— 미인정이 아니라 개별인정형 확인이 남았다는 뜻이다"],
+                  "ingredient_query": query,
                   "found": False, "matches": [], "dose_checks": [],
                   "warnings": warnings, "generated_at": time.strftime("%Y-%m-%dT%H:%M:%S%z")}
         _emit(report, args.output)
@@ -215,6 +372,7 @@ def main() -> int:
         matches.append({"code": e.get("code"), "ingredient_ko": e.get("ingredient_ko"),
                         "category": e.get("category"),
                         "recognition_type": e.get("recognition_type"),
+                        "functional_claims_raw": e.get("functional_claims_raw"),
                         "rows": rows, "cautions": e.get("cautions", [])})
 
     above = [c for c in checks if c["status"] == "above"]
@@ -235,8 +393,62 @@ def main() -> int:
     if any(e.get("cautions") for e in hits):
         warnings.append("고시의 섭취 시 주의사항은 안전성 슬라이드의 1차 근거다. "
                         "초록에 부작용 언급이 없다는 것과 혼동하지 말 것.")
+    # S2: functional_claim이 null인 행을 조용히 넘기면, 그걸 표로 옮기는
+    # 에이전트가 빈 칸을 보고 문구를 지어낼 확률이 높다 — 이 도구가 막으려는
+    # 바로 그 실패다.
+    if any(r.get("functional_claim") is None for m in matches for r in m.get("rows", [])):
+        warnings.append("이 원료는 고시 인정 문구를 추출하지 못한 행이 있다 — "
+                        "원문을 직접 확인해야 한다. 비어 있다고 문구를 생성하지 말 것.")
+    # S10: raw에 시행 전 개정 주석("고시 제…호", "시행일(…)")이 섞여 있으면
+    # parsed:false라 비교는 막혀도, raw를 그대로 보여주는 리포트는 시행 전
+    # 개정치를 현행처럼 읽힐 수 있다.
+    if any("시행일" in (r.get("daily_intake_raw") or "") for m in matches for r in m.get("rows", [])):
+        warnings.append("고시 원문에 개정 예정(시행 전) 문구가 섞여 있는 행이 있다. "
+                        "raw 텍스트의 날짜를 확인해 이미 시행된 내용인지 사람이 판단할 것.")
 
-    report = {"schema": "kr-claims-report/0.1", "ingredient_query": query,
+    # ── verdict — 산문 경고 대신 읽을 필드 ──
+    #
+    # 조회 모드·접두일치·basis 미확인·below가 전부 exit 0으로 수렴했다.
+    # 그 셋을 가르는 정보는 warnings 배열의 문장으로만 있었고, 그걸 읽는
+    # 쪽은 LLM이다. 문장은 흘린다. 분기에 쓸 값을 따로 준다.
+    #
+    # **verdict는 "발행해도 되는가"가 아니다.** 카피 표현이 인정 범위 안인지는
+    # 의미 판정이라 이 스크립트가 하지 않는다 (불변 원칙 2). pass는 "숫자가
+    # 고시 범위 안이고 이름이 정확히 맞았다"까지다.
+    below = [c for c in checks if c["status"] == "below"]
+    verdict_reasons = []
+    if above:
+        verdict_reasons.append(f"논문 용량이 인정 상한을 넘는 조합이 {len(above)}건 있다")
+    if args.pack and incomparable:
+        verdict_reasons.append(f"비교 불가 {len(incomparable)}건 — '문제없음'이 아니다")
+    if args.pack and not doses:
+        verdict_reasons.append("팩에 검증된 용량 슬롯이 없어 비교하지 못했다")
+    # 여기까지가 기존 종료 코드 2의 조건이다. verdict가 종료 코드의 상위
+    # 집합이 되지 않도록 경계를 여기서 끊는다 — 아래 사유들은 예전에도
+    # 0이었고 지금도 0이다. 바뀐 것은 그 0이 무엇을 뜻하는지 읽을 수 있게
+    # 됐다는 점뿐이다.
+    blocked = bool(verdict_reasons)
+
+    if not args.pack:
+        verdict_reasons.append("조회 모드다 — 용량 대조를 하지 않았다")
+    if below:
+        verdict_reasons.append(f"인정 최소치 미만 {len(below)}건 "
+                               "(다른 기능성 기준이면 정상이다)")
+    if match_kind in ("prefix", "partial"):
+        verdict_reasons.append(f"질의어가 등재명과 정확히 일치하지 않는다({match_kind})")
+    if any(c.get("basis_unconfirmed") for c in checks):
+        verdict_reasons.append("기준 성분(basis)이 논문 용량과 같은지 확인되지 않았다")
+    if any(r.get("functional_claim") is None for m in matches for r in m.get("rows", [])):
+        verdict_reasons.append("인정 문구를 추출하지 못한 행이 있다")
+    if dup_hit_names:
+        verdict_reasons.append("같은 이름으로 여러 코드가 등재돼 있다")
+
+    verdict = "block" if blocked else ("review" if verdict_reasons else "pass")
+
+    report = {"schema": "kr-claims-report/0.2",
+              "verdict": verdict,
+              "verdict_reasons": verdict_reasons,
+              "ingredient_query": query,
               "found": True, "matches": matches, "dose_checks": checks,
               "warnings": warnings, "generated_at": time.strftime("%Y-%m-%dT%H:%M:%S%z")}
     _emit(report, args.output)
@@ -246,7 +458,6 @@ def main() -> int:
     print(f"'{query}' → 고시 등재 {len(hits)}건 / 인정 문구 행 "
           f"{sum(len(m['rows']) for m in matches)}개 / 용량 비교 {len(checks)}건",
           file=sys.stderr)
-    below = [c for c in checks if c["status"] == "below"]
     if above:
         print(f"  상한 초과 {len(above)}건", file=sys.stderr)
     if incomparable:
@@ -254,9 +465,15 @@ def main() -> int:
     if below:
         print(f"  인정 최소치 미만 {len(below)}건 (다른 기능성 기준이면 정상)",
               file=sys.stderr)
-    if not args.pack:
-        return 0  # 조회 모드는 대조를 하지 않았으므로 판정할 것이 없다
-    return 2 if (above or incomparable or not doses) else 0
+    print(f"verdict={verdict}"
+          + (f" — {'; '.join(verdict_reasons)}" if verdict_reasons else ""),
+          file=sys.stderr)
+
+    # 종료 코드는 verdict에서 파생시킨다. 같은 조건을 두 곳에 적어 두면
+    # 한쪽만 고쳐질 때 조용히 갈라진다. blocked의 정의가 곧 기존 계약이라
+    # 종료 코드 자체는 이 변경으로 달라지지 않는다 — 조회 모드는 0,
+    # 상한 초과·비교 불가·용량 슬롯 없음은 2다.
+    return 2 if verdict == "block" else 0
 
 
 def _emit(report: dict, path: str | None) -> None:

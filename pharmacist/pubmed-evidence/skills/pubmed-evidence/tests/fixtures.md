@@ -41,6 +41,21 @@
 - [ ] **`unit`이 초록에 없는 값이면 슬롯이 폐기된다.** 초록이 `17.36 min`인데
       `value: "17.36"` + `unit: "hours"`로 오면 카드에 "17.36시간"이 찍힌다.
       value만 검사하면 이게 통과한다 — 스키마가 둘을 분리해 뒀기 때문이다.
+- [ ] **quote가 두 문장 이상이면 폐기된다** (`quote_multiple_sentences`).
+      `"Subjects received 500 mg magnesium daily. Sleep onset latency decreased
+      by 17.36 min."` 같은 두 문장짜리 quote 하나면, unit 검사가 quote 전체에서
+      부분문자열로 도는 한 다른 문장의 단위가 슬롯을 통과시킨다. `e.g.`·`vs.`·
+      `et al.` 같은 약어 뒤 마침표까지 문장 경계로 오인해 정상 단일 문장을
+      죽이면 안 된다 — 오탐 없이 통과해야 한다
+      (`python3 scripts/test_verify_evidence.py`로 상시 확인).
+- [ ] **`%` 절단이 막힌다.** `"Risk was reduced by 23% versus placebo."`에서
+      `value: "23"`(unit 없음)이면 폐기되고, `value: "23%"`면 통과한다.
+      %를 떼어내면 "23% 감소"라는 주장 자체가 사라진다.
+- [ ] **비정상 pmid는 조회 없이 제외된다** (`invalid_pmid`). pmid가
+      `"11111,22222"`처럼 숫자만이 아니면 `re.fullmatch(r"[0-9]+", pmid)`에서
+      걸려 `fetch_record`가 아예 호출되지 않는다 — efetch의 `id=`는 쉼표
+      목록을 받으므로, 검사 없이 조회하면 두 논문 초록이 한 응답에 합쳐져서
+      B논문의 숫자가 A논문 PMID로 검증을 통과할 수 있다.
 - [ ] 모든 케이스에서 `verified: false` 슬롯의 `value`가 `null`이다.
       값이 남아 있으면 스크립트 게이트가 우회된 것.
 
@@ -59,6 +74,11 @@
       `verification.retracted_pmids`와 **경고 첫 줄**에 오른다
       (회귀 확인용 PMID: **9500320** — 철회 공지 2건 + 우려 표명이 붙어 있다)
 - [ ] 입력 레코드가 0건이면 종료 코드 **2**를 내고 팩 파일을 만들지 않는다
+- [ ] 입력 파일이 없거나 JSON이 깨졌거나, `slots`가 dict가 아니거나, `meta.json`이
+      객체가 아니면 미포착 예외로 죽지 않고 stderr 메시지와 함께 종료 코드
+      **2**를 낸다. 이 스크립트의 종료 코드는 **0과 2뿐**이다 — 1이 나오면
+      입력 스키마 가드가 어딘가 빠진 것
+      (`python3 scripts/test_verify_evidence.py`가 7가지 malformed 입력을 돈다)
 - [ ] scout이 4차(guideline) 검색을 수행하고 `guideline_hit`을 채운다.
       이게 없으면 R1이 발화하지 않아 **F1은 영원히 T2로 나온다**
 

@@ -268,7 +268,7 @@
 
   <header class="hero">
     <div class="kicker">Pharmacist Study · pubmed-evidence plugin</div>
-    <h1>AI에게 일을 <span class="hl">쪼개서</span> 시킨다<br>— 서브에이전트 실습</h1>
+    <h1><span class="hl">서브에이전트</span> 실습</h1>
     <p>PubMed 근거로 카드뉴스 자료를 만드는 <code class="inl">pubmed-evidence</code> 플러그인을 뜯어보며,
     왜 하나의 AI가 아니라 <b>여러 개로 나누고, 마지막엔 스크립트가 검사하는지</b>를 이해합니다.</p>
     <div class="flow">
@@ -284,7 +284,7 @@
   <section class="session" id="s1">
     <div class="s-head"><span class="step">01</span><span class="sec">오프닝 · 우리가 푸는 문제</span></div>
     <h2 class="s-title">진짜 문제는 시간이 아니라 <span class="hl">그럴듯한 숫자</span>다</h2>
-    <p class="s-intro">카드뉴스 한 장 만들려면 논문 찾고, 숫자 뽑고, 다시 확인하는 데 30분. 그런데 그보다 무서운 건 따로 있습니다.</p>
+    <p class="s-intro">카드뉴스 한 편에 논문 검색·숫자 추출·출처 확인으로 30분이 듭니다. 더 큰 문제는 따로 있습니다.</p>
 
     <div class="vs">
       <div class="col a">
@@ -300,13 +300,13 @@
     <div class="warn"><b>약사에게 이건 치명적입니다.</b> 오탈자는 수정하면 되지만, 없는 숫자를 근거처럼 발행하면 그건 잘못된 복약 정보가 됩니다. 그래서 이 도구의 목표는 "빠르게"가 아니라 <b>"틀린 숫자는 절대 안 나오게"</b>입니다.</div>
 
     <div class="case">
-      <div class="case-label"><span class="dot"></span>왜 "지어내지 마"라고 시켜도 안 되는가</div>
-      <p>가장 자연스러운 해결책은 프롬프트에 <b>"근거 없는 숫자는 쓰지 마"</b>라고 적는 것입니다. 실제로 대부분은 잘 지켜집니다. 문제는 <b>안 지켜진 경우가 지켜진 경우와 똑같이 생겼다는 것</b>입니다.</p>
+      <div class="case-label"><span class="dot"></span>왜 "지어내지 마"라는 지시로는 부족한가</div>
+      <p>프롬프트에 <b>"근거 없는 숫자는 쓰지 마"</b>라고 적으면 대부분은 지켜집니다. 문제는 <b>안 지켜진 출력이 지켜진 출력과 똑같이 생겼다는 것</b>입니다. 출력만 보고는 구분할 수 없습니다.</p>
       <div class="def">
-        <div class="one">그리고 검사를 다시 AI에게 맡기면 — 검사관이 범인과 같은 사람입니다</div>
-        <div class="desc">같은 모델에게 "이 숫자 맞아?"라고 물으면 <b>자기가 만들어낸 값도 "그럴듯하다"고 통과시킵니다.</b> 같은 실패 습관을 공유하는 둘을 붙여놓는 건 교차검증이 아니라 <b>공모</b>입니다.</div>
+        <div class="one">AI에게 자기 답을 검사시키면 그냥 통과합니다</div>
+        <div class="desc">숫자를 지어낸 AI에게 "이 숫자 논문에 있어?"라고 물으면 <b>"있다"고 답합니다.</b> 틀린 줄 알았으면 처음부터 그렇게 쓰지 않았을 테니까요. 확인하려면 <b>논문 원문과 글자 그대로 대조</b>하는 수밖에 없습니다.</div>
       </div>
-      <p>그래서 이 도구는 판정을 <b>AI가 아닌 곳</b>에 맡깁니다. 오늘 볼 것은 그 경계를 어떻게 그었는가입니다.</p>
+      <p>그래서 이 도구는 최종 판정을 <b>AI가 아닌 파이썬 스크립트</b>에 맡깁니다. 오늘 볼 것은 그 경계를 어디에 그었는가입니다.</p>
     </div>
 
     <div class="key">
@@ -316,11 +316,11 @@
 
     <div class="note">
       <div class="lab">발표자 노트</div>
-      <p class="say">여러분, 챗GPT한테 "마그네슘이 수면에 좋다는 논문 근거 좀 줘" 해보신 적 있죠? 논문 제목도 나오고 숫자도 나와요. 근데 그 PMID로 들어가 보면 그런 숫자가 없는 경우가 있습니다.</p>
+      <p class="say">챗GPT에 "마그네슘이 수면에 좋다는 논문 근거 좀 줘"라고 하면 논문 제목과 숫자가 함께 나옵니다. 그 PMID를 열어보면 그 숫자가 없는 경우가 있습니다.</p>
       <ul>
-        <li>여기서 청중 반응 확인. 경험 있는 분 손 들어보게 하면 몰입도가 확 올라감.</li>
-        <li>"AI가 거짓말을 한다"가 아니라 <b>"AI는 그럴듯한 다음 단어를 고르는 기계라 빈칸을 자연스럽게 메운다"</b>로 설명할 것.</li>
-        <li>"검사관이 범인과 같은 사람" 비유는 오늘 세션 전체의 뼈대입니다. 여기서 한 번 심어두면 10번 섹션에서 회수됩니다.</li>
+        <li>경험 있는 분 손 들어보게 하면 몰입도가 올라감.</li>
+        <li>"AI가 거짓말을 한다"가 아니라 <b>"AI는 그럴듯한 다음 단어를 고르므로 빈칸을 자연스럽게 메운다"</b>로 설명할 것.</li>
+        <li><b>"같은 모델은 자기 출력을 검증하지 못한다"</b>가 10번 섹션(스크립트 게이트)의 전제입니다. 여기서 한 번 짚어둘 것.</li>
       </ul>
     </div>
   </section>
@@ -332,7 +332,7 @@
     <p class="s-intro">이 세 문장을 스스로 설명할 수 있으면 오늘은 성공입니다.</p>
 
     <div class="steps">
-      <div class="steprow"><span class="n">①</span><span class="t"><b>서브에이전트가 왜 필요한가</b>를 "역할 분담"이 아니라 <b>"메인 책상에 올라오는 원문을 검증 가능한 최소 단위로 줄이는 것"</b>으로 설명할 수 있다</span></div>
+      <div class="steprow"><span class="n">①</span><span class="t"><b>서브에이전트를 왜 쓰는가.</b> 일을 나눠 맡기려는 게 아닙니다. 숫자 하나에 <b>그 숫자가 들어 있는 문장 한 개</b>를 붙여서 넘기게 하려고 씁니다. 그래야 나중에 <b>스크립트가 그 문장을 논문 초록에서 찾아</b> 대조할 수 있습니다</span></div>
       <div class="steprow"><span class="n">②</span><span class="t">pubmed-evidence의 <b>P1 → P2 → P3 → P3-1 → P6 흐름</b>과 각 단계의 담당자를 그릴 수 있다</span></div>
       <div class="steprow"><span class="n">③</span><span class="t">"이 숫자는 왜 믿을 수 있나?"에 <b>C1~C5 검증 계약</b>으로 답하고, <b>그 게이트가 못 막는 것</b>까지 말할 수 있다</span></div>
     </div>
@@ -359,57 +359,58 @@
   <!-- ═══════════════════ 3 ═══════════════════ -->
   <section class="session" id="s3">
     <div class="s-head"><span class="step">03</span><span class="sec">개념 · 오늘의 핵심</span></div>
-    <h2 class="s-title">서브에이전트 — <span class="hl">일 나누기가 아니라 책상 나누기</span></h2>
-    <p class="s-intro">이 개념 하나만 제대로 잡으면 나머지는 전부 자연스럽게 읽힙니다. 오늘 배울 것 중 <b>유일하게 다른 업무에도 그대로 쓰이는</b> 개념입니다.</p>
+    <h2 class="s-title">서브에이전트 — <span class="hl">일이 아니라 컨텍스트를 나눈다</span></h2>
+    <p class="s-intro">이 개념 하나만 잡으면 나머지는 따라옵니다. 오늘 배울 것 중 <b>다른 업무에도 그대로 쓰이는</b> 개념입니다.</p>
 
     <div class="case">
       <div class="case-label"><span class="dot"></span>먼저, 컨텍스트(context)란</div>
       <div class="def">
-        <div class="one">AI가 지금 이 대화에서 "보고 있는 것 전부"를 올려둔 책상</div>
-        <div class="desc">지금까지 주고받은 말, 읽은 파일, 검색 결과가 전부 이 책상 위에 쌓입니다. AI는 <b>책상 위에 있는 것만</b> 보고 답합니다. 그리고 책상은 <b>크기가 정해져 있고, 한번 올라온 건 잘 안 내려갑니다.</b></div>
+        <div class="one">AI가 지금 <b>입력으로 받고 있는 것 전부</b></div>
+        <div class="desc">지금까지 주고받은 대화, 읽은 파일, 검색 결과가 전부 여기에 누적됩니다. AI는 <b>컨텍스트 안에 있는 것만</b> 보고 답합니다. 크기 상한이 있고, <b>쌓이기만 할 뿐 필요 없는 것만 골라서 뺄 수는 없습니다.</b></div>
       </div>
-      <div class="anal">비유 — <b>조제대 위</b>. 지금 조제 중인 처방전 옆에 아까 다른 환자 약봉지가 놓여 있으면? 그게 사고의 시작입니다.</div>
+      <div class="anal">그래서 <b>여러 논문의 숫자가 한 컨텍스트에 함께 있으면</b>, 어느 숫자가 어느 논문 것인지 구분할 근거가 출력에 남지 않습니다.</div>
     </div>
 
     <div class="case">
-      <div class="case-label star"><span class="dot"></span>서브에이전트 = 별도 책상을 가진 조수</div>
+      <div class="case-label star"><span class="dot"></span>서브에이전트 = 격리된 컨텍스트에서 도는 별도 AI 호출</div>
       <div class="def">
-        <div class="one">본인만의 새 책상에서 일하고, <b>정해진 형식의 결과 한 장만 건네주고 책상을 통째로 버리는</b> AI</div>
-        <div class="desc">조수가 논문 30편을 다 펼쳐놓고 읽어도, 나에게 오는 건 <b>"결론: T2, 볼 논문 8개"</b>라는 쪽지 한 장뿐. 30편의 초록은 조수 책상과 함께 사라집니다.</div>
+        <div class="one">빈 컨텍스트에서 시작해 <b>정해진 형식의 결과만 반환하고, 자기 컨텍스트는 폐기</b>된다</div>
+        <div class="desc">서브에이전트가 논문 수십 편을 읽어도 메인이 받는 것은 <code class="inl">{"tone":"T2","pmids":[…8개]}</code> 같은 JSON 하나입니다. 읽은 초록은 그 컨텍스트와 함께 사라집니다.</div>
       </div>
       <table class="ttable">
-        <tr><th>서브에이전트를 이루는 3가지</th><th>pubmed-evidence에서는</th><th>왜 중요한가</th></tr>
-        <tr><td><b>별도 책상</b> (격리된 컨텍스트)</td><td>scout 1개, miner 최대 8개가 각자 자기 책상</td><td>서로가 본 것이 섞이지 않는다</td></tr>
-        <tr><td><b>고정된 지시문</b> (역할·금지사항)</td><td><code>agents/*.md</code> 파일 한 장</td><td>매번 같은 규칙으로 일한다</td></tr>
-        <tr><td><b>정해진 반환 형식</b></td><td>JSON 한 덩어리만. 설명·서문 금지</td><td>메인 책상에 뭐가 올라올지를 내가 정한다</td></tr>
-        <tr class="hi"><td><b>내가 안 준 도구</b></td><td>둘 다 <code>tools: Bash</code>만 — 파일 쓰기 없음</td><td>부탁이 아니라 <b>설정</b>으로 막는다</td></tr>
+        <tr><th>서브에이전트를 이루는 것</th><th>pubmed-evidence에서는</th><th>왜 중요한가</th></tr>
+        <tr><td><b>격리된 컨텍스트</b></td><td>scout 1개, miner 최대 8개가 각자 별도 컨텍스트</td><td>서로가 읽은 것이 섞이지 않는다</td></tr>
+        <tr><td><b>고정된 지시문</b> (역할·금지사항)</td><td><code>agents/*.md</code> 파일 한 장</td><td>매번 같은 규칙으로 실행된다</td></tr>
+        <tr><td><b>정해진 반환 형식</b></td><td>JSON 한 덩어리만. 설명·서문 금지</td><td>메인 컨텍스트에 무엇이 올라올지를 호출자가 정한다</td></tr>
+        <tr class="hi"><td><b>주지 않은 도구</b></td><td>둘 다 <code>tools: Bash</code> 하나 — Write·Edit 없음</td><td>부탁이 아니라 <b>설정</b>으로 제한한다</td></tr>
       </table>
+      <p><code class="inl">tools: Bash</code>는 <b>Write·Edit 도구를 주지 않았다</b>는 뜻입니다. 단, Bash가 있으면 셸로 파일을 쓰는 것 자체는 가능하므로 완전한 차단은 아닙니다 — 도구 제한이 보장하는 범위는 <b>"산출물이 반환 JSON 하나로 모인다"</b>까지입니다.</p>
     </div>
 
     <div class="case">
-      <div class="case-label"><span class="dot"></span>여기서 흔히 잘못 아는 것 — "원문이 차단된다"는 <b>과장</b>입니다</div>
-      <div class="fix"><span class="tag">정정</span>메인 책상에 초록 원문이 <b>아예 안 올라오는 게 아닙니다.</b> 조수 2(miner)가 돌려주는 <code class="inl">quote</code>는 <b>글자 하나 안 바꾼 원문 문장</b>이고, 그건 메인 책상에 올라옵니다. 그리고 그건 <b>버그가 아니라 요구사항</b>입니다 — 나중에 스크립트가 대조할 대상이 없으면 검증 자체가 성립하지 않으니까요.</div>
-      <p>바뀌는 것은 <b>차단이냐 아니냐</b>가 아니라 <b>양과 형태</b>입니다.</p>
+      <div class="case-label"><span class="dot"></span>흔한 오해 — "원문이 차단된다"는 <b>사실이 아닙니다</b></div>
+      <div class="fix"><span class="tag">정정</span>메인 컨텍스트에 초록 원문이 <b>안 올라오는 게 아닙니다.</b> abstract-miner가 반환하는 <code class="inl">quote</code>는 <b>글자 하나 안 바꾼 원문 문장</b>이고, 그대로 메인에 올라옵니다. 이건 요구사항입니다 — 스크립트가 대조할 대상이 없으면 검증이 성립하지 않습니다. SKILL.md 불변 원칙 ②의 표현대로, 오염 <b>차단</b>이 아니라 <b>표면 축소</b>입니다.</div>
+      <p>바뀌는 것은 <b>차단 여부</b>가 아니라 <b>양과 형태</b>입니다.</p>
       <table class="ttable">
-        <tr><th></th><th>서브에이전트 없이 (한 책상)</th><th>이 구조 (책상 9개)</th></tr>
+        <tr><th></th><th>서브에이전트 없이 (컨텍스트 1개)</th><th>이 구조 (메인 + 격리된 컨텍스트 9개)</th></tr>
         <tr><td>메인에 들어오는 원문</td><td>스캔한 초록 전문 (검색 4회 × 최대 40건)</td><td>논문당 최대 <b>5문장</b></td></tr>
         <tr><td>그 문장의 출처</td><td>섞여 있음</td><td>슬롯·PMID에 묶여 있음</td></tr>
         <tr><td>검증 가능성</td><td>불가 — 무엇을 무엇과 대조할지 모름</td><td>가능 — quote 단위로 대조</td></tr>
       </table>
       <div class="key">
         <div class="lab">정확한 한 문장</div>
-        <p>서브에이전트를 쓰는 이유는 원문을 <b>못 보게</b> 하려는 게 아니라,<br>메인이 보는 원문을 <b>검증 가능한 최소 단위로 줄이려는</b> 것입니다.</p>
+        <p>서브에이전트는 원문을 <b>못 보게</b> 하려고 쓰는 게 아닙니다.<br>메인에 올라오는 원문을 <b>「값 + 그 값이 든 문장 한 개」</b> 단위로 만들려고 씁니다 —<br>그래야 P6 스크립트가 <b>그 문장을 논문 초록에서 찾아</b> 대조할 수 있습니다.</p>
       </div>
     </div>
 
     <div class="vs">
       <div class="col a">
-        <h4>서브에이전트 없이 (한 책상)</h4>
-        <p><span class="big">숫자가 서로 섞인다</span>논문 A의 "500mg", 논문 B의 "23%"가 같은 책상 위에 올라와 있으면, AI는 <b>A의 용량과 B의 효과를 한 문장으로 합칠 수 있습니다.</b> 각각은 실재하는 숫자라 더 안 잡힙니다.</p>
+        <h4>서브에이전트 없이 (컨텍스트 1개)</h4>
+        <p><span class="big">숫자가 서로 섞인다</span>논문 A의 "500mg"과 논문 B의 "23%"가 한 컨텍스트에 함께 있으면, AI는 <b>A의 용량과 B의 효과를 한 문장으로 합칠 수 있습니다.</b> 각각은 실재하는 숫자라 사후 검사로도 안 걸립니다.</p>
       </div>
       <div class="col b">
-        <h4>서브에이전트로 (책상 8개)</h4>
-        <p><span class="big">섞일 재료가 없다</span>논문 1편당 조수 1명. 각 조수는 <b>다른 논문의 숫자를 아예 본 적이 없습니다.</b> 못 섞는 게 아니라, 섞을 재료가 애초에 없습니다.</p>
+        <h4>서브에이전트로 (miner 8개)</h4>
+        <p><span class="big">섞일 재료가 없다</span>논문 1편에 miner 1개. 각 miner는 <b>다른 논문의 초록을 입력으로 받지 않습니다.</b> 섞지 못하게 막은 것이 아니라, 섞을 대상이 컨텍스트에 없습니다.</p>
       </div>
     </div>
 
@@ -417,22 +418,21 @@
       <div class="case-label"><span class="dot"></span>그럼 언제 쓰고, 언제 안 쓰나</div>
       <table class="ttable">
         <tr><th>쓴다</th><th>안 쓴다</th></tr>
-        <tr><td>읽을 자료는 많은데 <b>필요한 결과는 짧을</b> 때 (논문 30편 → 쪽지 한 장)</td><td>결과를 만들려면 <b>대화 맥락 전부가 필요할</b> 때 (조수는 내 대화를 모릅니다)</td></tr>
-        <tr><td>같은 일을 <b>여러 대상에 반복</b>할 때 (논문 8편 = 조수 8명 동시)</td><td>한두 줄짜리 단순 작업 — 조수 부르는 비용이 더 큼</td></tr>
-        <tr><td><b>서로 섞이면 안 되는 자료</b>를 다룰 때</td><td>중간에 사람이 계속 개입해야 할 때 (조수와는 대화 못 함)</td></tr>
+        <tr><td>읽을 자료는 많은데 <b>필요한 결과는 짧을</b> 때 (논문 30편 → JSON 하나)</td><td>결과를 만들려면 <b>대화 맥락 전부가 필요할</b> 때 — 서브에이전트는 메인의 대화를 받지 않습니다</td></tr>
+        <tr><td>같은 일을 <b>여러 대상에 반복</b>할 때 (논문 8편 = miner 8개 동시)</td><td>한두 줄짜리 단순 작업 — 호출 비용이 더 큼</td></tr>
+        <tr><td><b>서로 섞이면 안 되는 자료</b>를 다룰 때</td><td>중간에 사람이 개입해야 할 때 — 서브에이전트는 실행 중 사용자와 대화할 수 없습니다</td></tr>
       </table>
-      <div class="anal">기억할 한 가지 — 조수에게는 <b>내 대화 내용이 안 넘어갑니다.</b> 넘길 것을 내가 명시적으로 적어줘야 합니다. 그래서 P1의 정규화 결과를 JSON으로 만들어 통째로 넘기는 겁니다.</div>
+      <div class="anal">서브에이전트에는 <b>메인의 대화 내용이 전달되지 않습니다.</b> 넘길 것을 호출 시점에 명시해야 합니다. P1 정규화 결과를 JSON으로 만들어 통째로 넘기는 이유입니다.</div>
     </div>
 
     <div class="note">
       <div class="lab">발표자 노트</div>
-      <p>이 슬라이드가 <b>오늘 발표의 심장</b>입니다. 여기서 20분 써도 아깝지 않습니다.</p>
-      <p class="say">회사에서 일 나눌 때 "네가 이거 잘하니까 맡아" 하잖아요. AI 서브에이전트는 좀 다릅니다. 잘해서 맡기는 게 아니라, <b>내 책상에 뭐가 올라올지를 내가 고르려고</b> 맡기는 거예요.</p>
+      <p>이 섹션이 <b>오늘 발표의 핵심</b>입니다. 20분을 써도 됩니다.</p>
+      <p class="say">보통 일을 나눌 때는 "잘하는 사람에게 맡긴다"입니다. 서브에이전트는 다릅니다. <b>메인 컨텍스트에 무엇이 올라올지를 고르려고</b> 나눕니다.</p>
       <ul>
-        <li>조제대 비유를 <b>실제 몸짓으로</b> 하세요. 책상 위에 뭘 올리고 치우는 동작.</li>
-        <li><b>"정정" 박스를 건너뛰지 마세요.</b> 청중이 나중에 실습에서 quote를 눈으로 보게 되므로, 여기서 미리 정직하게 짚어야 신뢰가 유지됩니다.</li>
-        <li>흔한 오해 정정: "서브에이전트를 쓰면 더 똑똑해지나요?" → 아니오. <b>덜 헷갈리고, 검사가 가능해질</b> 뿐입니다.</li>
-        <li>질문 유도: "그럼 조수한테 논문 8개를 한꺼번에 주면 어떻게 될까요?" → 다시 섞임. 그래서 1편에 1명. (다음 그림 B의 예고)</li>
+        <li><b>"정정" 박스를 건너뛰지 마세요.</b> 실습에서 quote가 메인에 그대로 보이므로, 여기서 미리 짚어야 설명이 어긋나지 않습니다.</li>
+        <li>흔한 오해: "서브에이전트를 쓰면 더 똑똑해지나요?" → 아니오. <b>입력이 줄고, 검증이 가능해질</b> 뿐입니다.</li>
+        <li>질문 유도: "miner 하나에 논문 8편을 주면?" → 다시 섞임. 그래서 1편에 1개. (그림 B 예고)</li>
       </ul>
     </div>
   </section>
@@ -465,7 +465,7 @@
         </div>
         <div class="why">
           <h5>여기만 사람에게 묻는다</h5>
-          <p>검색어가 틀리면 그 뒤 전부가 틀립니다. 그런데 <b>조수는 도중에 사람과 대화할 수 없습니다.</b> 그래서 이 단계만 메인이 직접 합니다</p>
+          <p>검색어가 틀리면 그 뒤 전부가 틀립니다. <b>서브에이전트는 실행 중 사용자와 대화할 수 없습니다.</b> 그래서 이 단계만 메인이 직접 합니다</p>
         </div>
 
         <!-- P2 -->
@@ -480,8 +480,8 @@
           </div>
         </div>
         <div class="why">
-          <h5>수십 편을 읽어도<br>쪽지 한 장만 옵니다</h5>
-          <p>초록 전문은 조수 책상에서 사라집니다. 안 나누면 메인 책상이 금방 찹니다</p>
+          <h5>최대 160건을 훑어도<br>반환은 JSON 하나</h5>
+          <p>읽은 초록은 scout 컨텍스트와 함께 폐기됩니다. 안 나누면 메인 컨텍스트가 초록으로 찹니다</p>
         </div>
 
         <!-- P3 -->
@@ -524,8 +524,8 @@
           </div>
         </div>
         <div class="why">
-          <h5>검사관은 다른 종류여야 합니다</h5>
-          <p>같은 실수를 한 AI가 자기 실수를 검사하면 통과시킵니다. 그래서 파이썬입니다</p>
+          <h5>판정자는 AI가 아니어야 합니다</h5>
+          <p>같은 모델은 자기 출력을 통과시킵니다. 그래서 파이썬입니다</p>
         </div>
 
         <!-- 종료 -->
@@ -543,8 +543,8 @@
 
     <div class="case">
       <div class="case-label"><span class="dot"></span>왜 P3-1(파일 저장)이 따로 있나</div>
-      <p>파이썬 스크립트는 <b>대화 내용을 볼 수 없습니다.</b> 파일만 읽습니다. 그래서 조수 결과를 파일로 떨궈야 검증이 시작됩니다. 그리고 이 중간 지점이 <b>"AI가 만든 것"과 "기계가 검사하는 것"의 경계선</b>입니다.</p>
-      <div class="anal">경계를 파일로 끊어두면 좋은 점이 하나 더 있습니다 — <b>게이트만 따로 다시 돌릴 수 있습니다.</b> 오늘 실습의 「깨뜨리기」가 전부 이 성질을 이용합니다.</div>
+      <p>스크립트는 <b>대화 내용을 읽을 수 없습니다.</b> 파일만 읽습니다. 그래서 miner 결과를 파일로 저장해야 검증이 시작됩니다. 이 지점이 <b>"AI가 만든 것"과 "스크립트가 검사하는 것"의 경계</b>입니다.</p>
+      <div class="anal">경계를 파일로 끊어두면 <b>게이트만 따로 다시 실행할 수 있습니다.</b> 오늘 실습의 「깨뜨리기」가 전부 이 성질을 이용합니다.</div>
     </div>
 
     <div class="case">
@@ -563,12 +563,12 @@
 
     <div class="note">
       <div class="lab">발표자 노트</div>
-      <p>그림을 <b>위에서 아래로 손가락으로 짚으며</b> 읽어주세요. 왼쪽 초록선은 "내가 아는 것", 가운데 점선 상자는 "조수가 알고 잊은 것".</p>
-      <p class="say">여기 두 번째 상자 보세요. 논문 수십 편을 훑었어요. 근데 왼쪽으로 넘어온 건 톤이랑 PMID 목록뿐이에요. 나머지 초록은 어디 갔을까요? <b>사라졌습니다.</b> 그게 의도예요.</p>
+      <p>그림을 <b>위에서 아래로</b> 짚으며 읽어주세요. 왼쪽 초록선은 메인 컨텍스트에 남는 것, 가운데 점선 상자는 서브에이전트가 읽고 폐기하는 것입니다.</p>
+      <p class="say">두 번째 상자를 보세요. 논문 수십 편을 훑었지만 메인으로 넘어온 것은 톤과 PMID 목록뿐입니다. 나머지 초록은 scout 컨텍스트와 함께 사라졌고, 그게 의도한 동작입니다.</p>
       <ul>
-        <li>"왜 8개죠?" 나올 수 있음 → PubMed 호출 제한 + 카드뉴스 한 편에 8편이면 충분.</li>
-        <li>P3-1은 심심해 보이지만 <b>빼놓으면 P6이 아예 안 돕니다.</b> "검사관에게 서류를 제출하는 단계"라고 설명하세요.</li>
-        <li>마지막 표의 ❌ 줄을 강조. "AI 도구인데 빈칸을 낸다"가 이 도구의 <b>자랑 포인트</b>입니다.</li>
+        <li>"왜 8개죠?" → PubMed 호출 제한 + 카드뉴스 한 편에 8편이면 충분.</li>
+        <li>P3-1을 빼면 <b>P6이 아예 실행되지 않습니다.</b> 스크립트의 입력을 만드는 단계라고 설명하세요.</li>
+        <li>마지막 표의 ❌ 줄을 강조. "AI 도구인데 빈칸을 낸다"가 이 도구의 설계 목표입니다.</li>
       </ul>
     </div>
   </section>
@@ -576,8 +576,8 @@
   <!-- ═══════════════════ 5 ═══════════════════ -->
   <section class="session" id="s5">
     <div class="s-head"><span class="step">05</span><span class="sec">그림 B · 병렬</span></div>
-    <h2 class="s-title">조수가 <span class="hl">8명인 이유</span></h2>
-    <p class="caption">이건 <b>속도 때문이 아닙니다.</b> 한 조수에게 논문 8편을 주는 것과, 8명에게 1편씩 주는 것의 차이를 보세요.</p>
+    <h2 class="s-title">miner를 <span class="hl">논문 1편당 하나</span>로 나누는 이유</h2>
+    <p class="caption">속도 때문이 아닙니다. miner 하나에 논문 8편을 주는 것과, miner 8개에 1편씩 주는 것의 차이입니다.</p>
 
     <div class="diag">
       <div class="diag-grid wide">
@@ -586,25 +586,26 @@
         <div class="dh">판정</div>
 
         <div class="lane" style="border-right:2px solid var(--accent2);padding-top:6px">
-          <div class="mbox" style="border-color:var(--accent2);background:rgba(229,146,106,.09)">조수 1명<br>논문 8편</div>
+          <div class="mbox" style="border-color:var(--accent2);background:rgba(229,146,106,.09)">miner 1개<br>논문 8편</div>
         </div>
         <div class="mid">
           <div class="agentbox danger">
             <div class="an">abstract-miner ×1</div>
-            <div class="ad">한 책상 위에 8편의 숫자가 <b>동시에 놓입니다</b></div>
+            <div class="ad">한 컨텍스트에 8편의 숫자가 <b>동시에 들어옵니다</b></div>
             <div class="ad" style="font-family:var(--mono);font-size:.78rem;color:var(--gold)">500 mg · 17.36 min · 23.4% · -0.34 mmol/L · 46명 · 120명 …</div>
             <div class="ad">"3번 논문의 용량은?"이라고 물으면 모델은 <b>가장 그럴듯한 값</b>을 고를 수 있습니다</div>
-            <div class="ad" style="color:var(--red)">그 값도 <b>초록에 실재하는 숫자</b>라 게이트를 통과합니다</div>
+            <div class="ad" style="color:var(--red)">게이트는 <b>그 PMID 초록에서 다시 대조</b>하므로 남의 논문 숫자는 대부분 폐기됩니다 — 대신 <b>슬롯이 대량으로 비어 나갑니다</b></div>
+            <div class="ad" style="color:var(--red)"><code>direction</code>·<code>comparator</code>·<code>measure</code>는 <b>원문 대조 대상이 아니라서</b>, 오염돼도 그대로 통과합니다</div>
           </div>
         </div>
         <div class="why">
-          <h5 class="r">사후 탐지가 어렵습니다</h5>
-          <p>지어낸 숫자가 아니라 <b>남의 논문에서 온 진짜 숫자</b>입니다. 검사로는 못 잡습니다</p>
+          <h5 class="r">게이트로 되돌릴 수 없습니다</h5>
+          <p>값이 어긋나면 폐기되고, 대조하지 않는 필드는 오염된 채 남습니다. <b>어느 쪽이든 손해</b>입니다</p>
         </div>
 
         <div class="drow">이 플러그인이 택한 쪽 ↓</div>
 
-        <div class="lane" style="padding-top:6px"><div class="mbox">조수 8명<br>각자 1편</div></div>
+        <div class="lane" style="padding-top:6px"><div class="mbox">miner 8개<br>각자 1편</div></div>
         <div class="mid">
           <div class="fanout">
             <div class="mini"><div class="mn">miner</div><div class="mp">#23853635</div><div class="mv">1편만 봄</div></div>
@@ -615,7 +616,7 @@
           <div class="varr">↓ &nbsp; 각자 자기 논문의 5슬롯만 반환 &nbsp; ↓</div>
           <div class="greenbox">
             <div class="gn">섞을 재료가 애초에 없습니다</div>
-            <div class="gd">miner #3은 #1의 초록을 <b>본 적이 없습니다.</b> 못 섞게 막은 게 아니라, 섞을 대상이 존재하지 않습니다</div>
+            <div class="gd">miner #3의 컨텍스트에는 #1의 초록이 <b>들어오지 않습니다.</b> 섞지 못하게 막은 게 아니라, 섞을 대상이 없습니다</div>
           </div>
         </div>
         <div class="why">
@@ -626,8 +627,8 @@
       </div>
 
       <div class="legend">
-        <span><i class="red"></i>위험 — 한 책상에 여러 출처</span>
-        <span><i class="dash"></i>서브에이전트 — 각자 별도 책상</span>
+        <span><i class="red"></i>위험 — 한 컨텍스트에 여러 출처</span>
+        <span><i class="dash"></i>서브에이전트 — 각자 별도 컨텍스트</span>
         <span><i></i>안전 — 출처가 하나씩 격리됨</span>
       </div>
     </div>
@@ -635,17 +636,17 @@
     <div class="fix"><span class="tag">핵심</span>병렬은 <b>성능 최적화가 아니라 교차오염 제거</b>입니다. 토큰 비용은 순차와 비슷하고, 줄어드는 건 시간뿐입니다. <b>돈이 아니라 정확도를 사는 구조</b>입니다.</div>
 
     <div class="case">
-      <div class="case-label"><span class="dot"></span>순차 실행을 금지한 이유도 같습니다</div>
-      <p>SKILL.md에는 <b>"순차 실행 금지"</b>가 명시돼 있습니다. 한 조수를 8번 연달아 부르면 그건 조수 8명이 아니라 <b>기억이 쌓인 조수 1명</b>에 가까워질 위험이 있습니다. 동시에 부르는 것이 격리를 보장하는 가장 단순한 방법입니다.</p>
+      <div class="case-label"><span class="dot"></span>SKILL.md에 "순차 실행 금지"가 적혀 있습니다</div>
+      <p>P3 절차의 문구는 <b>"순차 실행 금지 — 앞 논문의 숫자가 뒤 논문 추출에 오염을 일으킨다"</b>입니다. 8개를 한 번에 띄우는 것이 격리를 지키는 가장 단순한 실행 방법이라, 규칙을 그렇게 못 박아 둔 것입니다.</p>
     </div>
 
     <div class="note">
       <div class="lab">발표자 노트</div>
-      <p>앞 섹션에서 "8편을 한 명한테 주면요?"라는 질문이 나왔다면 <b>여기가 그 답</b>입니다.</p>
-      <p class="say">여기 위쪽 상자에 숫자들 보이시죠. 500mg, 17.36분, 23.4%… 이게 다 한 책상에 있어요. 이 상태에서 "3번 논문 용량이 뭐였죠?" 하고 물으면, 모델은 이 중에서 <b>제일 그럴듯한 걸</b> 고를 수 있습니다. 그리고 그 숫자는 <b>어딘가엔 진짜로 있는 숫자</b>예요. 그래서 나중에 검사해도 안 걸립니다.</p>
+      <p>앞 섹션에서 "8편을 하나에 주면?"이라는 질문이 나왔다면 여기가 그 답입니다.</p>
+      <p class="say">위쪽 상자의 숫자들을 보세요. 500mg, 17.36분, 23.4%가 한 컨텍스트에 있습니다. 이 상태에서 "3번 논문 용량이 뭐였죠?"라고 물으면 모델은 이 중 가장 그럴듯한 값을 고를 수 있습니다. 게이트가 그 PMID 초록에서 다시 대조하니 대부분 폐기되지만, 남는 결과는 <b>빈칸투성이 팩</b>입니다.</p>
       <ul>
-        <li>"검사로 못 잡는다"는 대목이 중요합니다. 게이트가 만능이 아니라는 첫 번째 예고이고, 12번 섹션에서 회수됩니다.</li>
-        <li>속도 이야기는 <b>일부러 나중에</b> 하세요. 먼저 말하면 "성능 최적화 기법"으로 오해합니다.</li>
+        <li>여기서 강조할 것은 <b>"게이트가 잡아준다"가 아니라 "게이트가 잡을 일을 안 만든다"</b>입니다. 게이트가 대조하지 않는 필드(direction·comparator·measure)는 오염돼도 통과합니다.</li>
+        <li>속도 이야기는 <b>나중에</b> 하세요. 먼저 말하면 성능 최적화로 오해합니다.</li>
       </ul>
     </div>
   </section>
@@ -662,14 +663,14 @@
 │   └── marketplace.json                <span class="c">← 로컬 설치용 등록 정보</span>
 ├── skills/
 │   └── pubmed-evidence/
-│       ├── <span class="b">SKILL.md</span>                    <span class="c">← 오케스트레이터 (메인 책상)</span>
+│       ├── <span class="b">SKILL.md</span>                    <span class="c">← 오케스트레이터 절차서 (메인 컨텍스트)</span>
 │       ├── references/
 │       │   └── normalize.md            <span class="c">← 한글↔영문 성분명 표 (필요할 때만 로드)</span>
 │       └── tests/
 │           └── fixtures.md             <span class="c">← 회귀 테스트 4종</span>
 ├── agents/
-│   ├── <span class="b">evidence-scout.md</span>              <span class="c">← 조수 1 (별도 책상)</span>
-│   └── <span class="b">abstract-miner.md</span>              <span class="c">← 조수 2 (별도 책상, 병렬)</span>
+│   ├── <span class="b">evidence-scout.md</span>              <span class="c">← 서브에이전트 1 (P2, 1회 호출)</span>
+│   └── <span class="b">abstract-miner.md</span>              <span class="c">← 서브에이전트 2 (P3, 최대 8개 병렬)</span>
 └── scripts/
     ├── <span class="b">verify_evidence.py</span>              <span class="c">← 검증 게이트 (AI 아님)</span>
     └── test_verify_evidence.py          <span class="c">← 게이트가 안 뚫렸는지 보는 시험지</span></code></pre>
@@ -678,7 +679,7 @@
       <tr><th>위치</th><th>왜 하필 여기인가</th></tr>
       <tr class="hi"><td><code>agents/</code>가 플러그인 <b>루트</b></td><td>스킬 폴더 <b>안에 넣으면 등록되지 않습니다.</b> 서브에이전트는 루트 <code>agents/</code>만 스캔합니다</td></tr>
       <tr><td><code>scripts/</code>가 플러그인 <b>루트</b></td><td><code>${CLAUDE_PLUGIN_ROOT}</code>로 참조하기 위해. 스킬 안에 두면 경로가 지저분해집니다</td></tr>
-      <tr><td><code>references/</code>·<code>tests/</code>는 <b>스킬 안</b></td><td>스킬 본문에서만 쓰는 부속 문서. <b>필요할 때만</b> 읽혀서 책상을 아낍니다</td></tr>
+      <tr><td><code>references/</code>·<code>tests/</code>는 <b>스킬 안</b></td><td>스킬 본문에서만 쓰는 부속 문서. <b>필요할 때만</b> 읽혀서 메인 컨텍스트를 아낍니다</td></tr>
       <tr><td><code>.claude-plugin/</code>엔 매니페스트만</td><td>다른 디렉토리를 넣으면 <b>에러 없이 조용히 무시</b>됩니다. 제일 디버깅하기 힘든 실수</td></tr>
     </table>
 
@@ -686,8 +687,8 @@
       <div class="case-label star"><span class="dot"></span>파일 3종의 성격 차이 <b>— 여기가 헷갈리는 지점</b></div>
       <table class="ttable">
         <tr><th>종류</th><th>정체</th><th>실행되는 곳</th><th>믿을 수 있나</th></tr>
-        <tr><td><code>SKILL.md</code></td><td>절차서 (한국어 지시문)</td><td>메인 책상</td><td>AI가 읽고 따름 → 흔들릴 수 있음</td></tr>
-        <tr><td><code>agents/*.md</code></td><td>조수 지시문 (한국어)</td><td>별도 책상</td><td>AI가 읽고 따름 → 흔들릴 수 있음</td></tr>
+        <tr><td><code>SKILL.md</code></td><td>절차서 (한국어 지시문)</td><td>메인 컨텍스트</td><td>AI가 읽고 따름 → 흔들릴 수 있음</td></tr>
+        <tr><td><code>agents/*.md</code></td><td>서브에이전트 지시문 (한국어)</td><td>격리된 컨텍스트</td><td>AI가 읽고 따름 → 흔들릴 수 있음</td></tr>
         <tr class="hi"><td><code>verify_evidence.py</code></td><td>파이썬 코드</td><td>터미널</td><td>매번 똑같음. 안 흔들림</td></tr>
       </table>
       <p>앞의 두 개는 <b>"이렇게 해줘"</b>이고, 마지막 하나는 <b>"이건 이렇게 된다"</b>입니다. 그래서 <b>단위 테스트가 마지막 하나에만 붙어 있습니다</b> — 여기가 틀리면 잡아줄 사람이 없기 때문입니다.</p>
@@ -695,8 +696,7 @@
 
     <div class="note">
       <div class="lab">발표자 노트</div>
-      <p>약사분들은 코드를 안 짜지만 <b>"왜 폴더 위치가 규칙인가"</b>는 잘 이해합니다 — 약국 조제실 배치와 같은 논리니까요.</p>
-      <p class="say">마약류는 이중 잠금 금고에, 냉장 보관은 냉장고에. 자리가 정해져 있죠? 여기도 똑같아요. <b>자리를 틀리면 아예 없는 취급</b>을 받습니다.</p>
+      <p class="say">Claude Code는 정해진 위치만 읽습니다. <b>자리를 틀리면 에러가 아니라 "없는 것"으로 처리</b>됩니다. 그래서 디버깅이 어렵습니다.</p>
       <ul>
         <li>마지막 3종 비교표가 <b>섹션 7~10의 예고편</b>입니다. 여기서 한 번 짚고 넘어가면 뒤가 편합니다.</li>
         <li>실제로 <code>agents/</code>를 스킬 폴더 안에 넣어본 실패담이 있으면 꼭 넣으세요. 제일 잘 기억됩니다.</li>
@@ -707,14 +707,14 @@
   <!-- ═══════════════════ 7 ═══════════════════ -->
   <section class="session" id="s7">
     <div class="s-head"><span class="step">07</span><span class="sec">조각 1 · SKILL.md · 오케스트레이터</span></div>
-    <h2 class="s-title">지휘자는 <span class="hl">일을 하지 않는다</span></h2>
-    <p class="s-intro">SKILL.md는 절차서입니다. 직접 논문을 읽는 대신, <b>누구에게 무엇을 시킬지</b>와 <b>절대 하면 안 되는 것</b>을 정합니다.</p>
+    <h2 class="s-title">오케스트레이터는 <span class="hl">논문을 직접 읽지 않는다</span></h2>
+    <p class="s-intro">SKILL.md는 절차서입니다. <b>어느 단계를 누구에게 맡길지</b>와 <b>하면 안 되는 것</b>을 정합니다.</p>
 
     <div class="case">
       <div class="case-label star"><span class="dot"></span>불변 원칙 3개 — 이 파일의 알맹이</div>
       <div class="steps">
         <div class="steprow"><span class="n">①</span><span class="t"><b>검증되지 않은 숫자는 출력하지 않는다.</b> 검증 실패 슬롯은 <code class="inl">null</code>로 두고 사유를 남긴다. 그럴듯한 숫자를 만들어내는 것이 이 도구의 <b>유일한 치명적 실패</b></span></div>
-        <div class="steprow"><span class="n">②</span><span class="t"><b>오케스트레이터가 보는 원문은 검증 가능한 최소 단위로 제한한다.</b> 초록 전문은 조수 안에서만 살아 있다 폐기되고, 메인에는 <b>슬롯에 묶인 인용문만</b> 올라온다</span></div>
+        <div class="steprow"><span class="n">②</span><span class="t"><b>오케스트레이터가 보는 원문은 검증 가능한 최소 단위로 제한한다.</b> 초록 전문은 서브에이전트 컨텍스트에서만 살아 있다 폐기되고, 메인에는 <b>슬롯에 묶인 인용문만</b> 올라온다</span></div>
         <div class="steprow"><span class="n">③</span><span class="t"><b>숫자 검증은 AI가 하지 않는다.</b> <code class="inl">verify_evidence.py</code>만이 판정한다</span></div>
       </div>
     </div>
@@ -738,7 +738,7 @@
 
     <div class="case">
       <div class="case-label"><span class="dot"></span>중간에 멈추는 조건 — 하위 분해</div>
-      <p>조수 1이 <code class="inl">needs_decomposition: true</code>를 돌려주면 <b>거기서 멈추고</b> 사용자에게 묻습니다. "유산균"은 균주 단위로, "오메가3"는 EPA/DHA로 내려가야 유효한 근거가 나오기 때문입니다.</p>
+      <p>evidence-scout이 <code class="inl">needs_decomposition: true</code>를 반환하면 <b>P2에서 멈추고</b> 사용자에게 묻습니다. "유산균"은 균주 단위로, "오메가3"는 EPA/DHA로 내려가야 유효한 근거가 나오기 때문입니다.</p>
       <div class="warn"><b>뭉뚱그린 이름으로 나온 숫자는 카드에 못 씁니다.</b> EPA와 DHA는 중성지방에 대한 효과가 실제로 다릅니다. 한 표에 나란히 놓는 순간 그 표는 틀린 표가 됩니다.</div>
     </div>
 
@@ -755,9 +755,9 @@
 
     <div class="note">
       <div class="lab">발표자 노트</div>
-      <p class="say">지휘자는 악기를 안 다뤄요. 근데 누가 언제 들어오는지는 지휘자만 압니다. SKILL.md가 딱 그겁니다.</p>
+      <p class="say">SKILL.md에는 논문을 읽는 방법이 없습니다. <b>어느 단계에서 누구를 부르고, 그 결과를 어디에 저장할지</b>만 적혀 있습니다.</p>
       <ul>
-        <li>불변 원칙 ②를 강조: <b>"덜 읽는 게 능력"</b>이라는 반직관이 오늘 세션의 재미 포인트.</li>
+        <li>불변 원칙 ②를 강조: <b>메인이 원문을 덜 볼수록 검증 가능한 구조가 된다</b>는 점이 이 도구의 설계 전제입니다.</li>
         <li>T3 줄에서 잠깐 멈추기. "근거가 없다는 것도 콘텐츠가 된다" → 약사 청중이 가장 공감하는 부분.</li>
         <li>시간 없으면 정규화 JSON은 넘기고 톤 표만 봐도 됩니다.</li>
       </ul>
@@ -767,8 +767,8 @@
   <!-- ═══════════════════ 8 ═══════════════════ -->
   <section class="session" id="s8">
     <div class="s-head"><span class="step">08</span><span class="sec">조각 2 · agents/evidence-scout.md</span></div>
-    <h2 class="s-title">조수 1 — <span class="hl">판정하고 고른다. 숫자는 안 뽑는다</span></h2>
-    <p class="s-intro">"근거중심의학 훈련을 받은 DI 담당 약사"라는 역할이 주어진 조수. 논문 수십 편을 훑고 <b>쪽지 한 장</b>만 돌려줍니다.</p>
+    <h2 class="s-title">evidence-scout — <span class="hl">판정하고 고른다. 숫자는 안 뽑는다</span></h2>
+    <p class="s-intro">지시문이 부여한 역할은 "근거중심의학 훈련을 받은 DI 담당 약사"입니다. 논문 수십 편을 훑고 <b>JSON 하나</b>만 반환합니다.</p>
 
     <div class="case">
       <div class="case-label"><span class="dot"></span>검색을 4번 나눠 던진다 — 각각 목적이 다름</div>
@@ -788,13 +788,14 @@
       <div class="case-label star"><span class="dot"></span>성분 일치 검사 (off-target) — 실무에서 제일 많이 터지는 문제</div>
       <div class="def">
         <div class="one">"EPA"로 검색하면 크릴오일·EPA+DHA 복합제·ALA 비교 시험이 함께 딸려 옵니다</div>
-        <div class="desc">서로 <b>다른 물질의 숫자가 한 표에 섞이면 그 표는 통째로 못 씁니다.</b> 그래서 조수는 각 논문의 실제 개입 성분을 확인하고, 다르면 <code>off_target: true</code>를 붙여 <b>채굴 대상에서 뺍니다.</b></div>
+        <div class="desc">서로 <b>다른 물질의 숫자가 한 표에 섞이면 그 표는 통째로 못 씁니다.</b> 그래서 scout은 각 논문의 실제 개입 성분을 확인하고, 다르면 <code>off_target: true</code>를 붙여 <b>채굴 대상에서 뺍니다.</b></div>
       </div>
       <table class="ttable">
         <tr><th>off_target으로 찍히면</th><th>어떻게 되나</th></tr>
-        <tr><td>목록에는</td><td>남습니다 (몇 편이 걸렀는지 보여야 하니까)</td></tr>
+        <tr><td>scout 반환 <code>pmids</code> 배열에는</td><td>남습니다 (<code>rank: null</code>, 개수는 <code>evidence_map.off_target</code>에 집계)</td></tr>
         <tr><td>톤 판정 재료에서는</td><td><b>제외</b> — 다른 물질 논문이 근거 지형을 왜곡하면 안 됨</td></tr>
-        <tr><td>숫자 채굴 대상에서는</td><td><b>제외</b> — 8개 자리를 차지하지 못함</td></tr>
+        <tr><td>숫자 채굴 대상에서는</td><td><b>제외</b> — 최대 8개 자리를 차지하지 못함</td></tr>
+        <tr><td>사용자에게 보여주는 최종 표에는</td><td><b>넣지 않습니다</b> (SKILL.md P2)</td></tr>
       </table>
       <p>판단 기준 하나 — <b>애매하면 버린다.</b> 보수적으로 버리는 쪽이 잘못된 숫자를 내보내는 것보다 낫습니다. 그리고 off_target이 전체의 1/3 이상이면 <b>"성분 이름이 너무 넓다"</b>는 신호로 읽어 하위 분해를 제안합니다.</p>
     </div>
@@ -811,14 +812,14 @@
     </div>
 
     <div class="case">
-      <div class="case-label"><span class="dot"></span>금지 사항 — 조수가 <b>하면 안 되는 것</b></div>
+      <div class="case-label"><span class="dot"></span>금지 사항 — scout이 <b>하면 안 되는 것</b></div>
       <div class="steps">
         <div class="steprow"><span class="n">✕</span><span class="t"><b>초록 원문·인용문을 출력에 넣지 마라</b> — 검증되지 않은 숫자가 새어 나가는 경로</span></div>
-        <div class="steprow"><span class="n">✕</span><span class="t"><b>효과 크기 숫자를 출력하지 마라</b> — 그건 조수 2의 일 (역할 침범 금지)</span></div>
+        <div class="steprow"><span class="n">✕</span><span class="t"><b>효과 크기 숫자를 출력하지 마라</b> — 그건 abstract-miner의 일 (역할 침범 금지)</span></div>
         <div class="steprow"><span class="n">✕</span><span class="t"><b>결과가 빈약하다고 검색어를 창의적으로 바꾸지 마라</b> — 빈약한 것도 결과다</span></div>
         <div class="steprow"><span class="n">✕</span><span class="t"><b>PMID를 기억에서 만들어내지 마라</b> — 반드시 검색 응답에 있던 것만</span></div>
       </div>
-      <p>조수 1과 조수 2의 경계가 이 금지 사항으로 그어집니다. <b>같은 숫자를 두 명이 만지면 어느 쪽이 틀렸는지 알 수 없게 됩니다.</b></p>
+      <p>scout과 miner의 경계가 이 금지 사항으로 그어집니다. <b>같은 숫자를 둘 다 만지면 어느 쪽이 틀렸는지 알 수 없게 됩니다.</b></p>
     </div>
 
     <div class="note">
@@ -827,7 +828,7 @@
       <p class="say">보통 프롬프트 쓸 때 "이거 해줘"만 쓰잖아요. 근데 잘 도는 프롬프트는 <b>"이건 하지 마"가 절반</b>이에요. 여기 금지 사항 4개 보세요.</p>
       <ul>
         <li>off-target 예시(EPA vs 크릴오일)는 <b>약사 청중이 가장 즉각 이해하는 대목</b>입니다. 여기서 고개 끄덕임 나옵니다.</li>
-        <li>4차 검색(가이드라인)은 <b>실제로 빠뜨렸다가 F1이 계속 T2로 나왔던 버그</b>입니다. "검색 한 번 안 던져서 판정이 갇힌다"는 이야기가 임팩트 있습니다.</li>
+        <li>4차 검색(가이드라인)은 <b>빠뜨렸다가 F1이 계속 T2로 나왔던 버그</b>입니다. 검색 한 번을 안 던져서 판정이 T2에 갇힌 사례로 설명하세요.</li>
         <li>"T3를 두려워하지 마라" — AI가 사용자 마음에 드는 답으로 기우는 성향을 설명할 자연스러운 타이밍.</li>
       </ul>
     </div>
@@ -836,8 +837,8 @@
   <!-- ═══════════════════ 9 ═══════════════════ -->
   <section class="session" id="s9">
     <div class="s-head"><span class="step">09</span><span class="sec">조각 3 · agents/abstract-miner.md</span></div>
-    <h2 class="s-title">조수 2 — <span class="hl">해석하지 않고, 그대로 오려낸다</span></h2>
-    <p class="s-intro">"초록 1편에서 정해진 항목만 뽑아내는 추출기." 최대 8명이 <b>동시에</b> 돌아갑니다. 서로의 논문을 모릅니다.</p>
+    <h2 class="s-title">abstract-miner — <span class="hl">해석하지 않고, 그대로 오려낸다</span></h2>
+    <p class="s-intro">지시문의 첫 문장은 "초록 1편에서 정해진 5개 항목만 뽑아내는 추출기"입니다. 최대 8개가 <b>동시에</b> 돌고, 서로의 논문을 입력으로 받지 않습니다.</p>
 
     <div class="case">
       <div class="case-label"><span class="dot"></span>5개 슬롯 — 숫자 4개 + 문장 1개</div>
@@ -853,7 +854,7 @@
     </div>
 
     <div class="case">
-      <div class="case-label star"><span class="dot"></span>인용 규칙 — 이 조수의 전부</div>
+      <div class="case-label star"><span class="dot"></span>인용 규칙 — 이 에이전트의 핵심</div>
       <div class="def">
         <div class="one">모든 값은 <b>「값 + 단위 + 원문 인용문」</b> 한 묶음으로만 존재한다</div>
         <div class="desc"><code>quote</code>는 초록 문장을 <b>글자 하나 안 바꾸고</b> 복사한 것. <code>value</code>와 <code>unit</code>은 <b>둘 다 그 quote 안에 문자 그대로 들어 있는 조각</b>이어야 합니다.</div>
@@ -903,7 +904,7 @@
   <span class="s">"significance"</span>: <span class="s">"P = 0.02"</span>,    <span class="c">← p값은 버리지 말고 여기 따로</span>
   <span class="s">"quote"</span>: <span class="s">"..."</span>                 <span class="c">← 원문 그대로</span>
 }</code></pre>
-      <div class="anal"><code class="inl">unit_type</code>은 조수가 뭐라고 적든 <b>스크립트가 값을 보고 다시 정합니다.</b> 굳이 믿을 필요가 없는 것은 믿는 목록에서 빼는 것 — 이것도 설계입니다.</div>
+      <div class="anal"><code class="inl">unit_type</code>은 miner가 뭐라고 적든 <b>스크립트가 값을 보고 다시 정합니다.</b> 확인할 방법이 있는 값은 에이전트를 믿지 않는다 — 이것도 설계입니다.</div>
     </div>
 
     <div class="case">
@@ -916,7 +917,7 @@
         <div class="steprow"><span class="n">5</span><span class="t">effect가 p값·신뢰구간·서술어뿐인가? → <b>슬롯을 통째로 버려라</b></span></div>
         <div class="steprow"><span class="n">6</span><span class="t">conclusion이 <b>한 문장</b>이고, 저자의 완충 표현을 단정형으로 바꾸지 않았는가?</span></div>
       </div>
-      <p>그리고 지시문 마지막 줄 — <b>"P6 스크립트가 같은 규칙을 기계적으로 한 번 더 검사하므로, 억지로 통과시켜도 폐기된다."</b> AI에게 "네 뒤에 검사관이 있다"고 알려주는 것 자체가 장치입니다.</p>
+      <p>지시문 마지막 줄은 <b>"P6 스크립트가 같은 규칙을 기계적으로 한 번 더 검사하므로, 억지로 통과시켜도 폐기된다"</b>입니다. 뒤에 기계 검사가 있다는 사실을 지시문에 명시하는 것 자체가 장치입니다 — 통과시키려 애쓸 이유를 없앱니다.</p>
     </div>
 
     <div class="note">
@@ -935,18 +936,18 @@
   <section class="session" id="s10">
     <div class="s-head"><span class="step">10</span><span class="sec">조각 4 · scripts/verify_evidence.py</span></div>
     <h2 class="s-title">마지막 관문은 <span class="hl">AI가 아니다</span></h2>
-    <p class="s-intro">지금까지는 전부 "이렇게 해줘"였습니다. 여기서부터는 <b>"이렇게 된다"</b>입니다. 파이썬 코드는 기분도 없고 아부도 안 합니다.</p>
+    <p class="s-intro">지금까지는 전부 "이렇게 해줘"였습니다. 여기서부터는 <b>"이렇게 된다"</b>입니다. 같은 입력에 항상 같은 판정이 나옵니다.</p>
 
     <div class="case">
       <div class="case-label star"><span class="dot"></span>검증 계약 5개 — 전부 통과해야 <code>verified: true</code></div>
       <div class="steps">
-        <div class="steprow"><span class="n">C1</span><span class="t"><b>quote가 PubMed 초록 원문 안에 실제로 있는가</b> — 스크립트가 초록을 <b>직접 다시 받아와서</b> 대조. 조수가 인용문을 지어내면 통과 불가</span></div>
+        <div class="steprow"><span class="n">C1</span><span class="t"><b>quote가 PubMed 초록 원문 안에 있고, 한 문장인가</b> — 스크립트가 초록을 <b>직접 다시 받아와서</b> 대조. 인용문을 지어내면 통과 불가. 두 문장을 이어붙여도 폐기(<code>quote_multiple_sentences</code>)</span></div>
         <div class="steprow"><span class="n">C2</span><span class="t"><b>value가 그 quote 안에 있는가</b> — 인용문은 진짜인데 숫자만 바꿔치기한 경우를 잡음. <b>숫자는 수 경계까지 봅니다</b></span></div>
         <div class="steprow"><span class="n">C3</span><span class="t"><b>(effect 한정) 그 값이 효과 크기의 형태인가</b> — 원문에 실재하지만 효과 크기가 아닌 것(<code>p &lt; 0.05</code>)을 걸러냄</span></div>
         <div class="steprow"><span class="n">C4</span><span class="t"><b>unit이 그 quote 안에 있는가</b> — <code>17.36</code> + <code>hours</code>처럼 <b>단위만 바꾼 60배 뻥튀기</b>를 잡음</span></div>
         <div class="steprow"><span class="n">C5</span><span class="t"><b>(conclusion 한정) quote만 검사한다</b> — value·unit이 없는 슬롯. 저자 결론 문장 자체가 산출물이므로 문장이 원문에 있는지만 본다</span></div>
       </div>
-      <p><b>C1이 초록을 다시 받아오는 이유</b> — 조수가 넘긴 초록으로 대조하면 <b>같은 출처를 두 번 믿는 것</b>이라 검증이 아닙니다. 정답지는 반드시 파이프라인 밖에서 다시 가져와야 합니다.</p>
+      <p><b>C1이 초록을 다시 받아오는 이유</b> — miner가 넘긴 초록으로 대조하면 <b>같은 출처를 두 번 믿는 것</b>이라 검증이 아닙니다. 대조 기준은 파이프라인 밖에서 다시 가져와야 합니다.</p>
     </div>
 
     <div class="case">
@@ -960,13 +961,18 @@
 
     <div class="case">
       <div class="case-label"><span class="dot"></span>실제 코드 — 통과 못 하면 값을 <b>지웁니다</b></div>
-<pre><code><span class="c"># C1: 인용문이 초록에 실재하는가</span>
+<pre><code><span class="c"># C1: 인용문은 한 문장이어야 한다</span>
+<span class="k">if</span> has_multiple_sentences(quote):
+    <span class="k">return</span> {<span class="s">"value"</span>: <span class="k">None</span>, <span class="s">"verified"</span>: <span class="k">False</span>,
+            <span class="s">"reason"</span>: <span class="s">"quote_multiple_sentences"</span>}
+
+<span class="c"># C1: 인용문이 초록에 실재하는가</span>
 <span class="k">if</span> quote_norm <span class="k">not in</span> abstract_norm:
     <span class="k">return</span> {<span class="s">"value"</span>: <span class="k">None</span>, <span class="s">"verified"</span>: <span class="k">False</span>,
             <span class="s">"reason"</span>: <span class="s">"quote_not_in_abstract"</span>}
 
-<span class="c"># C2: 값이 인용문 안에 실재하는가 (숫자면 수 경계까지)</span>
-<span class="k">if</span> value_norm <span class="k">not in</span> quote_norm:
+<span class="c"># C2: 값이 인용문 안에 실재하는가 — 숫자면 수 경계까지</span>
+<span class="k">if</span> <span class="k">not</span> value_in_quote(value_norm, quote_norm):
     <span class="k">return</span> {<span class="s">"value"</span>: <span class="k">None</span>, <span class="s">"verified"</span>: <span class="k">False</span>,
             <span class="s">"reason"</span>: <span class="s">"value_not_in_quote"</span>}
 
@@ -977,11 +983,18 @@
         <span class="k">return</span> {<span class="s">"value"</span>: <span class="k">None</span>, <span class="s">"verified"</span>: <span class="k">False</span>, <span class="s">"reason"</span>: reason}
 
 <span class="c"># C4: 단위도 인용문 안에 실재하는가 (낱말 경계로)</span>
-<span class="k">if</span> unit <span class="k">and not</span> re.search(<span class="s">rf"(?&lt;![a-z]){unit}(?![a-z])"</span>, quote_norm):
+<span class="k">if</span> unit <span class="k">and not</span> re.search(<span class="s">rf"(?&lt;![a-z]){re.escape(normalize(unit))}(?![a-z])"</span>, quote_norm):
     <span class="k">return</span> {<span class="s">"value"</span>: <span class="k">None</span>, <span class="s">"verified"</span>: <span class="k">False</span>,
             <span class="s">"reason"</span>: <span class="s">"unit_not_in_quote"</span>}</code></pre>
       <div class="fix"><span class="tag">핵심</span><code class="inl">"value": None</code>입니다. "의심스러움" 표시를 다는 게 아니라 <b>값을 실제로 지워버립니다.</b> 팩에 남아 있으면 누군가는 결국 씁니다.</div>
       <div class="warn"><b>C4에서 "그냥 들어 있는지"가 아니라 "낱말로 들어 있는지"를 봅니다.</b> 그러지 않으면 <code class="inl">magnesium</code>의 <code class="inl">g</code> 한 글자에 단위 <code class="inl">g</code>가 걸려서, <b>500 mg가 500 g(1000배)으로 통과</b>합니다. C4가 막으려던 바로 그 사고가 C4를 뚫는 셈입니다.</div>
+      <div class="warn"><b>C1의 "한 문장" 조건이 없으면 C2·C4가 통째로 무의미해집니다.</b> C2와 C4는 <b>인용문 전체</b>에서 값과 단위를 찾습니다. 그래서 miner가 두 문장을 이어붙이면 —<br>
+      <code class="inl">"Subjects received 500 mg magnesium daily. Sleep onset latency decreased by 17.36 min."</code><br>
+      — 값 <code class="inl">17.36</code>에 단위 <code class="inl">mg</code>를 붙여도 <b>둘 다 인용문 안에 실재하므로 통과</b>합니다. 카드에는 <code class="inl">17.36 mg</code>으로 찍히지만 초록이 말한 것은 <code class="inl">17.36 min</code>입니다. 인용문이 초록 전문이면 C4는 "이 단위가 이 초록 어딘가에 있다"로 퇴화합니다. 프롬프트에도 "한 문장만"이라고 적혀 있지만, <b>프롬프트는 계약이고 게이트는 집행</b>입니다. 지키라고 적는 것과 못 어기게 막는 것은 다릅니다.</div>
+      <div class="warn"><b>그 집행도 한동안 반쪽이었습니다.</b> 문장 경계를 <code class="inl">[.!?]\s+[A-Z(]</code>로 찾고 있어서 <b>둘째 문장이 숫자로 시작하면</b> 경계로 잡히지 않았습니다. 위 예시의 어순만 뒤집은 —<br>
+      <code class="inl">"Subjects received 500 mg magnesium daily. 17.36 min was the mean reduction."</code><br>
+      — 이 형태가 <b>한 문장으로 통과</b>해서, 막으려던 <code class="inl">17.36 mg</code>이 그대로 만들어졌습니다. 지금은 숫자 시작도 경계로 봅니다(<code class="inl">[A-Z(0-9]</code>). 배울 점은 규칙이 아니라 <b>게이트의 보증은 그 게이트를 구현한 정규식 하나만큼만 참이라는 것</b>입니다 — 그래서 회귀 테스트가 게이트의 일부입니다.</div>
+      <div class="warn"><b>인용문을 앞에서 자르는 것도 같은 유형입니다.</b> 초록이 <code class="inl">"Magnesium did not improve sleep quality."</code>인데 인용문을 <code class="inl">"improve sleep quality."</code>로 내면 — <b>초록에 실재하는 문자열이고 한 문장</b>이므로 C1을 통과합니다. 저자가 부정한 결론이 긍정으로 뒤집혀 팩에 실립니다. 숫자가 틀리면 사람이 이상하다고 느끼지만, <b>뒤집힌 문장은 그대로 읽힙니다.</b> 그래서 C1b를 뒀습니다 — 인용문이 초록에서 <b>문장 시작 위치</b>에 놓여 있어야 합니다.</div>
     </div>
 
     <div class="case">
@@ -996,7 +1009,7 @@
 
     <div class="case">
       <div class="case-label"><span class="dot"></span>정규화는 하되, 숫자는 절대 안 건드린다</div>
-      <p>대문자·유니코드 대시(–, —)·따옴표('&nbsp;")·연속 공백처럼 <b>의미가 안 바뀌는 표기 차이만</b> 흡수합니다. PubMed의 대시와 조수가 옮겨 적은 하이픈이 달라서 <b>멀쩡한 값이 폐기되는 것</b>을 막으려는 장치입니다.</p>
+      <p>대문자·유니코드 대시(–, —)·따옴표('&nbsp;")·연속 공백처럼 <b>의미가 안 바뀌는 표기 차이만</b> 흡수합니다. PubMed의 대시와 miner가 옮겨 적은 하이픈이 달라서 <b>멀쩡한 값이 폐기되는 것</b>을 막으려는 장치입니다.</p>
       <div class="warn"><b>숫자와 단위는 정규화 대상이 아닙니다.</b> 그걸 검사하는 게 목적인데 정규화해버리면 게이트가 무너집니다. "흡수 범위를 넓히자"는 요청은 곧 "게이트를 약화시키자"는 요청입니다.</div>
     </div>
 
@@ -1020,7 +1033,8 @@
         <div class="steprow"><span class="n">!</span><span class="t">effect의 <b>비교 대상이 다르면</b> (위약 대비 vs 복용 전후) → 같은 경고</span></div>
         <div class="steprow"><span class="n">!</span><span class="t"><code>comparator</code>가 null인 게 있으면 → "카피에서 비교 대상을 단정하지 말 것"</span></div>
         <div class="steprow"><span class="n">!</span><span class="t">조회 실패·초록 없는 논문이 있으면 → "이 팩은 검색된 근거 전체가 아니라 <b>검증에 성공한 일부</b>다"</span></div>
-        <div class="steprow"><span class="n">!</span><span class="t"><b>항상</b> → "광고법 검토를 거치지 않았다. 발행 전 확인할 것"</span></div>
+        <div class="steprow"><span class="n">!</span><span class="t">우려 표명·정오표·이해충돌 진술·<code>design</code> 불일치가 있으면 → <b>사실만</b> 경고로 올림 (판정은 하지 않음)</span></div>
+        <div class="steprow"><span class="n">!</span><span class="t"><b>항상</b> → "광고법 검토를 거치지 않았다. 발행 전 확인할 것" · "무결성 정보는 생성 시점의 PubMed 스냅샷이다"</span></div>
       </div>
       <p>개별 값은 전부 검증을 통과했는데 <b>모아 놓으면 틀리는</b> 경우가 있습니다(%와 절대량 혼재, 위약 대비와 복용 전후 혼재). 슬롯 하나씩 보는 검사로는 안 잡히므로 <b>팩 전체를 놓고 한 번 더</b> 봅니다.</p>
     </div>
@@ -1033,10 +1047,10 @@
 
     <div class="note">
       <div class="lab">발표자 노트</div>
-      <p>여기가 <b>클라이맥스</b>입니다. 섹션 1에서 던진 "검사관이 범인과 같은 사람"의 답이 여기서 나옵니다.</p>
-      <p class="say">C1부터 C5까지, 어렵게 보이지만 결국 <b>Ctrl+F 세 번 + 형태 검사 한 번</b>이에요. 초록에서 문장 찾고, 문장에서 숫자 찾고, 문장에서 단위 찾고, 그 숫자가 p값은 아닌지 보고. 우리가 손으로 하던 걸 코드가 대신 하는 겁니다.</p>
+      <p>섹션 1의 <b>"같은 모델은 자기 출력을 검증하지 못한다"</b>에 대한 답이 여기입니다.</p>
+      <p class="say">C1부터 C5까지, 실제로 하는 일은 <b>Ctrl+F 세 번 + 형태 검사 한 번</b>입니다. 초록에서 문장 찾고, 문장에서 숫자 찾고, 문장에서 단위 찾고, 그 숫자가 p값은 아닌지 봅니다. 사람이 손으로 하던 확인을 코드가 대신합니다.</p>
       <ul>
-        <li>"근데 AI가 검사하면 안 되나요?" 질문 대비 → <b>같은 실수를 한 AI가 자기 실수를 검사하면 통과시킨다.</b></li>
+        <li>"AI가 검사하면 안 되나요?" 질문 대비 → <b>같은 실패 방식을 공유하는 모델은 자기 출력을 통과시킨다.</b></li>
         <li><code>"value": None</code> 부분을 손으로 짚으세요. "지운다"가 이 도구의 성격입니다.</li>
         <li><b>"magnesium의 g" 이야기는 반응이 좋습니다.</b> 안전장치도 대충 만들면 안전장치가 아니라는 예시.</li>
         <li>시간 여유 있으면 <code>python3 scripts/test_verify_evidence.py</code>를 라이브로 돌려 보여주면 임팩트가 큽니다. <code>ok</code> 한 줄이 나옵니다.</li>
@@ -1112,7 +1126,7 @@
         <div class="mid">
           <div class="agentbox danger">
             <div class="an">코드 2 — 팩을 신뢰할 수 없음</div>
-            <div class="ad">입력이 비었거나, <b>검증 불가 논문이 검증 성공 논문 이상</b></div>
+            <div class="ad"><b>제외된 논문이 수록된 논문 이상</b>이거나, 입력이 비었거나, 입력 파일·JSON·<code>slots</code> 스키마가 읽을 수 없는 형태</div>
             <div class="ad">8편 중 4편을 못 받아왔으면 <b>4:4도 2입니다</b></div>
             <div class="ad" style="color:var(--gold)">이때 메인은 팩을 보여주지 않고, <b>무엇이 조회되지 않았는지 먼저 보고</b>합니다</div>
           </div>
@@ -1135,7 +1149,7 @@
         </div>
         <div class="why">
           <h5>판정은 여기서만</h5>
-          <p>조수는 판정하지 않고, 게이트는 의미를 모릅니다. <b>둘을 합쳐 읽는 건 메인과 사람의 몫</b>입니다</p>
+          <p>서브에이전트는 판정하지 않고, 게이트는 의미를 모릅니다. <b>둘을 합쳐 읽는 것은 메인과 사람의 몫</b>입니다</p>
         </div>
       </div>
 
@@ -1197,7 +1211,7 @@ effect = { value: <span class="s">"500"</span>, unit: <span class="s">"mg"</span
         <div class="steprow"><span class="n">④</span><span class="t"><b>초록만 봅니다.</b> 본문에만 있는 수치는 구조적으로 못 뽑습니다 — null이 되고, 그게 의도된 동작입니다</span></div>
         <div class="steprow"><span class="n">⑤</span><span class="t"><b>비교 대상(comparator)은 검증 불가.</b> 문장이 아니라 판단이라 대조가 성립하지 않습니다. 정해진 4개 밖이면 null로 떨어뜨리는 게 최선</span></div>
         <div class="steprow"><span class="n">⑥</span><span class="t"><b>톤 판정은 흔들립니다.</b> 검색 시점 논문 수에 따라 경계에서 오갑니다. 어디까지 흔들려도 되는지를 문서에 적어두고, <b>F4만 불허</b>로 고정합니다</span></div>
-        <div class="steprow"><span class="n">⑦</span><span class="t"><b>quote는 메인 책상에 올라옵니다.</b> 격리는 오염 차단이 아니라 표면 축소이고, 최종 보증은 게이트 하나에서 나옵니다</span></div>
+        <div class="steprow"><span class="n">⑦</span><span class="t"><b>quote는 메인 컨텍스트에 올라옵니다.</b> 격리는 오염 차단이 아니라 표면 축소이고, 최종 보증은 게이트 하나에서 나옵니다</span></div>
         <div class="steprow"><span class="n">⑧</span><span class="t"><b>광고법 검사(P8)가 없습니다.</b> 출력물을 그대로 발행하면 안 됩니다 — 팩의 <code>warnings</code>에 이 문장이 항상 박혀 나옵니다</span></div>
       </div>
     </div>
@@ -1224,15 +1238,24 @@ effect = { value: <span class="s">"500"</span>, unit: <span class="s">"mg"</span
     <h2 class="s-title">돌려보고 <span class="hl">"빈칸이 나오는지"</span>를 본다</h2>
     <p class="s-intro">잘 되는 걸 확인하는 실습이 아닙니다. <b>안 되는 게 제대로 안 되는지</b>를 확인하는 실습입니다.</p>
 
-    <div class="warn"><b>시작 전 각자 준비.</b> NCBI API 키 발급은 실습 시간을 잡아먹습니다. 아래 3)번을 <b>미리</b> 해두세요. 키 없이 돌리면 조수 8명이 동시에 붙는 순간 호출 제한에 걸리고, 그 실패가 "조회 실패"로 조용히 묻혀서 원인을 찾기 어렵습니다.</div>
+    <div class="warn"><b>시작 전 각자 준비.</b> NCBI API 키 발급은 실습 시간을 잡아먹습니다. 아래 3)번을 <b>미리</b> 해두세요. 키 없이 돌리면 miner 8개가 동시에 붙는 순간 호출 제한(초당 3회)에 걸리고, 그 실패가 "조회 실패"로 조용히 묻혀서 원인을 찾기 어렵습니다.</div>
+
+    <div class="case">
+      <div class="case-label"><span class="dot"></span>사전 준비 — 세 가지가 깔려 있어야 합니다</div>
+      <p>아래 세 명령을 차례로 쳐서 <b>버전 번호가 나오면</b> 준비된 것입니다. "command not found"가 나오면 오른쪽대로 설치하세요.</p>
+<pre><code>claude --version    <span class="c"># 없으면: claude.com/claude-code 에서 설치</span>
+git --version       <span class="c"># 없으면: macOS는 xcode-select --install</span>
+python3 --version   <span class="c"># 없으면: python.org 또는 brew install python3</span></code></pre>
+      <div class="warn">이 세 가지는 <b>실습 시간에 설치하면 늦습니다.</b> 미리 확인해 두세요. 아래 3)번 NCBI API 키도 마찬가지입니다.</div>
+    </div>
 
     <div class="case">
       <div class="case-label"><span class="dot"></span>0) 레포 받기 &amp; 위치 확인 — 터미널에서</div>
 <pre><code><span class="c"># 아직 로컬에 파일이 없다면 먼저 받는다</span>
-git clone git@github.com:jiyajiya/pb-ai-study.git
+git clone https://github.com/jiyajiya/pb-ai-study.git
 cd pb-ai-study/pharmacist
 pwd   <span class="c"># 여기 출력되는 절대경로를 아래 2)에서 그대로 쓴다</span></code></pre>
-      <p>python3가 있어야 합니다 — <code class="inl">python3 --version</code>으로 먼저 확인하세요.</p>
+      <div class="anal">git이 없거나 clone이 안 되면 <b>브라우저로 받아도 됩니다.</b> <code class="inl">github.com/jiyajiya/pb-ai-study</code> → 초록색 <b>Code</b> 버튼 → <b>Download ZIP</b> → 압축을 푼 뒤, 터미널에서 그 안의 <code class="inl">pharmacist</code> 폴더로 <code class="inl">cd</code> 하면 이후 단계는 동일합니다.</div>
     </div>
 
     <div class="case">
@@ -1297,8 +1320,8 @@ claude plugin install pubmed-evidence@pharma-bros</code></pre>
 
     <div class="case">
       <div class="case-label star"><span class="dot"></span>깨뜨리기 — 오늘 실습의 핵심</div>
-      <p>여기부터가 진짜입니다. <b>게이트가 살아 있다는 걸 말로 듣는 것과, 내 손으로 뚫어보려다 막히는 것은 완전히 다릅니다.</b></p>
-      <p>5)번 실행이 끝나면 작업 디렉토리에 <code class="inl">raw_slots.json</code>이 남아 있습니다. 이 파일을 <b>손으로 고친 뒤 게이트만 다시 돌립니다.</b></p>
+      <p>게이트가 실제로 막는지 직접 확인하는 단계입니다.</p>
+      <p>5)번 실행이 끝나면 작업 디렉토리에 <code class="inl">raw_slots.json</code>이 남아 있습니다. 이 파일을 <b>손으로 고친 뒤 게이트만 다시 돌립니다.</b> 게이트는 매번 PubMed를 재조회하므로 <b>이 실습에는 네트워크가 필요합니다.</b></p>
 <pre><code><span class="c"># 게이트는 대화가 아니라 파일을 읽으므로, 단독으로 다시 돌릴 수 있다</span>
 python3 <span class="s">&lt;플러그인경로&gt;</span>/scripts/verify_evidence.py \
   --input raw_slots.json --meta meta.json --output evidence-pack.json
@@ -1308,7 +1331,7 @@ python3 <span class="s">&lt;플러그인경로&gt;</span>/scripts/verify_evidenc
         <tr><th>#</th><th>이렇게 고쳐본다</th><th>기대 결과</th><th>확인하는 것</th></tr>
         <tr class="hi"><td>①</td><td>어떤 슬롯의 <code>value</code>를 <code>"17.36"</code> → <code>"25"</code>로 바꾼다</td><td><code>value: null</code><br><code>reason: value_not_in_quote</code></td><td><b>숫자 조작이 막히는가</b> — quote는 그대로인데 값만 바꿔치기한 경우</td></tr>
         <tr><td>②</td><td><code>unit</code>만 <code>"min"</code> → <code>"hours"</code>로 바꾼다</td><td><code>value: null</code><br><code>reason: unit_not_in_quote</code></td><td><b>C4가 사는 순간.</b> 값은 맞는데 단위만 틀린 60배 뻥튀기</td></tr>
-        <tr><td>③</td><td><code>effect.value</code>에 <code>"p &lt; 0.05"</code>를 넣는다</td><td><code>value: null</code><br><code>reason: p_value_not_effect_size</code></td><td><b>C3.</b> 초록에 진짜로 있는 문자열인데도 폐기되는가</td></tr>
+        <tr><td>③</td><td><code>effect.value</code>에 <b>그 슬롯 quote 안에 실제로 있는</b> <code>"p &lt; 0.05"</code>류 문자열을 넣는다</td><td><code>value: null</code><br><code>reason: p_value_not_effect_size</code></td><td><b>C3.</b> 초록에 실재하는 문자열인데도 폐기되는가 (quote에 없는 문자열을 넣으면 C2가 먼저 걸려 <code>value_not_in_quote</code>가 뜹니다)</td></tr>
         <tr><td>④</td><td><code>quote</code>의 단어 하나를 살짝 고친다</td><td><code>value: null</code><br><code>reason: quote_not_in_abstract</code></td><td><b>C1.</b> 스크립트가 초록을 다시 받아온다는 증거</td></tr>
         <tr><td>⑤</td><td>철회 논문 PMID <code>9500320</code> 레코드를 하나 끼워 넣는다</td><td>슬롯이 통과해도 <b>papers에서 빠지고</b> 경고 첫 줄에 오름</td><td><b>검증 통과 ≠ 사용 가능</b></td></tr>
       </table>
@@ -1328,13 +1351,13 @@ python3 scripts/test_verify_evidence.py   <span class="c"># → ok</span></code>
       <div class="lab">발표자 노트</div>
       <p><b>라이브 데모는 2단으로 나누세요</b> — 전 구간은 F2, 톤 메시지는 F4.</p>
       <p>P1→P6 전 구간(파일 저장·검증까지)은 <b>F2(마그네슘 수면)</b>로 도세요. F4(콜라겐)는 근거가 약해서 채굴 대상이 적고, 운이 나쁘면 종료 코드 2로 끝나 확인 항목 상당수를 못 보여줄 수 있습니다.</p>
-      <p class="say">대신 F4는 이렇게 꽂으세요 — 콜라겐 먹으면 피부 좋아진다, 다들 아시죠. 이 도구를 돌리면 T3, 그러니까 <b>"근거 약함"</b>이 나옵니다. 도구가 고장 난 게 아니라, <b>이게 정답이라서</b> 이렇게 나오는 거예요.</p>
+      <p class="say">F4는 이렇게 설명하세요 — 콜라겐이 피부에 좋다는 인식은 널리 퍼져 있지만, 이 도구를 돌리면 T3, 즉 <b>"근거 약함"</b>이 나옵니다. 고장이 아니라 <b>기대값이 T3</b>이고, 다른 값이 나오면 릴리스 불가입니다.</p>
       <ul>
         <li><b>깨뜨리기는 반드시 시간을 확보하세요.</b> 시간이 부족하면 ①과 ②만 해도 됩니다. 특히 ②(단위만 바꾸기)가 가장 인상적입니다 — 값이 맞는데도 막히니까요.</li>
         <li>깨뜨리기 전에 <code>raw_slots.json</code>을 <b>복사해두라고</b> 안내하세요. 원본이 날아가면 다시 돌려야 합니다.</li>
-        <li>실행이 오래 걸리면(1~3분) 그동안 "지금 조수 8명이 각자 논문 한 편씩 읽고 있다"고 해설하세요. 빈 시간이 오히려 설명 기회입니다.</li>
+        <li>실행이 오래 걸리면(1~3분) "지금 miner 8개가 각자 논문 한 편씩 읽고 있다"고 해설하세요. 대기 시간을 설명에 쓸 수 있습니다.</li>
         <li>결과에 ❌ 빈칸이 나오면 <b>실패가 아니라 성공</b>이라고 반드시 짚어주세요. 여기서 안 짚으면 청중은 도구가 약하다고 오해합니다.</li>
-        <li>네트워크가 불안하면 미리 뽑아둔 <code>evidence-pack.json</code>과 <code>raw_slots.json</code>을 백업으로 준비. <b>깨뜨리기는 백업 파일만 있으면 네트워크 없이도 됩니다</b>(단 C1은 재조회가 필요합니다).</li>
+        <li>네트워크가 불안하면 미리 뽑아둔 <code>raw_slots.json</code>·<code>meta.json</code>·<code>evidence-pack.json</code>을 백업으로 준비하세요. 단 <b>깨뜨리기 자체는 네트워크가 필요합니다</b> — 게이트는 논문마다 초록을 재조회하고, 조회에 실패하면 전부 제외되어 종료 코드 2로 끝납니다. 오프라인이면 미리 만들어 둔 폐기 결과 팩을 화면으로 보여주는 것으로 대체하세요.</li>
       </ul>
     </div>
   </section>
@@ -1343,12 +1366,12 @@ python3 scripts/test_verify_evidence.py   <span class="c"># → ok</span></code>
   <section class="closing" id="s14">
     <h2>마무리 · 오늘의 핵심 7</h2>
     <div class="five">
-      <div><b>①</b> <b>컨텍스트</b> = AI가 지금 보고 있는 것 전부를 올려둔 책상. 한번 올라온 건 잘 안 내려간다</div>
-      <div><b>②</b> <b>서브에이전트</b> = 별도 책상에서 일하고 <b>정해진 형식의 결과 한 장만</b> 건네고 책상을 버리는 조수</div>
-      <div><b>③</b> 서브에이전트를 쓰는 이유는 역할 분담이 아니라 <b>메인이 보는 원문을 검증 가능한 최소 단위로 줄이는 것</b></div>
-      <div><b>④</b> 논문 8편에 조수 8명을 붙이는 건 속도가 아니라 <b>섞일 재료를 없애려는</b> 것이다</div>
-      <div><b>⑤</b> AI 지시문은 "해줘"보다 <b>"하지 마"가 절반</b>. 그리고 <b>도구를 안 주는 것</b>이 가장 확실한 금지다</div>
-      <div><b>⑥</b> 판정은 AI가 아니라 <b>스크립트</b>가 한다 — C1(인용문 실재) · C2(값 실재) · C3(효과 크기 형태) · C4(단위 실재) · C5(결론 문장 실재)</div>
+      <div><b>①</b> <b>컨텍스트</b> = AI가 지금 입력으로 받고 있는 것 전부. 크기 상한이 있고, <b>쌓이기만 할 뿐 골라서 뺄 수 없다</b></div>
+      <div><b>②</b> <b>서브에이전트</b> = 격리된 컨텍스트에서 돌고 <b>정해진 형식의 결과만</b> 반환한 뒤 그 컨텍스트를 폐기하는 AI 호출</div>
+      <div><b>③</b> 서브에이전트를 쓰는 이유는 역할 분담이 아니라, 메인에 올라오는 원문을 <b>「값 + 그 값이 든 문장 한 개」</b> 단위로 만들어 <b>스크립트가 논문과 대조</b>할 수 있게 하는 것</div>
+      <div><b>④</b> 논문 8편에 miner 8개를 붙이는 건 속도가 아니라 <b>섞일 재료를 없애려는</b> 것이다</div>
+      <div><b>⑤</b> AI 지시문은 "해줘"보다 <b>"하지 마"가 절반</b>. 그리고 <b>도구를 안 주는 것</b>이 부탁보다 확실하다</div>
+      <div><b>⑥</b> 판정은 AI가 아니라 <b>스크립트</b>가 한다 — C1(인용문 실재·한 문장) · C2(값 실재) · C3(효과 크기 형태) · C4(단위 실재) · C5(결론 문장 실재)</div>
       <div><b>⑦</b> <b>빈칸은 실패가 아니라 정보다.</b> 그리고 <b>✅도 "그 자리에 맞다"는 뜻은 아니다</b> — 마지막 한 겹은 사람이다</div>
     </div>
 
@@ -1356,10 +1379,10 @@ python3 scripts/test_verify_evidence.py   <span class="c"># → ok</span></code>
     <div class="five">
       <div><b>1</b> 자료를 <b>많이 읽어야 하는 일</b>인가? → 서브에이전트에 맡기고 <b>형식이 정해진 요약만</b> 받는다</div>
       <div><b>2</b> 결과에 <b>숫자·고유명사</b>가 들어가는가? → <b>원문 인용을 함께</b> 뽑게 하고, 대조는 사람이나 코드가 한다</div>
-      <div><b>3</b> 여러 출처의 숫자를 <b>한 표에 나란히</b> 놓는가? → 출처별로 조수를 나눠 섞이지 않게 한다</div>
+      <div><b>3</b> 여러 출처의 숫자를 <b>한 표에 나란히</b> 놓는가? → 출처별로 서브에이전트를 나눠 섞이지 않게 한다</div>
       <div><b>4</b> AI가 <b>기대하는 답으로 기울</b> 여지가 있는가? → "약하게 나와도 괜찮다"를 지시문에 명시하고, <b>보수적인 값을 기본값</b>으로 둔다</div>
       <div><b>5</b> 숫자에 <b>단위</b>가 붙는가? → 값만 확인하지 말고 <b>단위도 원문과 대조</b>한다. 값이 맞아도 단위가 틀리면 결과는 틀린다</div>
-      <div><b>6</b> 조수가 <b>고치면 안 되는 것</b>이 있는가? → 부탁하지 말고 <b>그 도구를 아예 주지 않는다</b></div>
+      <div><b>6</b> 에이전트가 <b>고치면 안 되는 것</b>이 있는가? → 부탁하지 말고 <b>그 도구를 주지 않는다</b></div>
       <div><b>7</b> 실패를 <b>한 등급으로만</b> 처리하고 있는가? → 필드만 버림 / 레코드 버림 / 전체 불신을 나눠라. 안 나누면 결국 기준을 낮추게 된다</div>
     </div>
 
