@@ -241,15 +241,19 @@ def main() -> int:
               "warnings": warnings, "generated_at": time.strftime("%Y-%m-%dT%H:%M:%S%z")}
     _emit(report, args.output)
 
+    # 사람이 읽는 요약은 전부 stderr다. --output 없이 돌리면 stdout은
+    # 리포트 JSON 하나뿐이어야 `> report.json`이 그대로 성립한다.
     print(f"'{query}' → 고시 등재 {len(hits)}건 / 인정 문구 행 "
-          f"{sum(len(m['rows']) for m in matches)}개 / 용량 비교 {len(checks)}건")
+          f"{sum(len(m['rows']) for m in matches)}개 / 용량 비교 {len(checks)}건",
+          file=sys.stderr)
     below = [c for c in checks if c["status"] == "below"]
     if above:
         print(f"  상한 초과 {len(above)}건", file=sys.stderr)
     if incomparable:
         print(f"  비교 불가 {len(incomparable)}건", file=sys.stderr)
     if below:
-        print(f"  인정 최소치 미만 {len(below)}건 (다른 기능성 기준이면 정상)")
+        print(f"  인정 최소치 미만 {len(below)}건 (다른 기능성 기준이면 정상)",
+              file=sys.stderr)
     if not args.pack:
         return 0  # 조회 모드는 대조를 하지 않았으므로 판정할 것이 없다
     return 2 if (above or incomparable or not doses) else 0
