@@ -15,6 +15,14 @@
   - **미등재를 "인정되지 않음"으로 단정.** 이 고시는 고시형만 담는다.
     개별인정형은 별도 문서이므로 없으면 "확인 필요"다.
 
+원료명을 정하는 순서 (`--ingredient` 생략 시):
+  1. 팩의 `kr_notice_name` — pubmed-evidence가 실어 보낸 **고시 등재명**
+  2. 그것이 공란("")이면 "고시형 미등재를 확인했다"는 뜻이므로 조회하지 않는다
+  3. 값이 `null`이면(또는 공백뿐이면) 팩의 `topic` 앞부분 — 이건 **PubMed 검색어**라
+     등재명과 다를 수 있다 ('유산균' vs 등재명 '프로바이오틱스')
+  어느 경로를 탔는지는 리포트의 `ingredient_source`에 남는다. 못 찾았을 때
+  "개별인정형이라 없다"와 "등재명으로 묻지 않았다"를 가르는 것이 이 필드다.
+
 용량 비교가 어려운 이유:
   고시는 기준 성분을 따로 정한다. EPA·DHA는 "EPA와 DHA의 합으로서 0.5~2 g"이라
   논문의 EPA 단독 용량과 직접 비교할 수 없다. 그래서 basis가 있으면 비교
@@ -271,6 +279,11 @@ def _error_report(args, detail: str) -> dict:
         "verdict": "block",
         "verdict_reasons": [f"스크립트가 정상 종료하지 못했다 ({detail})"],
         "ingredient_query": args.ingredient,
+        # 원료명 결정 이후라면 run()이 args에 실어 둔 실제 경로를 쓴다.
+        # 그 앞(팩·claims 로드 실패)에서는 아직 경로가 없어 인자 유무가 아는
+        # 전부다. main()의 포괄 예외도 이 한 곳을 지나므로 갈리지 않는다.
+        "ingredient_source": getattr(args, "resolved_source", None)
+                             or ("argument" if args.ingredient else None),
         "found": None,
         "matches": [], "dose_checks": [],
         "warnings": ["이 리포트는 실행 실패로 생성된 오류 리포트다. "
@@ -280,6 +293,9 @@ def _error_report(args, detail: str) -> dict:
 
 
 def run(args) -> int:
+    # 같은 Namespace로 다시 부를 때 1회차 경로가 남아 있으면 오류 리포트가
+    # 이번 실행과 무관한 source를 주장한다. 진입할 때마다 비운다.
+    args.resolved_source = None
     try:
         pack = json.load(open(args.pack, encoding="utf-8")) if args.pack else {}
     except (OSError, json.JSONDecodeError) as e:
@@ -305,12 +321,53 @@ def run(args) -> int:
         if _e.get("ingredient_ko"):
             _e["ingredient_ko"] = unicodedata.normalize("NFC", _e["ingredient_ko"])
 
+    # 원료명을 어디서 얻었는지가 "못 찾았다"의 뜻을 바꾼다. 등재명으로 물었는데
+    # 없으면 개별인정형이거나 매핑 오류이고, 검색어로 물었는데 없으면 애초에
+    # 등재명으로 묻지 않은 것이다. 둘을 같은 문장으로 보고하면 고시에 실재하는
+    # 원료(유산균 → 등재명 '프로바이오틱스')를 미등재로 읽게 된다.
     query = args.ingredient
+    query_source = "argument"
+    blank_notice = None
     if not query:
-        topic = pack.get("topic") or ""
-        query = re.split(r"[×xX]", topic)[0].strip()
+        notice_name = pack.get("kr_notice_name")
+        if isinstance(notice_name, str) and notice_name.strip():
+            query, query_source = notice_name.strip(), "pack_notice_name"
+        elif notice_name == "":
+            # 공란은 "고시형에 없음을 확인했다"(개별인정형)는 뜻이다. topic으로
+            # 되돌아가면 확인된 사실이 조회 실패로 뒤바뀐다.
+            query_source = "pack_notice_name_empty"
+        else:
+            # 공백만 있는 문자열("   ")은 확인의 결과가 아니라 데이터 오류다.
+            # 공란과 같이 묶으면 "고시형 미등재를 확인했다"는 없는 사실을
+            # 주장하게 되므로, 미확인(null)과 같은 길로 보내고 흔적만 남긴다.
+            if isinstance(notice_name, str):
+                blank_notice = notice_name
+            query = re.split(r"[×xX]", pack.get("topic") or "")[0].strip()
+            query_source = "pack_topic"
+
+    args.resolved_source = query_source
+
+    if query_source == "pack_notice_name_empty":
+        msg = ("팩이 이 원료를 고시형 미등재로 표시했다 (kr_notice_name이 공란). "
+               "**인정되지 않았다는 뜻이 아니다** — 개별인정형 목록을 따로 확인할 것.")
+        report = {"schema": "kr-claims-report/0.2",
+                  "verdict": "block",
+                  "verdict_reasons": ["팩이 고시형 미등재로 표시한 원료라 대조하지 않았다 "
+                                      "— 개별인정형 확인이 남았다는 뜻이다"],
+                  "ingredient_query": None, "ingredient_source": query_source,
+                  "found": False, "matches": [], "dose_checks": [],
+                  "warnings": [msg],
+                  "generated_at": time.strftime("%Y-%m-%dT%H:%M:%S%z")}
+        _emit(report, args.output)
+        print(msg, file=sys.stderr)
+        return 2
+
     if not query:
-        print("원료명을 정할 수 없다. --ingredient로 지정할 것.", file=sys.stderr)
+        # 리포트를 안 쓰고 나가면 --output에 직전 실행의 통과 리포트가 그대로
+        # 남는다. 다음 단계가 그걸 이번 결과로 읽는다 (main()의 예외 경로와 같은 이유).
+        detail = "원료명을 정할 수 없다 — --ingredient로 지정할 것"
+        _emit(_error_report(args, detail), args.output)
+        print(detail, file=sys.stderr)
         return 2
 
     hits, match_kind = find_ingredient(claims, query)
@@ -321,6 +378,13 @@ def run(args) -> int:
         "이 리포트는 인정 문구를 꺼내 놓을 뿐 카피 표현의 적법성을 판정하지 않는다. "
         "표방 문구는 고시 문구와 사람이 직접 대조할 것.",
     ]
+
+    if blank_notice is not None:
+        warnings.insert(0,
+            f"팩의 kr_notice_name이 공백만 있는 문자열({blank_notice!r})이다 — "
+            "'고시형에 없음을 확인했다'(공란)로 읽지 않고 미확인으로 처리해 "
+            "topic으로 조회했다. 팩을 만든 쪽의 데이터 오류일 가능성이 높으니 "
+            "등재명을 채우거나 빈 문자열로 정확히 비울 것.")
 
     # S10: source가 통째로 없으면 어느 고시 기준인지 알 길이 없다.
     if not claims.get("source"):
@@ -358,18 +422,36 @@ def run(args) -> int:
                         f"확인할 것: {found_names}")
 
     if not hits:
+        verdict_reasons = [f"'{query}'이(가) 고시에 없어 대조하지 못했다 "
+                           "— 미인정이 아니라 개별인정형 확인이 남았다는 뜻이다"]
         warnings.insert(0,
             f"'{query}'을(를) 고시에서 찾지 못했다. **인정되지 않았다는 뜻이 아니다** — "
             "이 고시는 고시형 원료만 담으므로 개별인정형 목록을 따로 확인해야 한다.")
+        # 무엇으로 물었는지에 따라 다음 조치가 갈린다. 이 구분이 없으면 파이프라인
+        # 결손(등재명 매핑 누락)이 "개별인정형이라 없다"로 읽혀 조용히 묻힌다.
+        if query_source == "pack_topic":
+            warnings.insert(0,
+                f"'{query}'은(는) 팩의 topic에서 뽑은 **PubMed 검색어**이지 고시 등재명이 아니다 "
+                "(팩에 kr_notice_name이 없어 topic으로 되돌아갔다). 검색어와 등재명이 다른 "
+                "원료는 고시에 실재해도 미등재로 나온다 — '유산균'의 등재명은 '프로바이오틱스', "
+                "'오메가3'는 'EPA 및 DHA 함유 유지'다. 개별인정형을 찾기 전에 등재명부터 확인할 것.")
+            verdict_reasons.append("등재명이 아니라 팩의 topic(검색어)으로 조회했다 "
+                                   "— 매핑 누락일 수 있다")
+        elif query_source in ("pack_notice_name", "argument"):
+            warnings.insert(0,
+                f"'{query}'은(는) 고시 등재명으로 지정된 이름인데 고시에서 찾지 못했다. "
+                "개별인정형이기보다 **등재명 자체가 틀렸을 가능성**을 먼저 볼 것 "
+                "(pubmed-evidence를 쓴다면 normalize.md의 「고시 등재명」 표).")
         report = {"schema": "kr-claims-report/0.2",
                   "verdict": "block",
-                  "verdict_reasons": [f"'{query}'이(가) 고시에 없어 대조하지 못했다 "
-                                      "— 미인정이 아니라 개별인정형 확인이 남았다는 뜻이다"],
+                  "verdict_reasons": verdict_reasons,
                   "ingredient_query": query,
+                  "ingredient_source": query_source,
                   "found": False, "matches": [], "dose_checks": [],
                   "warnings": warnings, "generated_at": time.strftime("%Y-%m-%dT%H:%M:%S%z")}
         _emit(report, args.output)
-        print(f"'{query}': 고시 미등재 → 개별인정형 확인 필요", file=sys.stderr)
+        print(f"'{query}': 고시 미등재 → 개별인정형 확인 필요 (조회 출처: {query_source})",
+              file=sys.stderr)
         return 2
 
     # 팩에서 검증된 용량 슬롯만 모은다. verified=false는 값이 이미 제거돼 있다.
@@ -489,6 +571,7 @@ def run(args) -> int:
               "verdict": verdict,
               "verdict_reasons": verdict_reasons,
               "ingredient_query": query,
+              "ingredient_source": query_source,
               "found": True, "matches": matches, "dose_checks": checks,
               "warnings": warnings, "generated_at": time.strftime("%Y-%m-%dT%H:%M:%S%z")}
     _emit(report, args.output)

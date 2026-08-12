@@ -1,0 +1,20 @@
+name: tests
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      # 테스트는 프레임워크 없이 assert로 돈다. 파일을 직접 실행한다.
+      # 각 테스트는 자기 scripts/ 안의 모듈을 import하므로 그 폴더에서 돈다.
+      - run: |
+          set -e
+          for t in $(find . -name 'test_*.py' -not -path './.git/*' | sort); do
+            echo "── $t"
+            (cd "$(dirname "$t")" && python3 "$(basename "$t")")
+          done

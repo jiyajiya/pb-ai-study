@@ -299,9 +299,10 @@
     <a href="#s9">miner</a>
     <a href="#s10">게이트</a>
     <a href="#s11">그림C</a>
-    <a href="#s12">한계</a>
-    <a href="#s13">실습</a>
-    <a href="#s14">마무리</a>
+    <a href="#s12">고시</a>
+    <a href="#s13">한계</a>
+    <a href="#s14">실습</a>
+    <a href="#s15">마무리</a>
   </div>
 </nav>
 
@@ -319,7 +320,8 @@
       <span>P2 <b>근거 스캔</b></span><span class="arrow">→</span>
       <span>P3 <b>숫자 채굴</b></span><span class="arrow">→</span>
       <span>P3-1 <b>파일 저장</b></span><span class="arrow">→</span>
-      <span>P6 <b>검증 게이트</b></span>
+      <span>P6 <b>검증 게이트</b></span><span class="arrow">→</span>
+      <span>P6-1 <b>고시 대조</b></span>
     </div>
     <p style="margin-top:18px;font-size:.92rem">🛠 이 구조를 직접 만들어보는 자료는 따로 있습니다 →
     <a class="xlink" href="pubmed-evidence-workshop.html">실습본 (붙여넣으면서 만드는 8단계)</a></p>
@@ -378,7 +380,7 @@
 
     <div class="steps">
       <div class="steprow"><span class="n">①</span><span class="t"><b>서브에이전트를 왜 쓰는가.</b> 일을 나눠 맡기려는 게 아닙니다. 숫자 하나에 <b>그 숫자가 들어 있는 문장 한 개</b>를 붙여서 넘기게 하려고 씁니다. 그래야 나중에 <b>스크립트가 그 문장을 논문 초록에서 찾아</b> 대조할 수 있습니다</span></div>
-      <div class="steprow"><span class="n">②</span><span class="t">pubmed-evidence의 <b>P1 → P2 → P3 → P3-1 → P6 흐름</b>과 각 단계의 담당자를 그릴 수 있다</span></div>
+      <div class="steprow"><span class="n">②</span><span class="t">pubmed-evidence의 <b>P1 → P2 → P3 → P3-1 → P6 → P6-1 흐름</b>과 각 단계의 담당자를 그릴 수 있다</span></div>
       <div class="steprow"><span class="n">③</span><span class="t">"이 숫자는 왜 믿을 수 있나?"에 <b>C1~C5 검증 계약</b>으로 답하고, <b>그 게이트가 못 막는 것</b>까지 말할 수 있다</span></div>
     </div>
 
@@ -388,6 +390,7 @@
       <tr><td>PubMed 근거 지형 스캔 + 톤 판정</td><td><b>광고법 검사</b> (P8)</td></tr>
       <tr><td>초록에서 5개 항목 추출 (숫자 4 + 결론 문장 1)</td><td>반론 논문 수집 (P4)</td></tr>
       <tr><td>추출한 값을 원문과 기계 대조</td><td>안전성 정보 추출 (P5)</td></tr>
+      <tr><td>식약처 고시 대조 — 인정 문구·일일섭취량 (P6-1)</td><td>그 문구가 <b>광고법에 맞는지</b> 판정하기</td></tr>
       <tr><td>철회·정오표·이해충돌 진술을 팩에 싣기</td><td>그 진술을 <b>판정</b>하기 (사람 몫)</td></tr>
     </table>
 
@@ -1375,7 +1378,93 @@
 
   <!-- ═══════════════════ 12 ═══════════════════ -->
   <section class="session" id="s12">
-    <div class="s-head"><span class="step">12</span><span class="sec">한계 · 게이트가 보증하지 못하는 것</span></div>
+    <div class="s-head"><span class="step">12</span><span class="sec">P6-1 · 두 번째 게이트</span></div>
+    <h2 class="s-title">초록에 있다고 <span class="hl">국내에서 쓸 수 있는 건 아니다</span></h2>
+    <p class="s-intro">P6이 통과시킨 <b>500 mg</b>은 "그 초록에 진짜로 있다"까지만 보증합니다. 그런데 카드뉴스는 한국에서 나갑니다 — 기능성 표시에는 <b>식약처 고시</b>라는 다른 기준이 따로 있습니다. 그걸 보는 단계가 <b>P6-1</b>이고, 담당은 <code class="inl">kr-claims</code>라는 <b>별도 플러그인</b>입니다.</p>
+
+    <div class="case">
+      <div class="case-label star"><span class="dot"></span>① 두 게이트는 서로 다른 질문을 합니다</div>
+      <table class="ttable">
+        <tr><th></th><th>P6 <code>verify_evidence.py</code></th><th>P6-1 <code>kr-claims</code></th></tr>
+        <tr><td><b>묻는 것</b></td><td>이 숫자가 <b>그 초록에</b> 있는가</td><td>이 숫자를 <b>국내에서</b> 써도 되는가</td></tr>
+        <tr><td><b>대조 기준</b></td><td>PubMed 초록 (재조회)</td><td>식약처 고시 (일일섭취량·인정 문구)</td></tr>
+        <tr><td><b>답</b></td><td colspan="2"><b>둘 다 같은 모양입니다</b> — <code>verdict</code> = <code>pass</code> / <code>review</code> / <code>block</code> + <code>verdict_reasons</code> 배열</td></tr>
+      </table>
+      <div class="fix"><span class="tag">정리</span>P6을 통과한 500 mg이 P6-1에서 <b>상한 초과로 걸리는 것은 고장이 아닙니다.</b> 논문의 사실과 국내에서 표시 가능한 범위는 애초에 다른 것이라, 둘 다 봐야 합니다.</div>
+    </div>
+
+    <div class="case">
+      <div class="case-label star"><span class="dot"></span>② 검색어와 고시 등재명은 <b>다른 축</b>입니다</div>
+      <p>여기서 실제로 사고가 났습니다. 두 이름이 같을 거라고 아무도 의심하지 않았거든요.</p>
+      <table class="ttable">
+        <tr><th>사람이 부르는 이름</th><th>PubMed 검색어</th><th>식약처 고시 등재명</th></tr>
+        <tr><td>오메가3</td><td>omega-3 fatty acids</td><td><b>EPA 및 DHA 함유 유지</b></td></tr>
+        <tr class="hi"><td>유산균</td><td>probiotics</td><td><b>프로바이오틱스</b></td></tr>
+        <tr><td>마그네슘</td><td>magnesium</td><td>마그네슘 <span style="font-size:.85em">(우연히 같은 경우)</span></td></tr>
+      </table>
+      <div class="warn"><b>"유산균"으로 고시를 조회하면 미등재로 나옵니다.</b> 고시에는 <b>「프로바이오틱스」로 실재하는데도</b> 그렇습니다. 그런데 그 실패가 나가는 문장은 <b>"고시에 없음 — 개별인정형 확인 필요"</b>여서, <b>정상 결과와 구별되지 않습니다.</b></div>
+      <div class="key">
+        <div class="lab">이 사고가 가르치는 것</div>
+        <p>도구를 이어붙일 때 진짜 위험한 곳은 <b>양쪽이 같은 것을 다르게 부르는 지점</b>입니다.<br>여기선 에러가 안 납니다 — <b>그럴듯한 결과가 나옵니다.</b> 그래서 못 봅니다.</p>
+      </div>
+      <div class="fix"><span class="tag">고친 방법</span>용어 사전(<code class="inl">normalize.md</code>)에 <b>「고시 등재명」 표를 따로</b> 만들었습니다. 검색어 표에 칸을 늘리지 않고 <b>표를 나눈</b> 이유가 이것입니다 — 축이 다르면 칸이 아니라 표를 나눠야 섞이지 않습니다.</div>
+    </div>
+
+    <div class="case">
+      <div class="case-label"><span class="dot"></span>③ 「고시에 없다」는 「인정되지 않았다」가 아닙니다</div>
+      <p>약사 청중이 가장 오해하기 쉬운 지점입니다. 이 고시가 담는 것은 <b>고시형 원료뿐</b>입니다.</p>
+      <div class="steps">
+        <div class="steprow"><span class="n">✓</span><span class="t"><b>정확한 문장</b> — "이 고시(고시형)에 없음. <b>개별인정형 목록 확인이 남았다</b>"</span></div>
+        <div class="steprow"><span class="n">✗</span><span class="t"><b>틀린 문장</b> — "국내 미인정"</span></div>
+      </div>
+      <p>저분자콜라겐펩타이드(F4)가 딱 이 경우입니다 — <b>개별인정형이라 고시형 데이터에 없는 게 정상</b>입니다. 반대로, <b>등재명을 제대로 넣었는데도 미등재가 나왔다면</b> 그건 개별인정형이 아니라 <b>매핑이 틀린 것</b>입니다.</p>
+    </div>
+
+    <div class="case">
+      <div class="case-label"><span class="dot"></span>④ 빈칸에도 두 가지 뜻이 있습니다</div>
+      <p>팩에 실려 내려가는 <code class="inl">kr_notice_name</code>은 <b>세 가지 상태</b>를 가집니다. 이 셋을 뭉개면 다음 단계가 잘못 갈립니다.</p>
+      <table class="ttable">
+        <tr><th>표의 상태</th><th>값</th><th>뜻</th><th>kr-claims가 하는 일</th></tr>
+        <tr><td>이름이 있음</td><td><code>"프로바이오틱스"</code></td><td>고시형 등재 원료</td><td>그 이름으로 조회</td></tr>
+        <tr><td>칸이 공란</td><td><code>""</code></td><td><b>고시형에 없음을 확인했다</b></td><td>조회하지 않고 <code>block</code> — 사람 확인이 남았다는 뜻</td></tr>
+        <tr class="hi"><td>행이 없음</td><td><code>null</code></td><td><b>아직 확인하지 않았다</b></td><td>검색어로 되돌아감 + 경고</td></tr>
+      </table>
+      <div class="warn"><b>등재명은 추론 금지입니다.</b> 틀린 등재명은 <b>다른 원료의 인정 문구와 섭취량을 조용히 가져옵니다</b> — 빈 값보다 나쁩니다. 표에 없으면 <code class="inl">null</code>이 정답입니다.</div>
+      <div class="anal">이 원칙은 miner의 <b>"모르면 null"</b>과 정확히 같은 규칙입니다. <b>모르는 것을 채우는 쪽이 비우는 쪽보다 항상 더 위험하다</b> — 이 도구 전체가 이 한 문장 위에 서 있습니다.</div>
+    </div>
+
+    <div class="case">
+      <div class="case-label"><span class="dot"></span>⑤ 게이트가 둘이면 답도 둘 — 합치는 규칙</div>
+<pre><code>최종 verdict = <span class="k">max</span>(pack.verdict, kr_report.verdict)   <span class="c">← block &gt; review &gt; pass</span>
+
+<span class="c">// verdict_reasons는 합치지 않는다. 두 배열을 출처와 함께 나란히.</span>
+<span class="s">"P6"</span>   : [<span class="s">"폐기된 슬롯이 2개 있다"</span>]
+<span class="s">"P6-1"</span>: [<span class="s">"논문 용량이 인정 상한을 넘는다"</span>]</code></pre>
+      <p><b>엄격한 쪽을 최종값으로 삼습니다.</b> 사유를 뭉치지 않는 이유는 단순합니다 — <b>어느 게이트가 무엇에 걸렸는지가 사라지면 사람이 다음 조치를 정할 수 없기</b> 때문입니다.</p>
+      <div class="warn"><code class="inl">kr-claims</code>가 <b>설치돼 있지 않으면</b> 이 단계는 건너뜁니다. 그때는 <b>"국내 기준 대조를 하지 않았다"를 출력에 반드시 적습니다</b> — <b>대조하지 않은 것이 통과로 읽히면 안 됩니다.</b></div>
+    </div>
+
+    <div class="key">
+      <div class="lab">그리고 P6-1은 P8을 대신하지 않습니다</div>
+      <p>여기서 하는 일은 <b>인정 문구와 용량을 꺼내 놓는 것</b>까지입니다.<br>그 문구로 쓴 <b>카피 표현이 광고법에 맞는지는 판정하지 않습니다.</b> 그건 여전히 사람 몫입니다.</p>
+    </div>
+
+    <div class="note">
+      <div class="lab">발표자 노트</div>
+      <p class="say">논문에서 500mg이 효과 있다고 나왔어요. 그럼 카드에 500mg 쓰면 될까요? <b>아니요.</b> 한국에는 식약처 고시가 따로 있고, 거기 상한이 다를 수 있어요. 두 개는 <b>서로 다른 질문</b>이에요.</p>
+      <ul>
+        <li>②의 <b>"유산균 → 프로바이오틱스"</b>가 이 섹션의 핵심입니다. 청중에게 <b>먼저 물어보세요</b> — "고시에 '유산균'이라고 등재돼 있을까요?" 대부분 그렇다고 답합니다. 거기서 표를 보여주면 강하게 남습니다.</li>
+        <li>이 사고의 성질을 짚어주세요: <b>에러가 안 났습니다.</b> 그럴듯한 결과가 나왔고, 그래서 아무도 못 봤습니다. 업무에 AI를 붙일 때 가장 흔한 실패 모양입니다.</li>
+        <li>③의 <b>"미등재 ≠ 미인정"</b>은 약사 청중이 <b>즉시 이해하고 가장 실무적으로 받아가는</b> 구분입니다. 개별인정형 이야기를 한 번 더 짚어주세요.</li>
+        <li>④의 <b>「공란과 null이 다르다」</b>는 개발자 청중이 더 좋아합니다. 시간이 없으면 표만 띄우고 넘어가도 됩니다.</li>
+        <li>실습에서는 <b>kr-claims가 설치돼 있지 않을 수 있습니다.</b> 그때 출력에 "대조하지 않았다"가 찍히는지 같이 확인하면 ⑤가 살아납니다.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ═══════════════════ 13 ═══════════════════ -->
+  <section class="session" id="s13">
+    <div class="s-head"><span class="step">13</span><span class="sec">한계 · 게이트가 보증하지 못하는 것</span></div>
     <h2 class="s-title">✅가 떠도 <span class="hl">사람이 봐야 하는 것</span></h2>
     <p class="s-intro">여기를 안 하고 넘어가면 이 도구는 위험해집니다. <b>게이트를 믿는 만큼, 게이트가 안 보는 곳도 알아야</b> 합니다.</p>
 
@@ -1434,9 +1523,9 @@ effect = { value: <span class="s">"500"</span>, unit: <span class="s">"mg"</span
     </div>
   </section>
 
-  <!-- ═══════════════════ 13 ═══════════════════ -->
-  <section class="session" id="s13">
-    <div class="s-head"><span class="step">13</span><span class="sec">실습 · 직접 돌려보기</span></div>
+  <!-- ═══════════════════ 14 ═══════════════════ -->
+  <section class="session" id="s14">
+    <div class="s-head"><span class="step">14</span><span class="sec">실습 · 직접 돌려보기</span></div>
     <h2 class="s-title">돌려보고 <span class="hl">"빈칸이 나오는지"</span>를 본다</h2>
     <p class="s-intro">잘 되는 걸 확인하는 실습이 아닙니다. <b>안 되는 게 제대로 안 되는지</b>를 확인하는 실습입니다.</p>
 
@@ -1567,8 +1656,8 @@ python3 scripts/test_verify_evidence.py   <span class="c"># → ok</span></code>
     </div>
   </section>
 
-  <!-- ═══════════════════ 14 ═══════════════════ -->
-  <section class="closing" id="s14">
+  <!-- ═══════════════════ 15 ═══════════════════ -->
+  <section class="closing" id="s15">
     <h2>마무리 · 오늘의 핵심 7</h2>
     <div class="five">
       <div><b>①</b> <b>컨텍스트</b> = AI가 지금 입력으로 받고 있는 것 전부. 크기 상한이 있고, <b>쌓이기만 할 뿐 골라서 뺄 수 없다</b></div>

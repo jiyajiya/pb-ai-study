@@ -11,7 +11,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).parent))
 from verify_evidence import (verify_slot, verify_quote_slot, normalize, REJECT_REASONS,
                             parse_record, design_check, has_multiple_sentences,
                             PubmedCountError, NotFoundError)
-import contextlib, io, json, os, tempfile
+import contextlib, io, json, os, subprocess, tempfile
 import verify_evidence
 
 ABS = normalize(
@@ -902,5 +902,56 @@ code, pack, err = run_main(
 )
 assert code == 2, (code, pack, err)
 assert pack["verdict"] == "block", (pack["verdict"], pack["verdict_reasons"])
+
+
+# ══════════════════════════════════════════════════════════════════
+# P6-1 브리지 상류: meta.json의 kr_notice_name이 팩까지 실려 내려간다.
+#
+# 키 이름은 pubmed-evidence와 kr-claims 사이의 **문자열 계약**이다. 한쪽에
+# 오타가 나도 예외는 안 난다 — 하류가 topic 앞부분으로 조용히 되돌아가고,
+# 고시에 실재하는 기준이 미등재로 보고된다. 그 퇴화가 눈에 보이는 유일한
+# 지점이 이 키의 존재 여부라서 여기에 고정한다.
+# ══════════════════════════════════════════════════════════════════
+
+_bridge_records = [{"pmid": "11111",
+                    "slots": effect_slots("-0.34", EFFECT_ABS, unit="mmol/L")}]
+_bridge_fetch = lambda pmid, api_key=None, retries=2: make_record(EFFECT_ABS)
+
+# 1) 이름이 있으면 그대로 실린다 (topic에서 유도할 수 없는 값이다)
+code, pack, err = run_main(_bridge_records, _bridge_fetch,
+                           meta={"topic": "오메가3 × 중성지방",
+                                 "kr_notice_name": "EPA 및 DHA 함유 유지"})
+assert pack["kr_notice_name"] == "EPA 및 DHA 함유 유지", pack.get("kr_notice_name")
+assert not any("kr_notice_name" in w for w in pack["warnings"]), pack["warnings"]
+
+# 2) 공란은 "고시형에 없음을 확인했다"이다. null로 뭉개지 말 것 —
+#    하류가 셋을 다르게 처리한다.
+code, pack, err = run_main(_bridge_records, _bridge_fetch,
+                           meta={"topic": "콜라겐 × 피부", "kr_notice_name": ""})
+assert pack["kr_notice_name"] == "", repr(pack.get("kr_notice_name"))
+assert not any("kr_notice_name" in w for w in pack["warnings"]), pack["warnings"]
+
+# 3) 키가 없으면 null이고, "확인하지 않았다"가 warnings에 남는다.
+#    topic이 우연히 등재명과 같은 원료(마그네슘)면 결과만 보고는 알 수 없다.
+code, pack, err = run_main(_bridge_records, _bridge_fetch,
+                           meta={"topic": "마그네슘 × 수면"})
+assert pack["kr_notice_name"] is None, pack.get("kr_notice_name")
+assert any("kr_notice_name" in w for w in pack["warnings"]), pack["warnings"]
+
+
+# ══════════════════════════════════════════════════════════════════
+# 워크숍 HTML 스냅샷도 여기서 같이 검사한다.
+#
+# sync_workshop.py는 이 저장소에만 있다 (참가자에게 나가는 starter zip에는
+# 없다). 있으면 = 플러그인 레포에서 도는 중이므로 --check를 태운다.
+# 사람이 기억해서 돌려야 하는 검사는 결국 안 돈다 — 스냅샷이 원본과
+# 어긋난 채 나간 것이 정확히 그 실패였고, 스크립트만 만들어 두면
+# "손으로 옮긴다"가 "기억해서 돌린다"로 한 칸 옮겨질 뿐이다.
+# ══════════════════════════════════════════════════════════════════
+
+_sync = os.path.join(os.path.dirname(os.path.abspath(__file__)), "sync_workshop.py")
+if os.path.exists(_sync):
+    assert subprocess.run([sys.executable, _sync, "--check"]).returncode == 0, (
+        "워크숍 HTML이 원본 파일과 어긋나 있다 (위 메시지 참고)")
 
 print("ok")
