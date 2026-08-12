@@ -241,7 +241,7 @@
     <a href="#st3">③ 검사기</a>
     <a href="#st4">④ 속여보기</a>
     <a href="#st5">⑤ 서브에이전트 2호</a>
-    <a href="#st6">⑥ 메인에이전트</a>
+    <a href="#st6">⑥ 스킬</a>
     <a href="#st7">⑦ 마무리</a>
     <div class="modeswitch" title="진행 방식">
       <button data-m="claude">💬 Claude만으로</button>
@@ -273,7 +273,7 @@
     <div class="maprow"><span class="mn">3</span><span class="mt"><b>검사기 가동</b> — 방금 한 검증을 기계에게 <span class="file">verify_evidence.py</span> <span class="mm">(10분)</span></span></div>
     <div class="maprow"><span class="mn">4</span><span class="mt"><b>속여보기</b> — 숫자를 조작해도 검사기가 막는지 <span class="mm">(10분)</span></span></div>
     <div class="maprow"><span class="mn">5</span><span class="mt"><b>서브에이전트 2호 만들기</b> — 논문 지형을 정찰하는 담당 <span class="file">evidence-scout.md</span> <span class="mm">(10분)</span></span></div>
-    <div class="maprow"><span class="mn">6</span><span class="mt"><b>메인에이전트에게 매뉴얼 주기</b> — "마그네슘 수면 근거 뽑아줘" 한 문장으로 전체 실행 <span class="file">SKILL.md</span> <span class="mm">(10분)</span></span></div>
+    <div class="maprow"><span class="mn">6</span><span class="mt"><b>스킬 만들기</b> — "마그네슘 수면 근거 뽑아줘" 한 문장으로 전체 실행 <span class="file">SKILL.md</span> <span class="mm">(10분)</span></span></div>
     <div class="maprow"><span class="mn">7</span><span class="mt"><b>마무리</b> — 나눠 쓰는 법, 그리고 이 도구가 못 막는 것 <span class="mm">(5분)</span></span></div>
   </div>
 
@@ -335,7 +335,7 @@ claude</code></pre>
       <div class="clab">✅ 이렇게 되면 성공</div>
       <p><span class="claude-only">Claude 대화창에 <b>"이 폴더 구조를 보여줘"</b>라고 부탁하면</span><span class="term-only">터미널에 <code class="inl">find . -type f</code> 를 치면</span>
       <code class="inl">scripts</code> 폴더의 파이썬 2개와 <code class="inl">.claude</code> 폴더가 보입니다.
-      <code class="inl">agents</code> 폴더는 비어 있습니다 — 다음 단계에서 첫 <b>서브에이전트</b>를 만듭니다.</p>
+      <code class="inl">agents</code>와 <code class="inl">skills</code> 폴더는 <b>둘 다 비어 있습니다</b> — 오늘 채울 곳이 여기 둘입니다. 같은 <code class="inl">.md</code> 파일이라도 <b>어느 쪽에 넣느냐로 성격이 갈립니다</b> (1단계에서 첫 <b>서브에이전트</b>부터 만듭니다).</p>
       <div class="nope"><b>🚨 안 될 때:</b> 폴더가 비어 보이면 → 압축을 풀지 않고 zip을 그대로 연 경우가 대부분입니다. <b>압축 해제 후의 폴더</b>를 여세요.
       (Mac Finder에서 .claude 폴더는 숨김 처리라 안 보이는 게 정상입니다 — Claude에게는 보입니다.)</div>
     </div>
@@ -709,31 +709,35 @@ echo "종료코드: $?"</code></pre>
   <section class="session" id="st6" data-files="skill,normalize">
     <div class="s-head">
       <div class="stepnum">6</div>
-      <div class="s-headtxt"><div class="sec">메인에이전트 · 10분</div><h2 class="s-title">이제 <span class="hl">한 문장이면</span> 됩니다</h2></div>
+      <div class="s-headtxt"><div class="sec">스킬 · 10분</div><h2 class="s-title">이제 <span class="hl">한 문장이면</span> 됩니다</h2></div>
     </div>
     <p class="s-intro">부품은 다 모였습니다 — 추출 담당(1단계), 검사기(3단계), 정찰 담당(5단계).
-    이들을 순서대로 부리는 것이 <b>메인에이전트</b>입니다.</p>
+    이들을 순서대로 부리는 <b>업무 매뉴얼</b>을 넣을 차례입니다. 이런 파일을 <b>스킬</b>이라고 부릅니다.</p>
 
-    <div class="tip"><b>메인에이전트는 이번에 만드는 게 아닙니다 — 0단계부터 계속 거기 있었습니다.</b>
-    여러분이 지금까지 말을 걸어 온 <b>그 대화창</b>이 메인에이전트입니다. 서브에이전트 둘은 새로
-    만들어야 했지만(따로 떨어진 대화방이 필요하니까), 메인에이전트는 <b>업무 매뉴얼이 없었을 뿐</b>입니다.
-    이번 단계에서 그걸 줍니다.</div>
+    <div class="tip"><b>스킬은 새 AI가 아닙니다 — 문서입니다.</b>
+    1·5단계에서 만든 것은 <b>따로 떨어진 대화방에서 도는 AI</b>(서브에이전트)였지만,
+    이번 파일은 <b>여러분이 지금까지 말을 걸어 온 그 대화창이 읽을 매뉴얼</b>입니다.
+    새로 뽑는 사람이 아니라, <b>이미 있던 사람에게 건네는 업무 지침서</b>입니다.</div>
+
+    <div class="aha"><b>폴더가 갈리는 지점이 여기입니다.</b>
+    같은 <code class="inl">.md</code> 파일이라도 <code class="inl">agents/</code>에 넣으면 <b>서브에이전트</b>가 되고,
+    <code class="inl">skills/</code>에 넣으면 <b>스킬</b>이 됩니다. 0단계에서 만든 빈 폴더 두 개가 이걸 위해 있었습니다.</div>
 
     <table class="ttable">
-      <tr><th></th><th>서브에이전트 (1·5단계)</th><th>메인에이전트 (6단계)</th></tr>
+      <tr><th></th><th>서브에이전트 (1·5단계)</th><th>스킬 (6단계)</th></tr>
       <tr><td><b>파일 위치</b></td><td><code>.claude/agents/</code></td><td><code>.claude/skills/</code></td></tr>
-      <tr><td><b>어디서 도나</b></td><td>따로 떨어진 대화방</td><td><b>여러분 눈앞의 이 대화창</b></td></tr>
-      <tr><td><b>읽은 원문은</b></td><td>일이 끝나면 방째 사라진다</td><td>이 대화창에 그대로 쌓인다</td></tr>
-      <tr><td><b>이번에 하는 일</b></td><td>새로 만든다</td><td><b>이미 있다.</b> 매뉴얼만 준다</td></tr>
+      <tr><td><b>정체</b></td><td>따로 떨어져 도는 <b>AI</b></td><td>대화창이 읽는 <b>문서</b></td></tr>
+      <tr><td><b>읽은 원문은</b></td><td>일이 끝나면 방째 사라진다 <span style="font-size:.85em">(격리 컨텍스트)</span></td><td>이 대화창에 그대로 쌓인다 <span style="font-size:.85em">(메인 컨텍스트)</span></td></tr>
+      <tr><td><b>내가 하는 일</b></td><td>없던 것을 새로 만든다</td><td><b>있던 대화창에</b> 매뉴얼을 준다</td></tr>
     </table>
 
-    <p>그래서 넣을 파일 2개는 메인에이전트가 읽을 <b>업무 매뉴얼</b>과, 한글 성분명을 영문 검색어로 바꾸는 <b>용어 사전</b>입니다.</p>
+    <p>그래서 넣을 파일 2개는 <b>업무 매뉴얼</b>과, 한글 성분명을 영문 검색어로 바꾸는 <b>용어 사전</b>입니다.</p>
 
     <div class="do"><span class="dn">1</span><div class="db">
       <div class="dt">지시문 파일 붙여넣기</div>
       <div class="makecard" data-src="skill">
         <div class="mk-file"><span class="ico">📄</span><span class="nm">.claude/skills/pubmed-evidence/SKILL.md</span><span class="ln">293줄</span>
-          <span class="role">메인에이전트의 업무 매뉴얼 · <b>실습판</b> — 원본 플러그인과 다른 곳은 <b>검사기 실행 경로</b>뿐입니다.</span></div>
+          <span class="role">스킬 본체 — 대화창이 읽는 업무 매뉴얼 · <b>실습판</b> — 원본 플러그인과 다른 곳은 <b>검사기 실행 경로</b>뿐입니다.</span></div>
         <div class="mk-act">
           <button class="mk-copy">📋 복사</button>
           <span class="mk-then"><span class="claude-only">→ <b>Claude 대화창</b>에 붙여넣기. Claude가 <b>293줄</b> 저장했다고 답하면 성공</span><span class="term-only">→ <b>터미널</b>에 붙여넣고 <b>Enter</b></span></span>
@@ -774,7 +778,7 @@ echo "종료코드: $?"</code></pre>
 
     <div class="aha">
       <div class="alab">💡 방금 무슨 일이 있었나</div>
-      <p><b>메인에이전트는 논문을 직접 읽지 않습니다.</b> 매뉴얼이 시키는 건 맡기기·저장·검사 실행뿐이고,
+      <p><b>매뉴얼을 읽은 대화창은 논문을 직접 읽지 않습니다.</b> 매뉴얼이 시키는 건 맡기기·저장·검사 실행뿐이고,
       서브에이전트 보고서도 "손대지 말고 그대로 모아라"입니다. 추출 담당을 <b>논문 1편당 한 명씩 동시에</b> 붙이는 것도
       속도 때문이 아니라 — <b>서로 다른 논문의 숫자가 섞일 재료를 없애기 위해서</b>입니다.</p>
     </div>
