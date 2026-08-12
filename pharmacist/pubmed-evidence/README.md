@@ -114,13 +114,17 @@ pubmed-evidence/                          ← 플러그인 루트
 
 `pubmed-evidence-workshop.html`은 실습에서 참가자가 붙여넣을 파일을 **세 군데**
 들고 있다 — `#src-*` 스냅샷, 카드의 줄 수 라벨, 다운로드용 starter zip. 손으로
-옮기면 어긋나고, 어긋난 실습본은 원본이 고친 버그를 그대로 재현한다. 원본
-파일을 고쳤으면 반드시 돌린다.
+옮기면 어긋나고, 어긋난 실습본은 원본이 고친 버그를 그대로 재현한다.
 
 ```bash
 python3 scripts/sync_workshop.py           # 원본에서 다시 채운다
 python3 scripts/sync_workshop.py --check   # 어긋나 있으면 종료 코드 1
 ```
+
+`--check`는 **사람이 기억해서 돌리는 검사가 아니다** — `test_verify_evidence.py`
+끝에서 자동으로 돈다. 원본을 고치고 스냅샷을 안 갱신하면 테스트가 실패하고,
+저장소 루트의 `.github/workflows/tests.yml`이 push·PR마다 같은 테스트를 돌린다.
+로컬에서 잊어도 CI에서 잡힌다.
 
 HTML은 플러그인 동작과 무관한 스터디 자료지만, 플러그인 루트에 있으므로
 설치하면 함께 딸려 온다.

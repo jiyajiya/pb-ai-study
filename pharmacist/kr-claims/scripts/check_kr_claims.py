@@ -293,6 +293,9 @@ def _error_report(args, detail: str) -> dict:
 
 
 def run(args) -> int:
+    # 같은 Namespace로 다시 부를 때 1회차 경로가 남아 있으면 오류 리포트가
+    # 이번 실행과 무관한 source를 주장한다. 진입할 때마다 비운다.
+    args.resolved_source = None
     try:
         pack = json.load(open(args.pack, encoding="utf-8")) if args.pack else {}
     except (OSError, json.JSONDecodeError) as e:

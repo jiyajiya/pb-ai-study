@@ -693,4 +693,48 @@ assert missing_sequence_codes(_seq(1, [1, 3]) + _seq(2, [2]), []) == ["1-2", "2-
 # 정렬은 사전순이 아니라 수열순이다 (2-10이 2-9보다 뒤)
 assert missing_sequence_codes(_seq(2, [11]), [])[-1] == "2-10"
 
+# ══════════════════════════════════════════════════════════════════════
+# F3: 원료명 결정 **이후**에 터진 예외는 오류 리포트의 ingredient_source를
+# null로 퇴화시키면 안 된다. null이면 "등재명으로 물었는데 실패"와
+# "등재명으로 묻지도 않았다"가 같은 리포트가 되고, 되돌려도 아무도 못 잡는
+# 경로였다. run()이 args에 실어 둔 값을 main()의 포괄 예외가 읽는지 본다.
+# ══════════════════════════════════════════════════════════════════════
+
+import argparse  # noqa: E402
+import check_kr_claims  # noqa: E402
+
+_write_claims(_claims, [MG_ROW])
+_write_pack_meta(_pack, "유산균 × 과민성대장증후군", kr_notice_name="프로바이오틱스")
+json.dump({"verdict": "pass", "found": True}, open(_out, "w", encoding="utf-8"))
+
+_real_find = check_kr_claims.find_ingredient
+try:
+    def _boom(*a, **kw):
+        raise RuntimeError("조회 중 폭발")
+    check_kr_claims.find_ingredient = _boom
+    rc, _ = _run_main(["check_kr_claims.py", "--claims", _claims, "--pack", _pack,
+                       "--output", _out])
+finally:
+    check_kr_claims.find_ingredient = _real_find
+
+assert rc == 2, rc
+rep = json.load(open(_out, encoding="utf-8"))
+assert rep["verdict"] == "block", "직전 통과 리포트가 그대로 남아 있다"
+# --ingredient를 안 줬으므로 fallback은 null이다. 여기가 pack_notice_name이어야
+# run()이 실어 둔 경로가 예외 경로까지 살아 왔다는 뜻이다.
+assert rep["ingredient_source"] == "pack_notice_name", rep
+assert any("RuntimeError" in r for r in rep["verdict_reasons"]), rep["verdict_reasons"]
+
+# 같은 Namespace를 재사용해도 1회차 경로가 2회차에 새지 않는다.
+# (현재 호출자는 매번 parse_args()라 도달하지 않지만, 새는 순간 위 계약이
+#  조용히 거짓말이 된다 — 그때 잡을 것이 여기밖에 없다.)
+_ns = argparse.Namespace(pack=_pack, claims=_claims, ingredient=None, output=_out)
+check_kr_claims.run(_ns)
+assert _ns.resolved_source == "pack_notice_name", _ns.resolved_source
+_ns.claims = os.path.join(_tmpdir, "없는파일.json")   # 원료명 결정 **전**에 죽는다
+check_kr_claims.run(_ns)
+assert _ns.resolved_source is None, ("1회차 값이 남았다", _ns.resolved_source)
+assert json.load(open(_out, encoding="utf-8"))["ingredient_source"] is None
+
+
 print("ok")
