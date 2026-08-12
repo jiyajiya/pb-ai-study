@@ -940,6 +940,58 @@ assert any("kr_notice_name" in w for w in pack["warnings"]), pack["warnings"]
 
 
 # ══════════════════════════════════════════════════════════════════
+# 조판용 얇은 공백(U+2009)
+#
+# 출판사(Springer 계열)가 부호·단위·연산자 앞뒤에 U+2009를 넣는다.
+# miner는 **같은 문자를 한 실행 안에서 세 가지로** 옮겼다 (실측):
+#   226 mg      → 그대로 유지    (PMID 34719399)
+#   17.36 min   → 일반 공백으로  (PMID 33865376)
+#   - 27.27     → 삭제           (PMID 33865376)
+# NFKC가 U+2009를 일반 공백으로 바꾸므로 앞의 둘은 통과하고 삭제만 걸렸다.
+# 초록에 그대로 실재하는 값이 조판 때문에 폐기되는 것은 오검출이다.
+# 셋이 **한 문장 안에 섞여** 나오므로 초록을 한 가지 표기로 고르는 방식으로는
+# 못 맞춘다 — 얇은 공백이 있던 자리마다 따로 공백 유무를 묻지 않아야 한다.
+# ══════════════════════════════════════════════════════════════════
+
+# 초록 쪽은 **명시적 이스케이프**로 쓴다. 소스에 얇은 공백을 그대로 넣으면
+# 보이지 않아서, 이 테스트가 무엇을 재현하는지 읽어서는 알 수 없다.
+THIN = "\u2009"
+THIN_ABS = normalize(
+    f"Pooled analysis showed that sleep onset latency was 17.36{THIN}min less "
+    f"after magnesium supplementation compared to placebo "
+    f"(95% CI -{THIN}27.27 to -{THIN}7.44, p{THIN}={THIN}0.0006)."
+)
+# 한 문장 안에 유지·공백화·삭제가 다 들어 있다.
+THIN_Q = ("Pooled analysis showed that sleep onset latency was 17.36 min less "
+          "after magnesium supplementation compared to placebo "
+          "(95% CI -27.27 to -7.44, p = 0.0006).")
+ok = verify_slot("effect", slot("17.36", THIN_Q, unit="min", unit_type="absolute",
+                                comparator="placebo", significance="p = 0.0006"), THIN_ABS)
+assert ok["verified"], ok
+
+# 얇은 공백을 관대하게 봐준다고 **일반 공백**까지 무시하면 안 된다.
+# 범위 "5 - 10"을 음수 "-10"으로 옮긴 인용이 통과하면 부호를 지어낸 것이다.
+RANGE_ABS = normalize("Sleep latency fell by 5 - 10 min in the treatment group.")
+RANGE_Q = "Sleep latency fell by 5 -10 min in the treatment group."
+bad = verify_slot("effect", slot("-10", RANGE_Q, unit="min"), RANGE_ABS)
+assert not bad["verified"] and bad["reason"] == "quote_not_in_abstract", bad
+
+# 얇은 공백으로 조판된 **범위**는 관용 대상이 아니다. "5<U+2009>-<U+2009>10"을
+# "5 -10"으로 옮기면 범위가 음수 효과 크기로 둔갑한다 — 이 스크립트가
+# 막으려는 부호 창작 그 자체다.
+THIN_RANGE_ABS = normalize(f"Sleep latency fell by 5{THIN}-{THIN}10 min in the group.")
+bad = verify_slot("effect", slot("-10", "Sleep latency fell by 5 -10 min in the group.",
+                                 unit="min"), THIN_RANGE_ABS)
+assert not bad["verified"] and bad["reason"] == "quote_not_in_abstract", bad
+
+# 얇은 공백 자리에서도 **앞이 잘린 인용**(C1b)은 그대로 걸려야 한다.
+bad = verify_slot("effect", slot("17.36", "sleep onset latency was 17.36 min less "
+                                 "after magnesium supplementation compared to placebo "
+                                 "(95% CI -27.27 to -7.44, p = 0.0006)."), THIN_ABS)
+assert not bad["verified"] and bad["reason"] == "quote_not_at_sentence_start", bad
+
+
+# ══════════════════════════════════════════════════════════════════
 # 워크숍 HTML 스냅샷도 여기서 같이 검사한다.
 #
 # sync_workshop.py는 이 저장소에만 있다 (참가자에게 나가는 starter zip에는

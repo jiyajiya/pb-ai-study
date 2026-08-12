@@ -112,6 +112,23 @@ DASHES = dict.fromkeys(map(ord, "\u2010\u2011\u2012\u2013\u2014\u2015\u2212"), "
 QUOTES = dict.fromkeys(map(ord, "\u2018\u2019\u201b\u2032"), "'")
 DQUOTES = dict.fromkeys(map(ord, "\u201c\u201d\u201f\u2033"), '"')
 
+# 조판용 얇은 공백. 출판사가 부호·단위·연산자 앞뒤에 넣는다 —
+# "17.36\u2009min", "-\u200927.27", "p\u2009=\u20090.0006".
+#
+# 이 문자는 miner가 **안정적으로 옮기지 못한다.** 한 실행 안에서 세 표기가
+# 다 나왔다: 그대로 유지(226\u2009mg), 일반 공백으로(17.36 min), 삭제(-27.27).
+# NFKC가 얇은 공백을 일반 공백으로 바꾸므로 앞의 둘은 통과하고 삭제만 걸려서,
+# 초록에 글자 그대로 실재하는 효과 크기가 quote_not_in_abstract로 폐기됐다.
+# 보이지 않는 문자를 정확히 복사하라는 지시는 집행할 수단이 없다.
+#
+# 그래서 **얇은 공백이 있던 자리에서만** 공백 유무를 묻지 않는다.
+# 공백을 통째로 무시하는 방식은 쓰지 않는다 — 그러면 범위 "5 - 10"이
+# 음수 "-10"으로 통과해서, 이 스크립트가 막으려는 부호 창작이 열린다.
+# 자리마다 따로 물어야 하는 이유는 세 표기가 한 문장 안에 섞여 나오기 때문이다.
+THIN_MARK = "\x00"  # 초록에도 quote에도 없는 문자라 표식으로 쓸 수 있다
+THINS = dict.fromkeys(
+    map(ord, "\u2009\u200a\u2007\u2008\u202f"), THIN_MARK)
+
 
 # C3의 판정. effect의 value는 숫자 하나여야 한다 — 부호·소수점·천단위·% 까지.
 # 이전에는 "효과 크기가 아닌 것"(p값·신뢰구간·서술어)을 걷어낸 뒤 숫자가
@@ -218,14 +235,10 @@ def quote_at_sentence_start(quote_norm: str, abstract_norm: str) -> bool:
     한 곳이라도 문장 시작이면 통과다 — 인용은 원문에 실재하는 문장이면
     되고, 어느 출현인지까지 특정할 근거는 없다.
     """
-    start = 0
-    while True:
-        i = abstract_norm.find(quote_norm, start)
-        if i < 0:
-            return False
-        if i == 0 or QUOTE_ANCHOR.search(abstract_norm[:i]):
+    for m in quote_matcher(quote_norm).finditer(abstract_norm):
+        if m.start() == 0 or QUOTE_ANCHOR.search(abstract_norm[:m.start()]):
             return True
-        start = i + 1
+    return False
 
 
 def effect_shape_reason(value_norm: str) -> str | None:
@@ -257,10 +270,34 @@ def normalize(text: str) -> str:
     """
     if text is None:
         return ""
-    t = unicodedata.normalize("NFKC", text)
+    # 얇은 공백은 NFKC보다 **먼저** 표식으로 바꾼다 — NFKC가 이걸 일반 공백으로
+    # 바꿔 버리면 조판 공백과 진짜 공백을 더는 구분할 수 없다.
+    t = text.translate(THINS)
+    t = unicodedata.normalize("NFKC", t)
     t = t.translate(DASHES).translate(QUOTES).translate(DQUOTES)
+    # THIN_MARK는 \s가 아니라 이 압축에서 살아남는다.
     t = re.sub(r"\s+", " ", t)
+    # 얇은 공백에 둘러싸인 대시 앞에 숫자가 오면 그건 부호가 아니라 **범위**다
+    # ("5<U+2009>-<U+2009>10"). 이 자리까지 공백 유무를 눈감아 주면
+    # "5 -10"으로 옮긴 인용이 통과해 범위가 음수 효과 크기로 둔갑한다.
+    # 범위 대시 양옆은 일반 공백으로 굳혀서 관용에서 뺀다.
+    t = re.sub(r"(\d)" + THIN_MARK + "-" + THIN_MARK + r"(\d)", r"\1 - \2", t)
     return t.strip().lower()
+
+
+def quote_matcher(quote_norm: str) -> re.Pattern:
+    """quote를 초록에서 찾을 패턴. 얇은 공백 자리에서만 공백 유무를 묻지 않는다.
+
+    - 표식(THIN_MARK)은 글자 사이 어디서나 **있어도 되고 없어도 된다** —
+      miner가 지운 경우를 받아 준다
+    - quote의 공백 한 칸은 초록의 공백 또는 표식과 맞춰 준다 —
+      miner가 얇은 공백을 일반 공백으로 옮긴 경우다
+    - 그 밖의 글자는 전부 그대로 맞아야 한다. 일반 공백은 여전히 유의미하다
+    """
+    opt = re.escape(THIN_MARK) + "?"
+    parts = [f"[ {re.escape(THIN_MARK)}]" if ch in (" ", THIN_MARK) else re.escape(ch)
+             for ch in quote_norm]
+    return re.compile(opt.join(parts))
 
 
 class PubmedCountError(ValueError):
@@ -430,7 +467,7 @@ def verify_slot(slot_name: str, slot: dict | None, abstract_norm: str) -> dict:
     value_norm = normalize(value)
 
     # C1: quote ⊂ abstract
-    if quote_norm not in abstract_norm:
+    if not quote_matcher(quote_norm).search(abstract_norm):
         return {"slot": slot_name, "value": None, "verified": False,
                 "reason": "quote_not_in_abstract",
                 "rejected_value": value, "rejected_quote": quote}
@@ -532,7 +569,7 @@ def verify_quote_slot(slot_name: str, slot: dict | None, abstract_norm: str) -> 
                 "reason": "quote_multiple_sentences", "rejected_quote": quote}
 
     quote_norm = normalize(quote)
-    if quote_norm not in abstract_norm:
+    if not quote_matcher(quote_norm).search(abstract_norm):
         return {"slot": slot_name, "quote": None, "verified": False,
                 "reason": "quote_not_in_abstract", "rejected_quote": quote}
 
