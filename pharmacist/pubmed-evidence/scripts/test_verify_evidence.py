@@ -11,7 +11,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).parent))
 from verify_evidence import (verify_slot, verify_quote_slot, normalize, REJECT_REASONS,
                             parse_record, design_check, has_multiple_sentences,
                             PubmedCountError, NotFoundError)
-import contextlib, io, json, os, tempfile
+import contextlib, io, json, os, subprocess, tempfile
 import verify_evidence
 
 ABS = normalize(
@@ -937,5 +937,21 @@ code, pack, err = run_main(_bridge_records, _bridge_fetch,
                            meta={"topic": "마그네슘 × 수면"})
 assert pack["kr_notice_name"] is None, pack.get("kr_notice_name")
 assert any("kr_notice_name" in w for w in pack["warnings"]), pack["warnings"]
+
+
+# ══════════════════════════════════════════════════════════════════
+# 워크숍 HTML 스냅샷도 여기서 같이 검사한다.
+#
+# sync_workshop.py는 이 저장소에만 있다 (참가자에게 나가는 starter zip에는
+# 없다). 있으면 = 플러그인 레포에서 도는 중이므로 --check를 태운다.
+# 사람이 기억해서 돌려야 하는 검사는 결국 안 돈다 — 스냅샷이 원본과
+# 어긋난 채 나간 것이 정확히 그 실패였고, 스크립트만 만들어 두면
+# "손으로 옮긴다"가 "기억해서 돌린다"로 한 칸 옮겨질 뿐이다.
+# ══════════════════════════════════════════════════════════════════
+
+_sync = os.path.join(os.path.dirname(os.path.abspath(__file__)), "sync_workshop.py")
+if os.path.exists(_sync):
+    assert subprocess.run([sys.executable, _sync, "--check"]).returncode == 0, (
+        "워크숍 HTML이 원본 파일과 어긋나 있다 (위 메시지 참고)")
 
 print("ok")

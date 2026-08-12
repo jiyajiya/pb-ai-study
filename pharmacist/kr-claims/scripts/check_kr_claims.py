@@ -18,7 +18,7 @@
 원료명을 정하는 순서 (`--ingredient` 생략 시):
   1. 팩의 `kr_notice_name` — pubmed-evidence가 실어 보낸 **고시 등재명**
   2. 그것이 공란("")이면 "고시형 미등재를 확인했다"는 뜻이므로 조회하지 않는다
-  3. 키가 아예 없으면 팩의 `topic` 앞부분 — 이건 **PubMed 검색어**라
+  3. 값이 `null`이면(또는 공백뿐이면) 팩의 `topic` 앞부분 — 이건 **PubMed 검색어**라
      등재명과 다를 수 있다 ('유산균' vs 등재명 '프로바이오틱스')
   어느 경로를 탔는지는 리포트의 `ingredient_source`에 남는다. 못 찾았을 때
   "개별인정형이라 없다"와 "등재명으로 묻지 않았다"를 가르는 것이 이 필드다.
@@ -273,15 +273,17 @@ def main() -> int:
         return 2
 
 
-def _error_report(args, detail: str, source: str = None) -> dict:
+def _error_report(args, detail: str) -> dict:
     return {
         "schema": "kr-claims-report/0.2",
         "verdict": "block",
         "verdict_reasons": [f"스크립트가 정상 종료하지 못했다 ({detail})"],
         "ingredient_query": args.ingredient,
-        # source는 원료명 결정 이후의 호출자만 넘긴다. 그 앞(팩·claims 로드
-        # 실패)에서는 아직 경로가 정해지지 않아 인자 유무가 아는 전부다.
-        "ingredient_source": source or ("argument" if args.ingredient else None),
+        # 원료명 결정 이후라면 run()이 args에 실어 둔 실제 경로를 쓴다.
+        # 그 앞(팩·claims 로드 실패)에서는 아직 경로가 없어 인자 유무가 아는
+        # 전부다. main()의 포괄 예외도 이 한 곳을 지나므로 갈리지 않는다.
+        "ingredient_source": getattr(args, "resolved_source", None)
+                             or ("argument" if args.ingredient else None),
         "found": None,
         "matches": [], "dose_checks": [],
         "warnings": ["이 리포트는 실행 실패로 생성된 오류 리포트다. "
@@ -340,6 +342,8 @@ def run(args) -> int:
             query = re.split(r"[×xX]", pack.get("topic") or "")[0].strip()
             query_source = "pack_topic"
 
+    args.resolved_source = query_source
+
     if query_source == "pack_notice_name_empty":
         msg = ("팩이 이 원료를 고시형 미등재로 표시했다 (kr_notice_name이 공란). "
                "**인정되지 않았다는 뜻이 아니다** — 개별인정형 목록을 따로 확인할 것.")
@@ -359,7 +363,7 @@ def run(args) -> int:
         # 리포트를 안 쓰고 나가면 --output에 직전 실행의 통과 리포트가 그대로
         # 남는다. 다음 단계가 그걸 이번 결과로 읽는다 (main()의 예외 경로와 같은 이유).
         detail = "원료명을 정할 수 없다 — --ingredient로 지정할 것"
-        _emit(_error_report(args, detail, source=query_source), args.output)
+        _emit(_error_report(args, detail), args.output)
         print(detail, file=sys.stderr)
         return 2
 
