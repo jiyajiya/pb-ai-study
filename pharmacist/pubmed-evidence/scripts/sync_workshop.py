@@ -42,11 +42,51 @@ FILES = {
     "normalize": ("skills/pubmed-evidence/references/normalize.md", []),
 }
 
-# starter zip에도 같은 파일이 들어 있다 (참가자가 붙여넣지 않고 받는 둘).
+# starter zip에는 원본 6개가 전부 완성본으로 들어간다. 참가자는 붙여넣어
+# 만들지 않고, 들어 있는 것을 열어 읽고 호출한다.
 ZIP_ENTRIES = {
     "pubmed-workshop/scripts/verify_evidence.py": "verify",
     "pubmed-workshop/scripts/test_verify_evidence.py": "test",
+    "pubmed-workshop/.claude/agents/abstract-miner.md": "miner",
+    "pubmed-workshop/.claude/agents/evidence-scout.md": "scout",
+    "pubmed-workshop/.claude/skills/pubmed-evidence/SKILL.md": "skill",
+    "pubmed-workshop/.claude/skills/pubmed-evidence/references/normalize.md":
+        "normalize",
 }
+
+# zip 안에만 있는 파일. 원본이 저장소에 없으므로 여기에 둔다.
+ZIP_LITERALS = {
+    "pubmed-workshop/README.txt": """\
+pubmed-workshop — 약사 스터디 실습 폴더
+========================================
+
+이 폴더를 Claude Code(데스크톱 앱 또는 터미널)로 여세요.
+
+들어 있는 것 — 전부 완성본입니다. 만들 것은 없습니다.
+- .claude/agents/abstract-miner.md : 서브에이전트 1호 (초록에서 숫자 오려내기)
+- .claude/agents/evidence-scout.md : 서브에이전트 2호 (논문 지형 정찰)
+- .claude/skills/pubmed-evidence/SKILL.md          : 스킬 (전체 진행 순서)
+- .claude/skills/pubmed-evidence/references/normalize.md : 용어 사전
+- scripts/verify_evidence.py      : 검사기 (실습 3단계에서 돌립니다)
+- scripts/test_verify_evidence.py : 검사기의 시험지
+- .claude/settings.json           : NCBI API 키를 넣는 곳 (실습 0단계)
+  * Mac에서 .claude 폴더는 숨김 처리라 안 보일 수 있습니다. 정상입니다.
+
+실습에서 여러분이 하는 일은 **이것들을 읽고 호출하는 것**입니다.
+지시문을 직접 만들지 않습니다 — 대신 안을 열어 무엇이 적혀 있는지 봅니다.
+
+실습 안내 문서(pubmed-evidence-workshop.html)를 열고 STEP 0부터 따라가세요.
+""",
+}
+
+# 새로 넣는 항목의 타임스탬프. 고정해야 재실행이 무변경이다.
+ZIP_DATE = (2026, 8, 12, 3, 13, 0)
+
+# 원본 zip은 전 항목이 0o600이라 폴더에 실행 비트가 없다. 비어 있을 때는
+# 아무도 몰랐지만, agents/에 파일이 들어간 지금은 압축을 풀어도 폴더에
+# 들어갈 수 없다 (drw-------). 풀어 쓰는 zip이므로 여기서 정규화한다.
+DIR_MODE = 0o40755 << 16
+FILE_MODE = 0o100644 << 16
 
 
 def die(msg):
@@ -105,16 +145,25 @@ def set_labels(html, key, lines):
 
 def rebuild_zip(b64, texts):
     src = zipfile.ZipFile(io.BytesIO(base64.b64decode(b64)))
-    missing = set(ZIP_ENTRIES) - set(src.namelist())
-    if missing:
-        die(f"starter zip에 없는 항목: {sorted(missing)}")
+    seen = set(src.namelist())
     out = io.BytesIO()
     with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
         for info in src.infolist():
             key = ZIP_ENTRIES.get(info.filename)
-            # info를 그대로 다시 쓴다 — 타임스탬프가 고정돼야 재실행이 무변경이다.
-            z.writestr(info, texts[key].encode("utf-8") if key
+            body = ZIP_LITERALS.get(info.filename)
+            if key:
+                body = texts[key]
+            # 타임스탬프는 그대로 둔다 — 고정돼야 재실행이 무변경이다.
+            info.external_attr = (DIR_MODE if info.filename.endswith("/")
+                                  else FILE_MODE)
+            z.writestr(info, body.encode("utf-8") if body is not None
                        else src.read(info.filename))
+        # zip에 아직 없는 항목은 뒤에 붙인다 (원본이 새로 관리 대상이 된 경우).
+        for name, key in ZIP_ENTRIES.items():
+            if name not in seen:
+                info = zipfile.ZipInfo(name, ZIP_DATE)
+                info.external_attr = FILE_MODE
+                z.writestr(info, texts[key].encode("utf-8"))
     return base64.b64encode(out.getvalue()).decode("ascii")
 
 
