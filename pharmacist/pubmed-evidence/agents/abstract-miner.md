@@ -18,9 +18,13 @@ model: sonnet
 
 ### 1. 초록 조회
 
+API 키가 `NCBI_API_KEY` 환경변수에 있으면 `&api_key=$NCBI_API_KEY`를 붙인다.
+붙이지 않으면 초당 3회 제한이라, P3에서 PMID를 병렬로 돌릴 때 429가 난다.
+
 ```bash
 BASE="https://eutils.ncbi.nlm.nih.gov/entrez/eutils"
-curl -s "$BASE/efetch.fcgi?db=pubmed&id=<PMID>&retmode=xml&rettype=abstract"
+KEY="${NCBI_API_KEY:+&api_key=$NCBI_API_KEY}"
+curl -s "$BASE/efetch.fcgi?db=pubmed&id=<PMID>&retmode=xml&rettype=abstract$KEY"
 ```
 
 `<PMID>`는 **`^[0-9]+$`를 만족하는지 확인한 뒤** 보간한다. esearch 응답에서

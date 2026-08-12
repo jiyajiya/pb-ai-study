@@ -288,7 +288,17 @@
 
     <div class="warn"><b>수업 전에 미리 준비 (당일에 하면 실습 시간이 사라집니다):</b><br>
     ① <b>Claude Code 설치</b> — 데스크톱 앱 권장 (claude.com/claude-code)<br>
-    ② <b>NCBI API 키 발급</b> — NCBI 사이트 로그인 → Account Settings → API Key Management<br>
+    ② <b>NCBI API 키 발급</b> — 아래 5단계, 2분이면 끝납니다<br>
+    <span style="display:block;margin:6px 0 10px 14px;font-weight:400;color:var(--ink)">
+      1. <b>ncbi.nlm.nih.gov</b> 접속 → 오른쪽 위 <b>Log in</b><br>
+      2. 계정이 없으면 <b>Sign up</b>(또는 Google 계정으로 로그인)으로 가입<br>
+      3. 로그인 후 오른쪽 위 <b>내 아이디 클릭 → Account settings</b><br>
+      4. 페이지를 내려 <b>API Key Management</b> 항목에서 <b>Create an API Key</b> 클릭<br>
+      5. 생성된 <b>36자리 문자열을 복사</b>해 두세요 — 아래 0단계 4번에서 붙여넣습니다
+    </span>
+    <span style="display:block;margin:0 0 10px 14px;font-weight:400;color:var(--muted);font-size:.9rem">
+      키는 다시 들어가면 언제든 확인·재발급할 수 있습니다. 남에게 공유하지 마세요.
+    </span>
     ③ <b>파이썬</b> — Mac은 대부분 내장(처음 실행 시 설치 창이 뜨면 확인만), <b>Windows는 python.org에서 설치</b>.
     설치 여부가 불확실해도 걱정 마세요 — 3단계에서 Claude에게 확인을 부탁하는 순서가 있습니다.</div>
 
@@ -368,11 +378,11 @@ claude</code></pre>
     <div class="do"><span class="dn">1</span><div class="db">
       <div class="dt">지시문 파일 붙여넣기</div>
       <div class="makecard" data-src="miner">
-        <div class="mk-file"><span class="ico">📄</span><span class="nm">.claude/agents/abstract-miner.md</span><span class="ln">246줄</span>
+        <div class="mk-file"><span class="ico">📄</span><span class="nm">.claude/agents/abstract-miner.md</span><span class="ln">250줄</span>
           <span class="role">서브에이전트 1호의 지시문. 코드가 아니라 글이고, 절반이 “하지 마라”입니다.</span></div>
         <div class="mk-act">
           <button class="mk-copy">📋 복사</button>
-          <span class="mk-then"><span class="claude-only">→ <b>Claude 대화창</b>에 붙여넣기. Claude가 <b>246줄</b> 저장했다고 답하면 성공</span><span class="term-only">→ <b>터미널</b>에 붙여넣고 <b>Enter</b></span></span>
+          <span class="mk-then"><span class="claude-only">→ <b>Claude 대화창</b>에 붙여넣기. Claude가 <b>250줄</b> 저장했다고 답하면 성공</span><span class="term-only">→ <b>터미널</b>에 붙여넣고 <b>Enter</b></span></span>
           <button class="mk-view">파일 내용 구경하기</button>
         </div>
       </div>
@@ -887,9 +897,13 @@ model: sonnet
 
 ### 1. 초록 조회
 
+API 키가 `NCBI_API_KEY` 환경변수에 있으면 `&api_key=$NCBI_API_KEY`를 붙인다.
+붙이지 않으면 초당 3회 제한이라, P3에서 PMID를 병렬로 돌릴 때 429가 난다.
+
 ```bash
 BASE="https://eutils.ncbi.nlm.nih.gov/entrez/eutils"
-curl -s "$BASE/efetch.fcgi?db=pubmed&id=<PMID>&retmode=xml&rettype=abstract"
+KEY="${NCBI_API_KEY:+&api_key=$NCBI_API_KEY}"
+curl -s "$BASE/efetch.fcgi?db=pubmed&id=<PMID>&retmode=xml&rettype=abstract$KEY"
 ```
 
 `<PMID>`는 **`^[0-9]+$`를 만족하는지 확인한 뒤** 보간한다. esearch 응답에서
